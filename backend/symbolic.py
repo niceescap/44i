@@ -31,6 +31,7 @@ try:
         _CHROMA_COLLECTION = chromadb.PersistentClient(path=chroma_path).get_collection(
             os.getenv("SYMBOLIQUE_CHROMA_COLLECTION", "paires")
         )
+        print(f"[symbolique] ChromaDB chargée: {chroma_path}", flush=True)
 except Exception as exc:
     print(f"[symbolique] ChromaDB indisponible: {exc}", flush=True)
 _raw_cards = load("52cartes.json", [])
