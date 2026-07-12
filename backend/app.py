@@ -140,6 +140,20 @@ def symbolic_card(code: str = Query(pattern=r"^(10|[A2-9JQK])[CDHS]$")) -> dict[
     return {"code": code.upper(), **card_info(code)}
 
 
+@app.get("/api/symbolique/pair")
+def symbolic_pair(cards: str = Query(description="Deux codes séparés par une virgule")) -> dict[str, Any]:
+    values = [value.strip().upper() for value in cards.split(",") if value.strip()]
+    if len(values) != 2:
+        raise HTTPException(status_code=400, detail="Deux cartes sont requises")
+    return {"cards": [{"code": value, **card_info(value)} for value in values], "interpretation": interpretation(values)}
+
+
+@app.get("/api/symbolique/remarkables")
+def symbolic_remarkables(cards: str = Query(description="Codes séparés par des virgules")) -> dict[str, list[Any]]:
+    values = [value.strip().upper() for value in cards.split(",") if value.strip()]
+    return {"cards": values, "remarkables": []}
+
+
 @app.get("/api/symbolique/session/{session_id}/summary")
 def symbolic_summary(session_id: str) -> dict[str, str]:
     session = get_session(session_id)
