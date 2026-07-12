@@ -62,7 +62,7 @@ def get_state(session_id: str) -> SessionState:
 
 
 @app.post("/api/sessions/{session_id}/cards/reveal", response_model=SessionState)
-def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
+async def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     session = get_session(session_id)
     code = session.top.pop(payload.slot, None)
     if code is None:
@@ -71,11 +71,12 @@ def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     row = 2 + sum(1 for slot in session.revealed if slot.startswith(column))
     target = f"{column}{row}"
     session.revealed[target] = code
-    # Comme dans le prototype, une nouvelle ligne de distribution apparaît
-    # lorsque les cartes de la ligne supérieure ont toutes été choisies.
     if not session.top and session.deck.cards:
         session.top = {f"{letter}1": session.deck.draw() for letter in "BCDEFGH" if session.deck.cards}
     session.summary = interpretation(list(session.revealed.values()))
+    result = await ask_openwebui(session, "")
+    if result:
+        session.messages.append({"role": "oracle", "content": result["Chat"]})
     return state_of(session)
 
 
