@@ -21,8 +21,8 @@ String initialLanguage() {
 
 // Updated by the selector; used for the small amount of UI copy that is
 // currently bundled in French and English. Oracle answers use all languages.
-String activeLanguage = initialLanguage();
-String tr(String french, String english) => activeLanguage == 'en' ? english : french;
+final activeLanguage = ValueNotifier<String>(initialLanguage());
+String tr(String french, String english) => activeLanguage.value == 'en' ? english : french;
 
 String get disclaimer => tr(
   '44 interprètes est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel.',
