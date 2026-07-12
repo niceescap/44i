@@ -64,8 +64,14 @@ def health() -> dict[str, str]:
 
 
 @app.post("/api/sessions", response_model=CreateSessionResponse, status_code=201)
-def create_session() -> CreateSessionResponse:
+async def create_session() -> CreateSessionResponse:
     session = store.create()
+    try:
+        result = await ask_openwebui(session, "")
+    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
+        result = None
+    apply_command(session, result)
+    session.messages.append({"role": "oracle", "content": result["Chat"] if result else fallback_oracle(session, "")})
     return CreateSessionResponse(session_id=session.id, expires_at=session.expires_at.isoformat(), state=state_of(session))
 
 
