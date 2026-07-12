@@ -95,7 +95,8 @@ async def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     session.summary = interpretation(list(session.revealed.values()))
     try:
         result = await ask_openwebui(session, "")
-    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
+    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
+        print(f"[openwebui] échec après révélation: {exc}", flush=True)
         result = None
     apply_command(session, result)
     answer = result["Chat"] if result else fallback_oracle(session, "")
