@@ -89,5 +89,9 @@ class SessionStore:
             return self._sessions.pop(session_id, None) is not None
 
     def reset(self, session_id: str) -> Session | None:
+        session = self.get(session_id)
+        if not session:
+            return None
+        language = session.language
         self.delete(session_id)
-        return self.create()
+        return self.create(language=language)
