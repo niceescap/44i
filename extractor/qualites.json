@@ -1,0 +1,834 @@
+{
+  "AC|C": {
+    "texte": "Félicité, chance.",
+    "qualite": "harmonie"
+  },
+  "AC|H": {
+    "texte": "Félicité amoureuse.",
+    "qualite": "harmonie"
+  },
+  "AC|D": {
+    "texte": "Réussite matérielle.",
+    "qualite": "harmonie"
+  },
+  "AC|S": {
+    "texte": "Vous vaincre l'adversité.",
+    "qualite": "harmonie"
+  },
+  "KC|C": {
+    "texte": "Excellent présage pour le consultant ou un homme de son entourage.",
+    "qualite": "harmonie"
+  },
+  "KC|H": {
+    "texte": "Sentiments amoureux partagés.",
+    "qualite": "harmonie"
+  },
+  "KC|D": {
+    "texte": "Voyage, déplacement que vous apprécierez.",
+    "qualite": "harmonie"
+  },
+  "KC|S": {
+    "texte": "Affaires contrariantes.",
+    "qualite": "conflit"
+  },
+  "QC|C": {
+    "texte": "Relation sentimentale sans lendemain.",
+    "qualite": "harmonie"
+  },
+  "QC|H": {
+    "texte": "Amitié sincère.",
+    "qualite": "harmonie"
+  },
+  "QC|D": {
+    "texte": "Faites le tri dans vos relations.",
+    "qualite": "conflit"
+  },
+  "QC|S": {
+    "texte": "Certaines personnes vous jalousent.",
+    "qualite": "conflit"
+  },
+  "JC|C": {
+    "texte": "Ce jeune homme est un riche parti.",
+    "qualite": "conflit"
+  },
+  "JC|H": {
+    "texte": "Projets amoureux.",
+    "qualite": "harmonie"
+  },
+  "JC|D": {
+    "texte": "Déplacements, visites agréables.",
+    "qualite": "conflit"
+  },
+  "JC|S": {
+    "texte": "Rencontre.",
+    "qualite": "harmonie"
+  },
+  "10C|C": {
+    "texte": "Honneurs, distinctions, vous récoltez ce que vous avez semé.",
+    "qualite": "harmonie"
+  },
+  "10C|H": {
+    "texte": "Cadeau d'un ami.",
+    "qualite": "harmonie"
+  },
+  "10C|D": {
+    "texte": "Entreprises, transactions avantageuses.",
+    "qualite": "conflit"
+  },
+  "10C|S": {
+    "texte": "Héritage.",
+    "qualite": "harmonie"
+  },
+  "9C|C": {
+    "texte": "Contrat, association bénéfique.",
+    "qualite": "harmonie"
+  },
+  "9C|H": {
+    "texte": "Domaine financier favorisé.",
+    "qualite": "conflit"
+  },
+  "9C|D": {
+    "texte": "Voyage fructueux, mane financière.",
+    "qualite": "harmonie"
+  },
+  "9C|S": {
+    "texte": "Gains suite à un jugement.",
+    "qualite": "conflit"
+  },
+  "8C|C": {
+    "texte": "Affaires fructueuses.",
+    "qualite": "harmonie"
+  },
+  "8C|H": {
+    "texte": "Rencontre agréable.",
+    "qualite": "harmonie"
+  },
+  "8C|D": {
+    "texte": "Activité professionnel en expension. Succès.",
+    "qualite": "harmonie"
+  },
+  "8C|S": {
+    "texte": "Tromperie.",
+    "qualite": "conflit"
+  },
+  "7C|C": {
+    "texte": "Rentrée d'argent.",
+    "qualite": "conflit"
+  },
+  "7C|H": {
+    "texte": "Douce rêverie.",
+    "qualite": "harmonie"
+  },
+  "7C|D": {
+    "texte": "Proposition étonnante et favorable.",
+    "qualite": "harmonie"
+  },
+  "7C|S": {
+    "texte": "Gain suite à un litige.",
+    "qualite": "conflit"
+  },
+  "6C|C": {
+    "texte": "Doutes, manque de confiance.",
+    "qualite": "conflit"
+  },
+  "6C|H": {
+    "texte": "Incertitude amoureuse.",
+    "qualite": "conflit"
+  },
+  "6C|D": {
+    "texte": "Le bout du tunnel n'est pas loin.",
+    "qualite": "harmonie"
+  },
+  "6C|S": {
+    "texte": "Choix difficile.",
+    "qualite": "conflit"
+  },
+  "5C|C": {
+    "texte": "Association bénéfique et avantageuse.",
+    "qualite": "harmonie"
+  },
+  "5C|H": {
+    "texte": "Investissement financier.",
+    "qualite": "conflit"
+  },
+  "5C|D": {
+    "texte": "Affaires en cours avantageuses.",
+    "qualite": "harmonie"
+  },
+  "5C|S": {
+    "texte": "Pertes dans le domaine financier.",
+    "qualite": "conflit"
+  },
+  "4C|C": {
+    "texte": "Investissement financier.",
+    "qualite": "conflit"
+  },
+  "4C|H": {
+    "texte": "Présent amical ou amoureux.",
+    "qualite": "harmonie"
+  },
+  "4C|D": {
+    "texte": "Sorties d'argent inutiles.",
+    "qualite": "conflit"
+  },
+  "4C|S": {
+    "texte": "Hypocrisie démasquée.",
+    "qualite": "conflit"
+  },
+  "3C|C": {
+    "texte": "Vous obtenez la reconnaissance de vos pairs.",
+    "qualite": "harmonie"
+  },
+  "3C|H": {
+    "texte": "Riche mariage.",
+    "qualite": "conflit"
+  },
+  "3C|D": {
+    "texte": "Association fructueuse.",
+    "qualite": "harmonie"
+  },
+  "3C|S": {
+    "texte": "Attitude passive. Attention à la déprime.",
+    "qualite": "conflit"
+  },
+  "2C|C": {
+    "texte": "Soutien de votre entourage. Mais ne lui faites pas subir vos états d'âme.",
+    "qualite": "conflit"
+  },
+  "2C|H": {
+    "texte": "Passion amoureuse.",
+    "qualite": "harmonie"
+  },
+  "2C|D": {
+    "texte": "Lâchez du leste et tenez votre langue.",
+    "qualite": "conflit"
+  },
+  "2C|S": {
+    "texte": "Découragement, manque de confiance.",
+    "qualite": "conflit"
+  },
+  "AH|C": {
+    "texte": "Cadeaux, gains financiers.",
+    "qualite": "conflit"
+  },
+  "AH|H": {
+    "texte": "Déclaration d'amour.",
+    "qualite": "harmonie"
+  },
+  "AH|D": {
+    "texte": "Voyage en perspective.",
+    "qualite": "harmonie"
+  },
+  "AH|S": {
+    "texte": "Réunion familiale.",
+    "qualite": "harmonie"
+  },
+  "KH|C": {
+    "texte": "Rentrée d'argent.",
+    "qualite": "conflit"
+  },
+  "KH|H": {
+    "texte": "Protection d'un être cher.",
+    "qualite": "harmonie"
+  },
+  "KH|D": {
+    "texte": "Visite, déplacement avec un être cher.",
+    "qualite": "harmonie"
+  },
+  "KH|S": {
+    "texte": "Témoignage d'intérêt d'un ami.",
+    "qualite": "harmonie"
+  },
+  "QH|C": {
+    "texte": "Vous récoltez ce que vous avez semé.",
+    "qualite": "harmonie"
+  },
+  "QH|H": {
+    "texte": "Domaine sentimental protégé et favorisé.",
+    "qualite": "harmonie"
+  },
+  "QH|D": {
+    "texte": "Visite prochaine espérée.",
+    "qualite": "harmonie"
+  },
+  "QH|S": {
+    "texte": "Problèmes sentimentaux.",
+    "qualite": "conflit"
+  },
+  "JH|C": {
+    "texte": "Gains en prévision.",
+    "qualite": "harmonie"
+  },
+  "JH|H": {
+    "texte": "Prétendant blond honnète et sincère.",
+    "qualite": "harmonie"
+  },
+  "JH|D": {
+    "texte": "Visite, déplacement prévu.",
+    "qualite": "conflit"
+  },
+  "JH|S": {
+    "texte": "Soucis avec un ami.",
+    "qualite": "conflit"
+  },
+  "10H|C": {
+    "texte": "Fortune assurée.",
+    "qualite": "harmonie"
+  },
+  "10H|H": {
+    "texte": "Succès en amour.",
+    "qualite": "harmonie"
+  },
+  "10H|D": {
+    "texte": "Invitation hors de chez vous.",
+    "qualite": "conflit"
+  },
+  "10H|S": {
+    "texte": "Soucis, inquiétude.",
+    "qualite": "conflit"
+  },
+  "9H|C": {
+    "texte": "Succès, satisfaction dans le domaine financier.",
+    "qualite": "harmonie"
+  },
+  "9H|H": {
+    "texte": "Félicité amoureuse.",
+    "qualite": "harmonie"
+  },
+  "9H|D": {
+    "texte": "Voyage agréable et fructueux.",
+    "qualite": "harmonie"
+  },
+  "9H|S": {
+    "texte": "Peines, chagrins évités.",
+    "qualite": "harmonie"
+  },
+  "8H|C": {
+    "texte": "Union avantageuse.",
+    "qualite": "harmonie"
+  },
+  "8H|H": {
+    "texte": "Mariage en vue.",
+    "qualite": "harmonie"
+  },
+  "8H|D": {
+    "texte": "Vous recevez des nouvelles.",
+    "qualite": "harmonie"
+  },
+  "8H|S": {
+    "texte": "Indifférence à surmonter.",
+    "qualite": "harmonie"
+  },
+  "7H|C": {
+    "texte": "Gains financiers.",
+    "qualite": "conflit"
+  },
+  "7H|H": {
+    "texte": "Félicité en amour.",
+    "qualite": "harmonie"
+  },
+  "7H|D": {
+    "texte": "Visite en vue.",
+    "qualite": "harmonie"
+  },
+  "7H|S": {
+    "texte": "Retard dansun mariage.",
+    "qualite": "conflit"
+  },
+  "6H|C": {
+    "texte": "Ambitions affichées.",
+    "qualite": "harmonie"
+  },
+  "6H|H": {
+    "texte": "Réussite dans le domaine affectif.",
+    "qualite": "harmonie"
+  },
+  "6H|D": {
+    "texte": "Dynamisme et joie de vivre.",
+    "qualite": "harmonie"
+  },
+  "6H|S": {
+    "texte": "Soucis, risque de rupture.",
+    "qualite": "conflit"
+  },
+  "5H|C": {
+    "texte": "Revenus en augmentation.",
+    "qualite": "harmonie"
+  },
+  "5H|H": {
+    "texte": "Félicité amoureuse.",
+    "qualite": "harmonie"
+  },
+  "5H|D": {
+    "texte": "Nouvelles inattendues.",
+    "qualite": "harmonie"
+  },
+  "5H|S": {
+    "texte": "Manque de sincérité.",
+    "qualite": "conflit"
+  },
+  "4H|C": {
+    "texte": "Soucis financier.",
+    "qualite": "conflit"
+  },
+  "4H|H": {
+    "texte": "Inquiétude quand à la possibilité d'une trahison sentimentale.",
+    "qualite": "conflit"
+  },
+  "4H|D": {
+    "texte": "Personne dont vous devez vous méfier.",
+    "qualite": "conflit"
+  },
+  "4H|S": {
+    "texte": "Problèmes relationnels.",
+    "qualite": "conflit"
+  },
+  "3H|C": {
+    "texte": "Apport d'argent.",
+    "qualite": "conflit"
+  },
+  "3H|H": {
+    "texte": "Réconciliation.",
+    "qualite": "harmonie"
+  },
+  "3H|D": {
+    "texte": "Vous êtes trés entouré.",
+    "qualite": "conflit"
+  },
+  "3H|S": {
+    "texte": "Votre situation sociale évolue.",
+    "qualite": "harmonie"
+  },
+  "2H|C": {
+    "texte": "Association en affaires.",
+    "qualite": "harmonie"
+  },
+  "2H|H": {
+    "texte": "Vous succombez aux sirènes de l'amour malgré quelques problèmes.",
+    "qualite": "conflit"
+  },
+  "2H|D": {
+    "texte": "Déplacement professionnel.",
+    "qualite": "conflit"
+  },
+  "2H|S": {
+    "texte": "Vous risquez de prendre une mauvaise décision.",
+    "qualite": "conflit"
+  },
+  "AD|C": {
+    "texte": "Courrier ayant trait à largent.",
+    "qualite": "conflit"
+  },
+  "AD|H": {
+    "texte": "Annonce dun mariage.",
+    "qualite": "harmonie"
+  },
+  "AD|D": {
+    "texte": "Voyage prochain.",
+    "qualite": "conflit"
+  },
+  "AD|S": {
+    "texte": "Courrier désagréable ayant trait à ladministratif ou au juridique.",
+    "qualite": "conflit"
+  },
+  "KD|C": {
+    "texte": "Relation, activité en rapport avec létranger.",
+    "qualite": "harmonie"
+  },
+  "KD|H": {
+    "texte": "Amour lointain.",
+    "qualite": "harmonie"
+  },
+  "KD|D": {
+    "texte": "Discussion professionnelle.",
+    "qualite": "conflit"
+  },
+  "KD|S": {
+    "texte": "Ennuis, soucis à prévoir",
+    "qualite": "conflit"
+  },
+  "QD|C": {
+    "texte": "Succès malgré quelques pièges.",
+    "qualite": "conflit"
+  },
+  "QD|H": {
+    "texte": "Liens amicaux ou amoureux sincères.",
+    "qualite": "harmonie"
+  },
+  "QD|D": {
+    "texte": "Cancans, ragots derrière votre dos.",
+    "qualite": "conflit"
+  },
+  "QD|S": {
+    "texte": "Médisances.",
+    "qualite": "conflit"
+  },
+  "JD|C": {
+    "texte": "Nouvelles daffaires ou dargent.",
+    "qualite": "conflit"
+  },
+  "JD|H": {
+    "texte": "Domaine amical et amoureux favorisés.",
+    "qualite": "harmonie"
+  },
+  "JD|D": {
+    "texte": "Vous recevez des nouvelles daffaires.",
+    "qualite": "harmonie"
+  },
+  "JD|S": {
+    "texte": "Risque de tromperie.",
+    "qualite": "conflit"
+  },
+  "10D|C": {
+    "texte": "financiers ou matériels.",
+    "qualite": "conflit"
+  },
+  "10D|H": {
+    "texte": "Voyage sentimental.",
+    "qualite": "harmonie"
+  },
+  "10D|D": {
+    "texte": "Déplacement, voyage professionnel.",
+    "qualite": "conflit"
+  },
+  "10D|S": {
+    "texte": "Nouvelles juridiques ou administratives.",
+    "qualite": "conflit"
+  },
+  "9D|C": {
+    "texte": "Ennuis, retard dargent.",
+    "qualite": "conflit"
+  },
+  "9D|H": {
+    "texte": "Difficultés sentimentales.",
+    "qualite": "conflit"
+  },
+  "9D|D": {
+    "texte": "Difficultés, retards domestiques.",
+    "qualite": "conflit"
+  },
+  "9D|S": {
+    "texte": "Lettres désagréables.",
+    "qualite": "conflit"
+  },
+  "8D|C": {
+    "texte": "Discussion, débat.",
+    "qualite": "conflit"
+  },
+  "8D|H": {
+    "texte": "Réussite dans les diverses activités.",
+    "qualite": "harmonie"
+  },
+  "8D|D": {
+    "texte": "Démarche pour lactivité professionnelle ou privée.",
+    "qualite": "conflit"
+  },
+  "8D|S": {
+    "texte": "Soucis, difficultés.",
+    "qualite": "conflit"
+  },
+  "7D|C": {
+    "texte": "Problèmes, désaccords professionnels.",
+    "qualite": "conflit"
+  },
+  "7D|H": {
+    "texte": "Mécontentement, déception dans le domaine sentimental ou amical.",
+    "qualite": "conflit"
+  },
+  "7D|D": {
+    "texte": "Grande contrariété suite à des ragots.",
+    "qualite": "conflit"
+  },
+  "7D|S": {
+    "texte": "Colère.",
+    "qualite": "conflit"
+  },
+  "6D|C": {
+    "texte": "Lutte pour défendre ses intérêts.",
+    "qualite": "conflit"
+  },
+  "6D|H": {
+    "texte": "Relations affectives favorisées.",
+    "qualite": "harmonie"
+  },
+  "6D|D": {
+    "texte": "Gains matériels.",
+    "qualite": "conflit"
+  },
+  "6D|S": {
+    "texte": "Disputes, conversations stériles.",
+    "qualite": "conflit"
+  },
+  "5D|C": {
+    "texte": "Domaine financier favorisé.",
+    "qualite": "conflit"
+  },
+  "5D|H": {
+    "texte": "Nouvelle relation entraînant un changement.",
+    "qualite": "conflit"
+  },
+  "5D|D": {
+    "texte": "Vie débridée.",
+    "qualite": "conflit"
+  },
+  "5D|S": {
+    "texte": "Soucis, complications.",
+    "qualite": "conflit"
+  },
+  "4D|C": {
+    "texte": "Entrée dargent inattendue ou aboutissement dun projet.",
+    "qualite": "harmonie"
+  },
+  "4D|H": {
+    "texte": "Réalisation affective.",
+    "qualite": "harmonie"
+  },
+  "4D|D": {
+    "texte": "Réussite matérielle.",
+    "qualite": "harmonie"
+  },
+  "4D|S": {
+    "texte": "Disputes, chamailleries.",
+    "qualite": "conflit"
+  },
+  "3D|C": {
+    "texte": "Réussite en affaires.",
+    "qualite": "harmonie"
+  },
+  "3D|H": {
+    "texte": "Dévouement.",
+    "qualite": "harmonie"
+  },
+  "3D|D": {
+    "texte": "Nouveau départ.",
+    "qualite": "harmonie"
+  },
+  "3D|S": {
+    "texte": "Période instable.",
+    "qualite": "conflit"
+  },
+  "2D|C": {
+    "texte": "Domaine des affaires favorisé.",
+    "qualite": "conflit"
+  },
+  "2D|H": {
+    "texte": "Domaine sentimental mis en avant.",
+    "qualite": "harmonie"
+  },
+  "2D|D": {
+    "texte": "Période de remous.",
+    "qualite": "conflit"
+  },
+  "2D|S": {
+    "texte": "Période de lutte.",
+    "qualite": "conflit"
+  },
+  "AS|C": {
+    "texte": "Dynamisme dans les affaires.",
+    "qualite": "harmonie"
+  },
+  "AS|H": {
+    "texte": "Succès amical et sentimental.",
+    "qualite": "harmonie"
+  },
+  "AS|D": {
+    "texte": "Courrier daffaires.",
+    "qualite": "conflit"
+  },
+  "AS|S": {
+    "texte": "Proposition qui semble intéressante.",
+    "qualite": "harmonie"
+  },
+  "KS|C": {
+    "texte": "Démarches concernant vos intérêts.",
+    "qualite": "conflit"
+  },
+  "KS|H": {
+    "texte": "Séparation ou divorce.",
+    "qualite": "conflit"
+  },
+  "KS|D": {
+    "texte": "Démarches officielles.",
+    "qualite": "conflit"
+  },
+  "KS|S": {
+    "texte": "Vous devrez vous défendre.",
+    "qualite": "conflit"
+  },
+  "QS|C": {
+    "texte": "Femme aisée.",
+    "qualite": "harmonie"
+  },
+  "QS|H": {
+    "texte": "femme seule de votre entourage.",
+    "qualite": "conflit"
+  },
+  "QS|D": {
+    "texte": "Contacts avec un homme de loi.",
+    "qualite": "conflit"
+  },
+  "QS|S": {
+    "texte": "Mauvaise période pour une femme seule.",
+    "qualite": "conflit"
+  },
+  "JS|C": {
+    "texte": "Vol, abus de confiance.",
+    "qualite": "conflit"
+  },
+  "JS|H": {
+    "texte": "Personne dont vous devez vous méfier.",
+    "qualite": "conflit"
+  },
+  "JS|D": {
+    "texte": "Calomnie dans votre dos.",
+    "qualite": "conflit"
+  },
+  "JS|S": {
+    "texte": "Manque de franchise envers vous, trahison.",
+    "qualite": "conflit"
+  },
+  "10S|C": {
+    "texte": "Problèmes financiers.",
+    "qualite": "conflit"
+  },
+  "10S|H": {
+    "texte": "Problèmes sentimentaux.",
+    "qualite": "conflit"
+  },
+  "10S|D": {
+    "texte": "Mauvaises nouvelles.",
+    "qualite": "conflit"
+  },
+  "10S|S": {
+    "texte": "Peines, déception.",
+    "qualite": "conflit"
+  },
+  "9S|C": {
+    "texte": "Tracas dargent.",
+    "qualite": "conflit"
+  },
+  "9S|H": {
+    "texte": "Chagrin, peine de cur.",
+    "qualite": "conflit"
+  },
+  "9S|D": {
+    "texte": "Problèmes, moments désagréables.",
+    "qualite": "conflit"
+  },
+  "9S|S": {
+    "texte": "Soucis de santé.",
+    "qualite": "conflit"
+  },
+  "8S|C": {
+    "texte": "Mauvaises passes financières.",
+    "qualite": "conflit"
+  },
+  "8S|H": {
+    "texte": "Déception sentimentale due aux ragots.",
+    "qualite": "conflit"
+  },
+  "8S|D": {
+    "texte": "Risque daccident pendant un déplacement.",
+    "qualite": "conflit"
+  },
+  "8S|S": {
+    "texte": "Problèmes de santé.",
+    "qualite": "conflit"
+  },
+  "7S|C": {
+    "texte": "Perte dargent.",
+    "qualite": "conflit"
+  },
+  "7S|H": {
+    "texte": "Peine sentimentale.",
+    "qualite": "conflit"
+  },
+  "7S|D": {
+    "texte": "Attente, retard.",
+    "qualite": "conflit"
+  },
+  "7S|S": {
+    "texte": "Nouvelles qui vous contrarient.",
+    "qualite": "conflit"
+  },
+  "6S|C": {
+    "texte": "Conciliation difficile.",
+    "qualite": "conflit"
+  },
+  "6S|H": {
+    "texte": "Difficultés de communication avec lêtre aimé.",
+    "qualite": "conflit"
+  },
+  "6S|D": {
+    "texte": "Courrier lié à vos intérêts.",
+    "qualite": "harmonie"
+  },
+  "6S|S": {
+    "texte": "Décisions à prendre.",
+    "qualite": "conflit"
+  },
+  "5S|C": {
+    "texte": "Relations professionnelles difficiles.",
+    "qualite": "conflit"
+  },
+  "5S|H": {
+    "texte": "Appauvrissement de la relation sentimentale.",
+    "qualite": "conflit"
+  },
+  "5S|D": {
+    "texte": "Risques daccident lors dun déplacement.",
+    "qualite": "conflit"
+  },
+  "5S|S": {
+    "texte": "Surveillez votre santé.",
+    "qualite": "harmonie"
+  },
+  "4S|C": {
+    "texte": "Le domaine des affaires est favorisé.",
+    "qualite": "conflit"
+  },
+  "4S|H": {
+    "texte": "domaine sentimental est favorisé.",
+    "qualite": "harmonie"
+  },
+  "4S|D": {
+    "texte": "Les choses ne seront pas comme vous le souhaitez.",
+    "qualite": "conflit"
+  },
+  "4S|S": {
+    "texte": "Problèmes dans le domaine juridique.",
+    "qualite": "conflit"
+  },
+  "3S|C": {
+    "texte": "Vous assurez dans le domaine professionnel.",
+    "qualite": "harmonie"
+  },
+  "3S|H": {
+    "texte": "Rupture sentimentale.",
+    "qualite": "conflit"
+  },
+  "3S|D": {
+    "texte": "Période de déprime, vous baissez les bras.",
+    "qualite": "conflit"
+  },
+  "3S|S": {
+    "texte": "Rupture de contrat.",
+    "qualite": "conflit"
+  },
+  "2S|C": {
+    "texte": "La méfiance est de mise dans le domaine des affaires.",
+    "qualite": "conflit"
+  },
+  "2S|H": {
+    "texte": "Manque de franchise dans les relations.",
+    "qualite": "conflit"
+  },
+  "2S|D": {
+    "texte": "Doutes et hésitations.",
+    "qualite": "conflit"
+  },
+  "2S|S": {
+    "texte": "Ragots, cancans, on parle à votre sujet.",
+    "qualite": "harmonie"
+  }
+}

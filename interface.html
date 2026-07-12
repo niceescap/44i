@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Dame de Trèfle</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #0a0510; 
+      color: #e8d5a3;
+      font-family: 'Georgia', 'Palatino Linotype', serif;
+      overflow: hidden; position: fixed; inset: 0;
+    }
+
+    #app { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; }
+
+    #memory-log {
+      position: absolute; left: 0; right: 0; top: 0; height: 30px;
+      background: #13091e; border-bottom: 1px solid #4a2a6e;
+      padding: 6px 12px; font-family: 'Georgia', serif; font-size: 13px;
+      line-height: 18px; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; color: #c9a84c; z-index: 10;
+      letter-spacing: 1px;
+    }
+
+    #table-wrapper {
+      position: absolute; left: 0; right: 0;
+      background: #0a0510; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 5;
+    }
+
+    #table-box { position: relative; flex-shrink: 0; overflow: hidden; }
+
+    #tapis-frame {
+      position: absolute; top: 0; left: 0;
+      width: 930px; height: 820px; border: none; background: #0a0510;
+      transform-origin: top left;
+    }
+
+    #chatbot-zone {
+      position: absolute; left: 0; right: 0;
+      background: linear-gradient(to bottom, #0a0510, #060309); 
+      border-top: 1px solid #2a1a3e;
+      overflow: hidden; z-index: 5; display: flex;
+      align-items: center; justify-content: center;
+    }
+
+    #command-bar {
+      position: absolute; left: 0; right: 0;
+      background: #13091e; border-top: 1px solid #6b4c8a;
+      display: flex; flex-direction: column; z-index: 20;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+    }
+
+    #chat-bar { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px; }
+
+    #chat-input {
+      flex: 1; padding: 14px 16px; background: #1a0e2e;
+      border: 1px solid #4a2a6e; border-radius: 6px; color: #e8d5a3;
+      font-size: 16px; font-family: 'Georgia', serif; outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    #chat-input:focus { 
+      border-color: #c9a84c; 
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.2);
+    }
+    #chat-input::placeholder { color: #5a4a6a; font-style: italic; }
+
+    #chat-send {
+      flex-shrink: 0; width: 50px; height: 50px; 
+      background: transparent;
+      border: 1px solid #6b4c8a; border-radius: 50%; color: #c9a84c;
+      font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    #chat-send:active { background: #4a2a6e; }
+    #chat-send:disabled { border-color: #333; color: #333; }
+
+    #chat-waiting {
+      display: none; font-family: 'Georgia', serif; font-size: 12px;
+      color: #c9a84c; padding: 0 12px 8px; letter-spacing: 3px;
+      font-style: italic;
+    }
+    #chat-waiting.active { display: block; }
+
+    #chat-feed {
+      position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden;
+      padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 12px;
+      scrollbar-width: thin; scrollbar-color: #4a2a6e transparent;
+    }
+    
+    #chat-feed::-webkit-scrollbar { width: 4px; }
+    #chat-feed::-webkit-scrollbar-thumb { background: #4a2a6e; border-radius: 2px; }
+
+    .feed-line { 
+      font-family: 'Georgia', serif; 
+      line-height: 1.6; 
+      word-break: break-word; 
+      padding: 10px 14px;
+      border-radius: 4px;
+      background: rgba(26, 14, 46, 0.4);
+    }
+    
+    .feed-line.user { 
+      color: #b19cd9; 
+      border-left: 3px solid #6b4c8a; 
+      font-size: 15px; 
+      font-style: italic;
+      align-self: flex-end;
+      max-width: 85%;
+    }
+    
+    .feed-line.llm { 
+      color: #f4e8c8; 
+      border-left: 3px solid #c9a84c; 
+      font-size: 18px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      max-width: 90%;
+    }
+    
+    .feed-line.ts { 
+      color: #5a4a6a; 
+      font-size: 11px; 
+      margin-bottom: -8px; 
+      padding: 0 14px;
+      background: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="memory-log">En attente des étoiles...</div>
+
+    <div id="table-wrapper">
+      <div id="table-box">
+        <iframe id="tapis-frame" src="/tapis.html"></iframe>
+      </div>
+    </div>
+
+    <div id="chatbot-zone">
+      <div id="chat-feed"></div>
+    </div>
+
+    <div id="command-bar">
+      <div id="chat-bar">
+        <input type="text" id="chat-input" placeholder="Interrogez l'oracle..."
+               autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+        <button id="chat-send">✦</button>
+      </div>
+      <div id="chat-waiting">L'oracle consulte les esprits...</div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const app          = document.getElementById('app');
+      const logDiv       = document.getElementById('memory-log');
+      const frame        = document.getElementById('tapis-frame');
+      const tableBox     = document.getElementById('table-box');
+      const tableWrapper = document.getElementById('table-wrapper');
+      const chatbotZone  = document.getElementById('chatbot-zone');
+      const commandBar   = document.getElementById('command-bar');
+      const chatFeed     = document.getElementById('chat-feed');
+      const chatInput    = document.getElementById('chat-input');
+      const chatSend     = document.getElementById('chat-send');
+      const chatWait     = document.getElementById('chat-waiting');
+
+      const TAPIS_W = 930;
+      const TAPIS_H = 820;
+      const LOG_H   = 30;
+
+      let currentScale = 1.0;
+      let lastWidth = window.innerWidth;
+
+      function computeScale() {
+        const screenH = window.innerHeight;
+        const maxTapisH = Math.round(screenH * 0.48);
+        const scaleByWidth = window.innerWidth / TAPIS_W;
+        const scaleByHeight = maxTapisH / TAPIS_H;
+        currentScale = Math.min(scaleByWidth, scaleByHeight);
+        lastWidth = window.innerWidth;
+      }
+
+      computeScale();
+
+      function refreshTapis() {
+        frame.src = "/tapis.html?t=" + Date.now();
+      }
+
+      function layout() {
+        const screenH = window.innerHeight;
+        const vvp = window.visualViewport;
+        const visibleH = vvp ? vvp.height : screenH;
+        const vvpTop = vvp ? vvp.offsetTop : 0;
+        const cmdH = commandBar.offsetHeight;
+
+        if (Math.abs(window.innerWidth - lastWidth) > 5) computeScale();
+
+        const dispW = Math.round(TAPIS_W * currentScale);
+        const dispH = Math.round(TAPIS_H * currentScale);
+
+        commandBar.style.top = (vvpTop + visibleH - cmdH) + 'px';
+
+        const maxTapisH = Math.round(screenH * 0.48);
+        tableWrapper.style.top = LOG_H + 'px';
+        tableWrapper.style.height = Math.min(dispH, maxTapisH) + 'px';
+        tableBox.style.width  = dispW + 'px';
+        tableBox.style.height = dispH + 'px';
+        frame.style.transform = `scale(${currentScale})`;
+
+        const chatbotTop = LOG_H + Math.min(dispH, maxTapisH);
+        const chatbotH = screenH - chatbotTop - cmdH;
+        chatbotZone.style.display = 'flex';
+        chatbotZone.style.top = chatbotTop + 'px';
+        chatbotZone.style.height = Math.max(0, chatbotH) + 'px';
+
+        app.style.height = screenH + 'px';
+      }
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', layout);
+        window.visualViewport.addEventListener('scroll', layout);
+      } else {
+        window.addEventListener('resize', layout);
+      }
+      window.addEventListener('orientationchange', () => setTimeout(layout, 100));
+
+      function updateMemory(memory) {
+        const status = memory?.status || '?';
+        const phase  = memory?.phase  || '?';
+        const col    = memory?.active_col || '?';
+        logDiv.textContent = `Status: ${status} | Phase: ${phase} | Colonne: ${col}`;
+      }
+
+      async function refreshMemory() {
+        try {
+          const data = await (await fetch('/state')).json();
+          if (data.memory) updateMemory(data.memory);
+        } catch {}
+      }
+
+      function addLine(role, text, ts) {
+        if (ts) {
+          const tsEl = document.createElement('div');
+          tsEl.className = 'feed-line ts';
+          tsEl.textContent = ts;
+          chatFeed.appendChild(tsEl);
+        }
+        const el = document.createElement('div');
+        el.className = `feed-line ${role}`;
+        el.textContent = text;
+        chatFeed.appendChild(el);
+        chatFeed.scrollTop = chatFeed.scrollHeight;
+      }
+
+      async function loadHistory() {
+        try {
+          const data = await (await fetch('/chat/history')).json();
+          chatFeed.innerHTML = '';
+          for (const line of data.lines) {
+            const m = line.match(/^\[(\d{2}:\d{2}:\d{2})\] (USER|LLM): (.+)$/);
+            if (!m) continue;
+            const [, ts, role, text] = m;
+            addLine(role.toLowerCase(), text, ts);
+          }
+        } catch {}
+      }
+
+      /* ── Chat texte ── */
+      let polling = false;
+      let pollTimer = null;
+
+      async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text || polling) return;
+        chatInput.value = '';
+        chatSend.disabled = true;
+        chatInput.blur(); // Cache le clavier immédiatement après l'envoi
+
+        const ts = new Date().toLocaleTimeString('fr-FR', { hour12: false });
+        addLine('user', text, ts);
+
+        try {
+          await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+          });
+          startPolling();
+        } catch {
+          addLine('llm', '⚠ Erreur de connexion aux esprits.', '');
+          chatSend.disabled = false;
+        }
+      }
+
+      function startPolling() {
+        polling = true;
+        chatWait.classList.add('active');
+
+        async function poll() {
+          try {
+            const res = await fetch('/chat/poll');
+            const data = await res.json();
+
+            if (data.status === 'ok') {
+              stopPolling();
+              const text = data.entry?.text || '';
+              refreshTapis();
+              await refreshMemory();
+              const ts = new Date().toLocaleTimeString('fr-FR', { hour12: false });
+              addLine('llm', text, ts);
+            } else {
+              pollTimer = setTimeout(poll, 700);
+            }
+          } catch {
+            stopPolling();
+            addLine('llm', '⚠ Le voile se déchire... (erreur serveur)', '');
+          }
+        }
+        poll();
+      }
+
+      function stopPolling() {
+        polling = false;
+        chatWait.classList.remove('active');
+        chatSend.disabled = false;
+        clearTimeout(pollTimer);
+        // On NE focus PLUS l'input ici pour laisser le clavier fermé par défaut
+      }
+
+      chatSend.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
+      });
+
+      /* ── Clic sur carte ── */
+      window.addEventListener('message', function(event) {
+        const data = event.data;
+        if (data.type === 'reveal_card' && data.slot) {
+          fetch('/reveal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slot: data.slot })
+          })
+          .then(r => r.json())
+          .then(async d => {
+            if (d.status === 'ok') {
+              refreshTapis();
+              await refreshMemory();
+              if (d.chat) {
+                const ts = new Date().toLocaleTimeString('fr-FR', { hour12: false });
+                addLine('llm', d.chat, ts);
+              }
+            } else {
+              addLine('llm', '⚠ ' + (d.message || 'Carte hermétique.'), '');
+            }
+          })
+          .catch(() => addLine('llm', '⚠ Échec de la révélation.', ''));
+        }
+      });
+
+      /* ── Initialisation ── */
+      (async () => {
+        await refreshMemory();
+        await loadHistory();
+        requestAnimationFrame(layout);
+      })();
+    })();
+  </script>
+</body>
+</html>

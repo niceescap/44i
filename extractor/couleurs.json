@@ -1,0 +1,366 @@
+[
+  {
+    "carte": "AC",
+    "trefle": "Félicité, chance.",
+    "coeur": "Félicité amoureuse.",
+    "carreau": "Réussite matérielle.",
+    "pique": "Vous vaincre l'adversité."
+  },
+  {
+    "carte": "KC",
+    "trefle": "Excellent présage pour le consultant ou un homme de son entourage.",
+    "coeur": "Sentiments amoureux partagés.",
+    "carreau": "Voyage, déplacement que vous apprécierez.",
+    "pique": "Affaires contrariantes."
+  },
+  {
+    "carte": "QC",
+    "trefle": "Relation sentimentale sans lendemain.",
+    "coeur": "Amitié sincère.",
+    "carreau": "Faites le tri dans vos relations.",
+    "pique": "Certaines personnes vous jalousent."
+  },
+  {
+    "carte": "JC",
+    "trefle": "Ce jeune homme est un riche parti.",
+    "coeur": "Projets amoureux.",
+    "carreau": "Déplacements, visites agréables.",
+    "pique": "Rencontre."
+  },
+  {
+    "carte": "10C",
+    "trefle": "Honneurs, distinctions, vous récoltez ce que vous avez semé.",
+    "coeur": "Cadeau d'un ami.",
+    "carreau": "Entreprises, transactions avantageuses.",
+    "pique": "Héritage."
+  },
+  {
+    "carte": "9C",
+    "trefle": "Contrat, association bénéfique.",
+    "coeur": "Domaine financier favorisé.",
+    "carreau": "Voyage fructueux, mane financière.",
+    "pique": "Gains suite à un jugement."
+  },
+  {
+    "carte": "8C",
+    "trefle": "Affaires fructueuses.",
+    "coeur": "Rencontre agréable.",
+    "carreau": "Activité professionnel en expension. Succès.",
+    "pique": "Tromperie."
+  },
+  {
+    "carte": "7C",
+    "trefle": "Rentrée d'argent.",
+    "coeur": "Douce rêverie.",
+    "carreau": "Proposition étonnante et favorable.",
+    "pique": "Gain suite à un litige."
+  },
+  {
+    "carte": "6C",
+    "trefle": "Doutes, manque de confiance.",
+    "coeur": "Incertitude amoureuse.",
+    "carreau": "Le bout du tunnel n'est pas loin.",
+    "pique": "Choix difficile."
+  },
+  {
+    "carte": "5C",
+    "trefle": "Association bénéfique et avantageuse.",
+    "coeur": "Investissement financier.",
+    "carreau": "Affaires en cours avantageuses.",
+    "pique": "Pertes dans le domaine financier."
+  },
+  {
+    "carte": "4C",
+    "trefle": "Investissement financier.",
+    "coeur": "Présent amical ou amoureux.",
+    "carreau": "Sorties d'argent inutiles.",
+    "pique": "Hypocrisie démasquée."
+  },
+  {
+    "carte": "3C",
+    "trefle": "Vous obtenez la reconnaissance de vos pairs.",
+    "coeur": "Riche mariage.",
+    "carreau": "Association fructueuse.",
+    "pique": "Attitude passive. Attention à la déprime."
+  },
+  {
+    "carte": "2C",
+    "trefle": "Soutien de votre entourage. Mais ne lui faites pas subir vos états d'âme.",
+    "coeur": "Passion amoureuse.",
+    "carreau": "Lâchez du leste et tenez votre langue.",
+    "pique": "Découragement, manque de confiance."
+  },
+  {
+    "carte": "AH",
+    "trefle": "Cadeaux, gains financiers.",
+    "coeur": "Déclaration d'amour.",
+    "carreau": "Voyage en perspective.",
+    "pique": "Réunion familiale."
+  },
+  {
+    "carte": "KH",
+    "trefle": "Rentrée d'argent.",
+    "coeur": "Protection d'un être cher.",
+    "carreau": "Visite, déplacement avec un être cher.",
+    "pique": "Témoignage d'intérêt d'un ami."
+  },
+  {
+    "carte": "QH",
+    "trefle": "Vous récoltez ce que vous avez semé.",
+    "coeur": "Domaine sentimental protégé et favorisé.",
+    "carreau": "Visite prochaine espérée.",
+    "pique": "Problèmes sentimentaux."
+  },
+  {
+    "carte": "JH",
+    "trefle": "Gains en prévision.",
+    "coeur": "Prétendant blond honnète et sincère.",
+    "carreau": "Visite, déplacement prévu.",
+    "pique": "Soucis avec un ami."
+  },
+  {
+    "carte": "10H",
+    "trefle": "Fortune assurée.",
+    "coeur": "Succès en amour.",
+    "carreau": "Invitation hors de chez vous.",
+    "pique": "Soucis, inquiétude."
+  },
+  {
+    "carte": "9H",
+    "trefle": "Succès, satisfaction dans le domaine financier.",
+    "coeur": "Félicité amoureuse.",
+    "carreau": "Voyage agréable et fructueux.",
+    "pique": "Peines, chagrins évités."
+  },
+  {
+    "carte": "8H",
+    "trefle": "Union avantageuse.",
+    "coeur": "Mariage en vue.",
+    "carreau": "Vous recevez des nouvelles.",
+    "pique": "Indifférence à surmonter."
+  },
+  {
+    "carte": "7H",
+    "trefle": "Gains financiers.",
+    "coeur": "Félicité en amour.",
+    "carreau": "Visite en vue.",
+    "pique": "Retard dansun mariage."
+  },
+  {
+    "carte": "6H",
+    "trefle": "Ambitions affichées.",
+    "coeur": "Réussite dans le domaine affectif.",
+    "carreau": "Dynamisme et joie de vivre.",
+    "pique": "Soucis, risque de rupture."
+  },
+  {
+    "carte": "5H",
+    "trefle": "Revenus en augmentation.",
+    "coeur": "Félicité amoureuse.",
+    "carreau": "Nouvelles inattendues.",
+    "pique": "Manque de sincérité."
+  },
+  {
+    "carte": "4H",
+    "trefle": "Soucis financier.",
+    "coeur": "Inquiétude quand à la possibilité d'une trahison sentimentale.",
+    "carreau": "Personne dont vous devez vous méfier.",
+    "pique": "Problèmes relationnels."
+  },
+  {
+    "carte": "3H",
+    "trefle": "Apport d'argent.",
+    "coeur": "Réconciliation.",
+    "carreau": "Vous êtes trés entouré.",
+    "pique": "Votre situation sociale évolue."
+  },
+  {
+    "carte": "2H",
+    "trefle": "Association en affaires.",
+    "coeur": "Vous succombez aux sirènes de l'amour malgré quelques problèmes.",
+    "carreau": "Déplacement professionnel.",
+    "pique": "Vous risquez de prendre une mauvaise décision."
+  },
+  {
+    "carte": "AD",
+    "trefle": "Courrier ayant trait à largent.",
+    "coeur": "Annonce dun mariage.",
+    "carreau": "Voyage prochain.",
+    "pique": "Courrier désagréable ayant trait à ladministratif ou au juridique."
+  },
+  {
+    "carte": "KD",
+    "trefle": "Relation, activité en rapport avec létranger.",
+    "coeur": "Amour lointain.",
+    "carreau": "Discussion professionnelle.",
+    "pique": "Ennuis, soucis à prévoir"
+  },
+  {
+    "carte": "QD",
+    "trefle": "Succès malgré quelques pièges.",
+    "coeur": "Liens amicaux ou amoureux sincères.",
+    "carreau": "Cancans, ragots derrière votre dos.",
+    "pique": "Médisances."
+  },
+  {
+    "carte": "JD",
+    "trefle": "Nouvelles daffaires ou dargent.",
+    "coeur": "Domaine amical et amoureux favorisés.",
+    "carreau": "Vous recevez des nouvelles daffaires.",
+    "pique": "Risque de tromperie."
+  },
+  {
+    "carte": "10D",
+    "trefle": "financiers ou matériels.",
+    "coeur": "Voyage sentimental.",
+    "carreau": "Déplacement, voyage professionnel.",
+    "pique": "Nouvelles juridiques ou administratives."
+  },
+  {
+    "carte": "9D",
+    "trefle": "Ennuis, retard dargent.",
+    "coeur": "Difficultés sentimentales.",
+    "carreau": "Difficultés, retards domestiques.",
+    "pique": "Lettres désagréables."
+  },
+  {
+    "carte": "8D",
+    "trefle": "Discussion, débat.",
+    "coeur": "Réussite dans les diverses activités.",
+    "carreau": "Démarche pour lactivité professionnelle ou privée.",
+    "pique": "Soucis, difficultés."
+  },
+  {
+    "carte": "7D",
+    "trefle": "Problèmes, désaccords professionnels.",
+    "coeur": "Mécontentement, déception dans le domaine sentimental ou amical.",
+    "carreau": "Grande contrariété suite à des ragots.",
+    "pique": "Colère."
+  },
+  {
+    "carte": "6D",
+    "trefle": "Lutte pour défendre ses intérêts.",
+    "coeur": "Relations affectives favorisées.",
+    "carreau": "Gains matériels.",
+    "pique": "Disputes, conversations stériles."
+  },
+  {
+    "carte": "5D",
+    "trefle": "Domaine financier favorisé.",
+    "coeur": "Nouvelle relation entraînant un changement.",
+    "carreau": "Vie débridée.",
+    "pique": "Soucis, complications."
+  },
+  {
+    "carte": "4D",
+    "trefle": "Entrée dargent inattendue ou aboutissement dun projet.",
+    "coeur": "Réalisation affective.",
+    "carreau": "Réussite matérielle.",
+    "pique": "Disputes, chamailleries."
+  },
+  {
+    "carte": "3D",
+    "trefle": "Réussite en affaires.",
+    "coeur": "Dévouement.",
+    "carreau": "Nouveau départ.",
+    "pique": "Période instable."
+  },
+  {
+    "carte": "2D",
+    "trefle": "Domaine des affaires favorisé.",
+    "coeur": "Domaine sentimental mis en avant.",
+    "carreau": "Période de remous.",
+    "pique": "Période de lutte."
+  },
+  {
+    "carte": "AS",
+    "trefle": "Dynamisme dans les affaires.",
+    "coeur": "Succès amical et sentimental.",
+    "carreau": "Courrier daffaires.",
+    "pique": "Proposition qui semble intéressante."
+  },
+  {
+    "carte": "KS",
+    "trefle": "Démarches concernant vos intérêts.",
+    "coeur": "Séparation ou divorce.",
+    "carreau": "Démarches officielles.",
+    "pique": "Vous devrez vous défendre."
+  },
+  {
+    "carte": "QS",
+    "trefle": "Femme aisée.",
+    "coeur": "femme seule de votre entourage.",
+    "carreau": "Contacts avec un homme de loi.",
+    "pique": "Mauvaise période pour une femme seule."
+  },
+  {
+    "carte": "JS",
+    "trefle": "Vol, abus de confiance.",
+    "coeur": "Personne dont vous devez vous méfier.",
+    "carreau": "Calomnie dans votre dos.",
+    "pique": "Manque de franchise envers vous, trahison."
+  },
+  {
+    "carte": "10S",
+    "trefle": "Problèmes financiers.",
+    "coeur": "Problèmes sentimentaux.",
+    "carreau": "Mauvaises nouvelles.",
+    "pique": "Peines, déception."
+  },
+  {
+    "carte": "9S",
+    "trefle": "Tracas dargent.",
+    "coeur": "Chagrin, peine de cur.",
+    "carreau": "Problèmes, moments désagréables.",
+    "pique": "Soucis de santé."
+  },
+  {
+    "carte": "8S",
+    "trefle": "Mauvaises passes financières.",
+    "coeur": "Déception sentimentale due aux ragots.",
+    "carreau": "Risque daccident pendant un déplacement.",
+    "pique": "Problèmes de santé."
+  },
+  {
+    "carte": "7S",
+    "trefle": "Perte dargent.",
+    "coeur": "Peine sentimentale.",
+    "carreau": "Attente, retard.",
+    "pique": "Nouvelles qui vous contrarient."
+  },
+  {
+    "carte": "6S",
+    "trefle": "Conciliation difficile.",
+    "coeur": "Difficultés de communication avec lêtre aimé.",
+    "carreau": "Courrier lié à vos intérêts.",
+    "pique": "Décisions à prendre."
+  },
+  {
+    "carte": "5S",
+    "trefle": "Relations professionnelles difficiles.",
+    "coeur": "Appauvrissement de la relation sentimentale.",
+    "carreau": "Risques daccident lors dun déplacement.",
+    "pique": "Surveillez votre santé."
+  },
+  {
+    "carte": "4S",
+    "trefle": "Le domaine des affaires est favorisé.",
+    "coeur": "domaine sentimental est favorisé.",
+    "carreau": "Les choses ne seront pas comme vous le souhaitez.",
+    "pique": "Problèmes dans le domaine juridique."
+  },
+  {
+    "carte": "3S",
+    "trefle": "Vous assurez dans le domaine professionnel.",
+    "coeur": "Rupture sentimentale.",
+    "carreau": "Période de déprime, vous baissez les bras.",
+    "pique": "Rupture de contrat."
+  },
+  {
+    "carte": "2S",
+    "trefle": "La méfiance est de mise dans le domaine des affaires.",
+    "coeur": "Manque de franchise dans les relations.",
+    "carreau": "Doutes et hésitations.",
+    "pique": "Ragots, cancans, on parle à votre sujet."
+  }
+]

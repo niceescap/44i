@@ -1,0 +1,312 @@
+[
+  {
+    "carte": "AC",
+    "symbole": "triomphe, réussite totale, succès majeur, accomplissement",
+    "harmonie": "présage très favorable, réussite assurée, issue excellente",
+    "conflit": "retards mineurs sans remise en cause du succès final"
+  },
+  {
+    "carte": "KC",
+    "symbole": "homme protecteur, partenaire fiable, collaborateur influent, soutien bénéfique",
+    "harmonie": "succès matériel, prédictions favorables, avantages financiers",
+    "conflit": "perte d'avantages, soutien affaibli, recul des bénéfices"
+  },
+  {
+    "carte": "QC",
+    "symbole": "femme alliée, partenaire aidante, soutien bienveillant, collaboration favorable",
+    "harmonie": "aide précieuse, situation favorable, appui bénéfique",
+    "conflit": "perte d'avantages, diminution des soutiens, aide retirée"
+  },
+  {
+    "carte": "JC",
+    "symbole": "jeune homme, célibataire, enfant possible, énergie légère, calme et joie",
+    "harmonie": "engagement affectif, fiançailles, rapprochement sentimental",
+    "conflit": "obstacles, complications, blocages dans les démarches"
+  },
+  {
+    "carte": "TC",
+    "symbole": "argent, finances, flux financiers, gains ou pertes selon le contexte",
+    "harmonie": "profit, amélioration financière, avantage matériel",
+    "conflit": "retards financiers, risque de perte, ralentissement des gains"
+  },
+  {
+    "carte": "9C",
+    "symbole": "travail, activité professionnelle, situation en évolution, changement",
+    "harmonie": "opportunités favorables, propositions intéressantes, évolution positive",
+    "conflit": "propositions décevantes, opportunités peu satisfaisantes"
+  },
+  {
+    "carte": "8C",
+    "symbole": "jeune femme brune, association, petite somme d'argent, relation sensible au contexte",
+    "harmonie": "personne agréable, relation positive, soutien sympathique",
+    "conflit": "personne peu fiable, méfiance, risque de tromperie"
+  },
+  {
+    "carte": "7C",
+    "symbole": "mental, intellect, état d'esprit, réflexion, affaires en cours",
+    "harmonie": "succès, accomplissement, victoire grâce à la maîtrise mentale",
+    "conflit": "retards, ralentissement des résultats attendus"
+  },
+  {
+    "carte": "6C",
+    "symbole": "obstacles, freins, difficultés dans les projets, contrariétés",
+    "harmonie": "résolution des problèmes, sortie d'impasse, amélioration",
+    "conflit": "abandon de projet, échec de concrétisation, renoncement"
+  },
+  {
+    "carte": "5C",
+    "symbole": "investissement professionnel, implication au travail, augmentation des revenus",
+    "harmonie": "succès financier, récompense des efforts, gains",
+    "conflit": "influence neutre, absence d'effet notable"
+  },
+  {
+    "carte": "4C",
+    "symbole": "manque de loyauté, imprudence, risque concernant les biens personnels",
+    "harmonie": "comportement irresponsable, légèreté excessive, manque de sérieux",
+    "conflit": "trahison, déloyauté, rupture de confiance"
+  },
+  {
+    "carte": "3C",
+    "symbole": "aide de l'entourage, collaboration, soutien professionnel, union avantageuse",
+    "harmonie": "évolution positive, progression, amélioration de la situation",
+    "conflit": "stagnation, maintien du statu quo"
+  },
+  {
+    "carte": "2C",
+    "symbole": "méfiance, hésitation, doute envers soi et les autres, difficulté à choisir",
+    "harmonie": "inquiétudes injustifiées, doutes passagers à dépasser",
+    "conflit": "doutes persistants, indécision chronique, blocage mental"
+  },{
+    "carte": "AH",
+    "symbole": "foyer, famille, vie privée, lien affectif, mariage, bon présage",
+    "harmonie": "bonheur affectif, stabilité émotionnelle, épanouissement relationnel",
+    "conflit": "obstacles affectifs, retards émotionnels, contrariétés mineures"
+  },
+  {
+    "carte": "KH",
+    "symbole": "homme bienveillant, figure familiale, protecteur, soutien fiable",
+    "harmonie": "appui d'un homme protecteur, soutien solide, sécurité affective",
+    "conflit": "protection affaiblie, obstacles au soutien, tensions relationnelles"
+  },
+  {
+    "carte": "QH",
+    "symbole": "femme bienveillante, figure familiale, épouse, soutien affectif",
+    "harmonie": "relation stable, mariage ou amitié sincère, lien harmonieux",
+    "conflit": "relation fragilisée, amitié en péril, déséquilibre affectif"
+  },
+  {
+    "carte": "JH",
+    "symbole": "jeune homme célibataire, énergie légère, immaturité possible, rencontre",
+    "harmonie": "rencontre éphémère, interaction légère, relation sans engagement",
+    "conflit": "mise en garde, prudence relationnelle, risque de déception"
+  },
+  {
+    "carte": "TH",
+    "symbole": "rencontres, invitations, vie sociale, joie, événements positifs",
+    "harmonie": "joie, bonheur, satisfaction sociale",
+    "conflit": "petits soucis, désagréments passagers, perturbations mineures"
+  },
+  {
+    "carte": "9H",
+    "symbole": "satisfaction globale, réussite, accomplissement personnel",
+    "harmonie": "très favorable, réussite confirmée, accomplissement",
+    "conflit": "retards, inquiétudes, résultats différés"
+  },
+  {
+    "carte": "8H",
+    "symbole": "jeune femme célibataire, sentiments, relation amoureuse, proximité affective",
+    "harmonie": "absence d'obstacles sentimentaux, fluidité relationnelle",
+    "conflit": "précipitation à éviter, attente nécessaire, instabilité émotionnelle"
+  },
+  {
+    "carte": "7H",
+    "symbole": "vie affective, émotions, sentiments, monde intérieur",
+    "harmonie": "sérénité, paix intérieure, équilibre émotionnel",
+    "conflit": "obsession, fixation émotionnelle, excès affectif"
+  },
+  {
+    "carte": "6H",
+    "symbole": "souvenirs, passé émotionnel, mémoire affective",
+    "harmonie": "souvenirs agréables, réconfort, nostalgie positive",
+    "conflit": "mélancolie, regrets, poids du passé"
+  },
+  {
+    "carte": "5H",
+    "symbole": "échanges affectifs, propositions, interactions sentimentales",
+    "harmonie": "situation stable, continuité émotionnelle",
+    "conflit": "retards mineurs, lenteur relationnelle"
+  },
+  {
+    "carte": "4H",
+    "symbole": "déception, tromperie, émotions fortes, relations destructrices",
+    "harmonie": "épreuve surmontée, résilience émotionnelle",
+    "conflit": "vulnérabilité émotionnelle, difficulté à gérer les événements"
+  },
+  {
+    "carte": "3H",
+    "symbole": "stabilité affective, union, réalisation des espoirs",
+    "harmonie": "accomplissement sans obstacle, réussite relationnelle",
+    "conflit": "indécision, hésitation, blocage émotionnel"
+  },
+  {
+    "carte": "2H",
+    "symbole": "manque de communication, incompréhension, décalage relationnel",
+    "harmonie": "situation maîtrisée, communication stabilisée",
+    "conflit": "blocage relationnel, absence de dialogue"
+  },{
+    "carte": "AD",
+    "symbole": "lettre, nouvelle reçue, communication, information extérieure, message favorable",
+    "harmonie": "bonne nouvelle, réception positive d'information, annonce favorable",
+    "conflit": "retards mineurs dans la réception de nouvelles, délai sans gravité"
+  },
+  {
+    "carte": "KD",
+    "symbole": "homme autoritaire, extérieur au cercle, déplacements, voyages, influence distante",
+    "harmonie": "protection, aide extérieure, soutien d'une autorité",
+    "conflit": "autorité pesante, tensions avec une figure dominante, difficultés relationnelles"
+  },
+  {
+    "carte": "QD",
+    "symbole": "femme responsable, distante géographiquement ou affectivement, rivalité possible, jalousie",
+    "harmonie": "réalisation de projets, aboutissement d'objectifs, progression",
+    "conflit": "retards, obstacles, complications dans les projets"
+  },
+  {
+    "carte": "JD",
+    "symbole": "messager, facteur, transmission d'information, annonce, nouvelles variables",
+    "harmonie": "nouvelles favorables, messages positifs, communication utile",
+    "conflit": "mauvaises nouvelles, annonces négatives, perturbations informationnelles"
+  },
+  {
+    "carte": "TD",
+    "symbole": "voyages, déplacements, changement de situation, transition, mouvement",
+    "harmonie": "issue favorable, évolution positive, déplacement utile",
+    "conflit": "échecs possibles, obstacles aux déplacements, blocages de transition"
+  },
+  {
+    "carte": "9D",
+    "symbole": "retards, ajournements, blocages temporels, lenteur des projets",
+    "harmonie": "patience, temporisation constructive, attente utile",
+    "conflit": "retards prolongés, stagnation, délai problématique"
+  },
+  {
+    "carte": "8D",
+    "symbole": "démarches, déplacements, activités professionnelles ou privées, confirmation d'événements",
+    "harmonie": "validation d'un événement, orientation favorable selon contexte",
+    "conflit": "indétermination, nécessité d'interprétation contextuelle, flou décisionnel"
+  },
+  {
+    "carte": "7D",
+    "symbole": "discussions, débats, tensions verbales, désagréments relationnels",
+    "harmonie": "canalisation des conflits, issue positive après tension",
+    "conflit": "colère, disputes, tensions émotionnelles ou verbales"
+  },
+  {
+    "carte": "6D",
+    "symbole": "gains modestes ou pertes, flux financier variable, contexte dépendant des cartes voisines",
+    "harmonie": "générosité, désintéressement, circulation positive des ressources",
+    "conflit": "problèmes financiers, pertes d'argent, déséquilibres matériels"
+  },
+  {
+    "carte": "5D",
+    "symbole": "désordre, clandestinité, vie cachée, instabilité émotionnelle ou relationnelle",
+    "harmonie": "rencontre sentimentale, opportunité affective, ouverture relationnelle",
+    "conflit": "séparation brutale, rupture, rupture de lien affectif"
+  },
+  {
+    "carte": "4D",
+    "symbole": "concrétisation de projets, gains matériels, cadeaux, réussite professionnelle",
+    "harmonie": "bénéfice matériel, réussite financière, concrétisation positive",
+    "conflit": "avarice, blocage matériel, rigidité dans les échanges"
+  },
+  {
+    "carte": "3D",
+    "symbole": "construction, union, association, volonté de bâtir, coopération",
+    "harmonie": "association favorable, union réussie, collaboration positive",
+    "conflit": "retards dans la construction des projets, lenteur d'évolution"
+  },
+  {
+    "carte": "2D",
+    "symbole": "indécision, incapacité à choisir, hésitation, désorganisation",
+    "harmonie": "réponse favorable, clarification d'une situation",
+    "conflit": "désordre, embarras, confusion décisionnelle"
+  },{
+    "carte": "AS",
+    "symbole": "démarches administratives, contrats, papiers officiels, sécurité matérielle et intellectuelle, stabilité",
+    "harmonie": "gains importants possibles, réussite administrative, sécurisation des acquis",
+    "conflit": "égoïsme envers l'entourage, comportement centré sur soi, rigidité matérielle"
+  },
+  {
+    "carte": "KS",
+    "symbole": "homme seul, veuf ou divorcé, figure influente, juriste ou médecin, autorité officielle",
+    "harmonie": "personne favorable au consultant, soutien institutionnel, aide extérieure positive",
+    "conflit": "problèmes administratifs, blocages institutionnels, complications officielles"
+  },
+  {
+    "carte": "QS",
+    "symbole": "femme seule, veuve ou divorcée, solitude mal vécue, séparation, paroles négatives",
+    "harmonie": "expression de vérité, messages directs de cette femme, clarification verbale",
+    "conflit": "mauvaises paroles, critiques, influences négatives relationnelles"
+  },
+  {
+    "carte": "JS",
+    "symbole": "événement rapide, trahison possible, déception, malveillance, avertissement",
+    "harmonie": "prise de conscience rapide, alerte utile, protection par anticipation",
+    "conflit": "danger, trahison, événement défavorable, rupture de confiance"
+  },
+  {
+    "carte": "TS",
+    "symbole": "nuages, doutes, tristesse, difficultés, déséquilibre émotionnel, incertitude",
+    "harmonie": "issue probable favorable, amélioration possible, atténuation des difficultés",
+    "conflit": "malheur probable, événement difficile, chute émotionnelle"
+  },
+  {
+    "carte": "9S",
+    "symbole": "coup du sort, douleur, tristesse, découragement, illusions perdues",
+    "harmonie": "prise de recul, compréhension des épreuves, évolution après difficulté",
+    "conflit": "retour des difficultés, intensification des souffrances, perte de repères"
+  },
+  {
+    "carte": "8S",
+    "symbole": "problèmes, conflits, ragots, malveillance, fatigue, santé fragile",
+    "harmonie": "déception exprimée, prise de conscience des tensions, clarification",
+    "conflit": "petits chagrins, perturbations émotionnelles, tensions persistantes"
+  },
+  {
+    "carte": "7S",
+    "symbole": "luttes, transitions, conflits professionnels ou financiers, instabilité",
+    "harmonie": "période favorable, évolution positive, résolution possible des tensions",
+    "conflit": "incertitude, absence de conclusion, instabilité prolongée"
+  },
+  {
+    "carte": "6S",
+    "symbole": "petits problèmes quotidiens, disputes, désaccords familiaux ou relationnels",
+    "harmonie": "échanges d'opinions, discussions constructives, communication active",
+    "conflit": "dissensions, désaccords, tensions relationnelles"
+  },
+  {
+    "carte": "5S",
+    "symbole": "dissensions, rupture, perte amicale ou sentimentale, conflits relationnels",
+    "harmonie": "rupture nécessaire, libération d'une situation toxique, clarification relationnelle",
+    "conflit": "retards dans les événements, blocage de séparation, stagnation relationnelle"
+  },
+  {
+    "carte": "4S",
+    "symbole": "retrait, isolement, récupération, introspection, besoin de repos",
+    "harmonie": "isolement volontaire, recul bénéfique, réflexion intérieure",
+    "conflit": "repos forcé, enfermement, retrait subi"
+  },
+  {
+    "carte": "3S",
+    "symbole": "rivalité, trahison, rupture, conflit amoureux, refroidissement relationnel",
+    "harmonie": "rupture libératrice, séparation nécessaire, fin d'une relation toxique",
+    "conflit": "désordre mental, conséquences des conflits passés, surcharge émotionnelle"
+  },
+  {
+    "carte": "2S",
+    "symbole": "tromperie, manipulation, actions peu franches, vigilance, contrats risqués",
+    "harmonie": "justice ou retour des actions, résolution d'une situation conflictuelle",
+    "conflit": "blocage total, situation figée, impasse relationnelle ou administrative"
+  }
+
+]

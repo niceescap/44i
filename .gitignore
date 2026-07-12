@@ -1,0 +1,23 @@
+# Secrets
+OR_key.txt
+
+# Base vectorielle confidentielle
+chroma_db/
+
+# Fichiers générés au runtime
+*.log
+*.db
+chatin.json
+chatout.json
+state.json
+memory.json
+deck_shuffled.json
+feed.txt
+ordre_croupier.json
+output_prompting_proto_query.json
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
