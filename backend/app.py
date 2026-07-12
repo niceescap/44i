@@ -240,7 +240,8 @@ async def message(session_id: str, payload: MessageRequest) -> MessageResponse:
     session.messages.append({"role": "user", "content": text})
     try:
         result = await ask_openwebui(session, text)
-    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
+    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
+        print(f"[openwebui] échec message: {exc}", flush=True)
         result = None
     apply_command(session, result)
     answer = result["Chat"] if result else fallback_oracle(session, text)
