@@ -12,6 +12,7 @@ L'outil ne modifie jamais une session, un deck, un historique ou un fichier.
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
