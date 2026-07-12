@@ -6,7 +6,23 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
 
-String tr(String french, String english) => ui.PlatformDispatcher.instance.locale.languageCode.toLowerCase() == 'en' ? english : french;
+const languageLabels = <String, String>{
+  'fr': 'Français', 'en': 'English', 'es': 'Español', 'it': 'Italiano',
+  'de': 'Deutsch', 'nl': 'Nederlands', 'pt': 'Português', 'pl': 'Polski',
+  'hu': 'Magyar', 'sr': 'Српски', 'ru': 'Русский', 'ar': 'العربية',
+  'he': 'עברית', 'zh': '中文', 'th': 'ไทย', 'ja': '日本語', 'ko': '한국어',
+  'hi': 'हिन्दी', 'id': 'Bahasa Indonesia', 'tr': 'Türkçe', 'vi': 'Tiếng Việt',
+};
+
+String initialLanguage() {
+  final language = ui.PlatformDispatcher.instance.locale.languageCode.toLowerCase();
+  return languageLabels.containsKey(language) ? language : 'fr';
+}
+
+// Updated by the selector; used for the small amount of UI copy that is
+// currently bundled in French and English. Oracle answers use all languages.
+String activeLanguage = initialLanguage();
+String tr(String french, String english) => activeLanguage == 'en' ? english : french;
 
 String get disclaimer => tr(
   '44 interprètes est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel.',
