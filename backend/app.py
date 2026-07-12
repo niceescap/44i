@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .models import Card, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
 from .session_store import Session, SessionStore
-from .symbolic import CARDS, QUALITIES, card_info, interpretation
+from .symbolic import CARDS, QUALITIES, card_info, interpretation, pair_symbol
 
 app = FastAPI(title="44 interprètes API", version="1.0.0")
 store = SessionStore()
