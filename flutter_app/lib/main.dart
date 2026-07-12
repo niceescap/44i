@@ -199,7 +199,7 @@ class TapisView extends StatelessWidget {
         const SizedBox(height: 22),
         Wrap(alignment: WrapAlignment.center, spacing: 10, runSpacing: 12, children: faceDown.map((card) => _CardTile(card: card, onTap: busy ? null : () => onReveal(card['slot'] as String))).toList()),
         const SizedBox(height: 26),
-        if (faceUp.isNotEmpty) const Text('Cartes révélées', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        if (faceUp.isNotEmpty) Text(tr('Cartes révélées', 'Revealed cards'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 10),
         ...faceUp.map((card) => ListTile(leading: const Icon(Icons.auto_awesome, color: Color(0xffd6ad62)), title: Text('${card['name']} (${card['code']})'), subtitle: Text('${card['slot']} · ${card['symbol'] ?? ''}'))),
         const SizedBox(height: 16),
