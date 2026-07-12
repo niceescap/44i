@@ -219,8 +219,15 @@ async def ask_openwebui(session: Session, message: str) -> dict[str, Any] | None
         response = await client.post(f"{base}/api/chat/completions", headers=headers, json=body)
         response.raise_for_status()
         data: dict[str, Any] = response.json()
-        content = data.get("choices", [{}])[0].get("message", {}).get("content")
-        return parse_masterout(content)
+        choice = data.get("choices", [{}])[0]
+        message_data = choice.get("message", {}) if isinstance(choice, dict) else {}
+        content = message_data.get("content")
+        if not content and isinstance(message_data.get("tool_calls"), list):
+            print(f"[openwebui] tool_calls reçus sans contenu final: {len(message_data['tool_calls'])}", flush=True)
+        result = parse_masterout(content)
+        if result is None:
+            print(f"[openwebui] réponse non exploitable: {str(data)[:500]}", flush=True)
+        return result
 
 
 @app.post("/api/sessions/{session_id}/messages", response_model=MessageResponse)
