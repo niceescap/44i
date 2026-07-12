@@ -152,6 +152,7 @@ def apply_command(session: Session, result: dict[str, Any] | None) -> None:
     if theme:
         session.themes.append(theme)
     session.active_col = next_column
+    session.column_signal = None
 
 
 def fallback_oracle(session: Session, message: str) -> str:
