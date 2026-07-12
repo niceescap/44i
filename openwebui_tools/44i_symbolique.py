@@ -24,7 +24,7 @@ except ImportError:  # permet au reste de l'outil de fonctionner sans ChromaDB
     chromadb = None
 
 
-CODE_RE = re.compile(r"^(?:10|[A2-9JQK])[CDHS]$", re.IGNORECASE)
+CODE_RE = re.compile(r"^(?:T|[A2-9JQK])[CDHS]$", re.IGNORECASE)
 
 
 class Tools:
