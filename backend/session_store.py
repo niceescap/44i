@@ -34,6 +34,7 @@ class Session:
     active_col: str = "A"
     symbolic: SymbolicEngine = field(default_factory=SymbolicEngine)
     column_signal: str | None = None
+    last_symbolic_event: dict = field(default_factory=dict)
 
     def touch(self) -> None:
         self.expires_at = now() + timedelta(minutes=TTL_MINUTES)
