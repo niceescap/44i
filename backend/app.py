@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
-from .models import Card, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
+from .models import Card, CreateSessionRequest, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
 from .session_store import Session, SessionStore
 from .symbolic import CARDS, QUALITIES, card_info, interpretation, pair_symbol
 
