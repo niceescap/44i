@@ -142,7 +142,8 @@ def masterin(session: Session, message: str) -> dict[str, Any]:
 
 def apply_command(session: Session, result: dict[str, Any] | None) -> None:
     """Applique uniquement la commande de colonne validée par le backend."""
-    if not result or result.get("Com") != "tx":
+    forced = bool(session.column_signal and session.column_signal.startswith("obligation:"))
+    if not forced and (not result or result.get("Com") != "tx"):
         return
     next_column = session.next_column()
     if next_column is None:
