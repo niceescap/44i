@@ -218,7 +218,9 @@ def execute_symbolic_tool(name: str, arguments: dict[str, Any]) -> str:
     if name == "rechercher_paire":
         first = str(arguments.get("carte_a", arguments.get("card_a", ""))).strip().upper()
         second = str(arguments.get("carte_b", arguments.get("card_b", ""))).strip().upper()
-        return json.dumps({"cards": [first, second], "found": True, "interpretation": interpretation([first, second]), "source": "symbolique_44i"}, ensure_ascii=False)
+        result = pair_symbol(first, second)
+        result["interpretation"] = interpretation([first, second])
+        return json.dumps(result, ensure_ascii=False)
     if name == "rechercher_qualite":
         base = str(arguments.get("carte_base", "")).strip().upper()
         apport = str(arguments.get("carte_apport", "")).strip().upper()
