@@ -165,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('44 interprètes'), actions: [IconButton(onPressed: _shareExport, icon: const Icon(Icons.ios_share), tooltip: 'Exporter')]),
+        appBar: AppBar(title: const Text('44 interprètes'), actions: [IconButton(onPressed: _shareExport, icon: const Icon(Icons.ios_share), tooltip: tr('Exporter', 'Export'))]),
         body: SafeArea(child: _body()),
         bottomNavigationBar: NavigationBar(selectedIndex: tab, onDestinationSelected: (value) => setState(() => tab = value), destinations: const [NavigationDestination(icon: Icon(Icons.style), label: 'Tapis'), NavigationDestination(icon: Icon(Icons.chat_bubble_outline), label: 'Oracle'), NavigationDestination(icon: Icon(Icons.info_outline), label: 'À propos')]),
       );
