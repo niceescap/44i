@@ -79,19 +79,69 @@ def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     return state_of(session)
 
 
-async def ask_openwebui(session: Session, message: str) -> str | None:
+def masterin(session: Session, message: str) -> dict[str, Any]:
+    revealed = [
+        {"code": code, "slot": slot, **card_info(code)}
+        for slot, code in session.revealed.items()
+    ]
+    return {
+        "type": "consultation_44i",
+        "version": "1",
+        "message_utilisateur": message,
+        "carte_revelee": revealed[-1] if revealed else None,
+        "cartes_revelees": revealed,
+        "resume_symbolique": session.summary,
+        "themes_precedents": [],
+        "historique_recent": session.messages[-10:],
+        "contraintes": {
+            "lecture_symbolique": True,
+            "prediction_certaine": False,
+            "langue": "fr",
+        },
+    }
+
+
+def parse_masterout(content: Any) -> dict[str, Any] | None:
+    if not isinstance(content, str):
+        return None
+    cleaned = content.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.strip("`").replace("json\n", "", 1).strip()
+    try:
+        value = json.loads(cleaned)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(value, dict) or not value.get("Chat"):
+        return None
+    command = str(value.get("Com", "no")).lower()
+    value["Com"] = command if command in {"no", "tx"} else "no"
+    value["Theme"] = str(value.get("Theme", ""))
+    value["Sources"] = value.get("Sources", []) if isinstance(value.get("Sources", []), list) else []
+    return value
+
+
+async def ask_openwebui(session: Session, message: str) -> dict[str, Any] | None:
     base = os.getenv("OPENWEBUI_URL", "").rstrip("/")
     token = os.getenv("OPENWEBUI_API_KEY", "")
-    model = os.getenv("OPENWEBUI_MODEL", "")
-    if not base or not token or not model:
+    model = os.getenv("OPENWEBUI_MODEL", "44-interpretes")
+    if not base or not token:
         return None
-    prompt = f"Question utilisateur : {message}\nCartes révélées : {interpretation(list(session.revealed.values()))}\nRéponds en français, avec une lecture symbolique et prudente."
-    headers = {"Authorization": f"Bearer {token}"}
-    async with httpx.AsyncClient(timeout=45) as client:
-        response = await client.post(f"{base}/api/chat/completions", headers=headers, json={"model": model, "messages": [{"role": "user", "content": prompt}], "temperature": 0.7})
+    tool_ids = [item.strip() for item in os.getenv("OPENWEBUI_TOOL_IDS", "").split(",") if item.strip()]
+    body: dict[str, Any] = {
+        "model": model,
+        "messages": [{"role": "user", "content": json.dumps(masterin(session, message), ensure_ascii=False)}],
+        "temperature": 0.7,
+        "stream": False,
+    }
+    if tool_ids:
+        body["tool_ids"] = tool_ids
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    async with httpx.AsyncClient(timeout=90) as client:
+        response = await client.post(f"{base}/api/chat/completions", headers=headers, json=body)
         response.raise_for_status()
         data: dict[str, Any] = response.json()
-        return data.get("choices", [{}])[0].get("message", {}).get("content")
+        content = data.get("choices", [{}])[0].get("message", {}).get("content")
+        return parse_masterout(content)
 
 
 @app.post("/api/sessions/{session_id}/messages", response_model=MessageResponse)
