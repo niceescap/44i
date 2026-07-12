@@ -26,7 +26,7 @@ def load(name: str, default):
 
 _CHROMA_COLLECTION = None
 try:
-    chroma_path = os.getenv("SYMBOLIQUE_CHROMA_DIR", str(EXTRACTOR / "chroma_db"))
+    chroma_path = os.getenv("SYMBOLIQUE_CHROMA_DIR", str(ROOT / "chroma_db"))
     if chromadb and Path(chroma_path).exists():
         _CHROMA_COLLECTION = chromadb.PersistentClient(path=chroma_path).get_collection(
             os.getenv("SYMBOLIQUE_CHROMA_COLLECTION", "paires")
