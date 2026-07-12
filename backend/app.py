@@ -43,6 +43,7 @@ def state_of(session: Session) -> SessionState:
         status="active",
         created_at=session.created_at.isoformat(),
         expires_at=session.expires_at.isoformat(),
+        language=normalize_language(session.language),
         question=session.question,
         cards=cards,
         available_slots=list(session.top.keys()),
