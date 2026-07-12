@@ -179,7 +179,10 @@ def parse_masterout(content: Any) -> dict[str, Any] | None:
     try:
         value = json.loads(cleaned)
     except json.JSONDecodeError:
-        return None
+        # Laguna peut occasionnellement répondre en texte malgré le contrat JSON.
+        # On affiche alors sa réponse plutôt que de remplacer la consultation par
+        # un fallback générique.
+        return {"Chat": content.strip(), "Com": "no", "Theme": "", "Sources": []} if content.strip() else None
     if not isinstance(value, dict) or not value.get("Chat"):
         return None
     command = str(value.get("Com", "no")).lower()
