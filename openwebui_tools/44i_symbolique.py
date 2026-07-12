@@ -180,6 +180,9 @@ class Tools:
             return self._json({"error": "Code de carte invalide", "invalid": invalid})
 
         try:
+            extractor_path = str(self.extractor_dir)
+            if extractor_path not in sys.path:
+                sys.path.insert(0, extractor_path)
             from detector_rem import detecter_remarquables
             remarkable = detecter_remarquables(values)
         except Exception as exc:
