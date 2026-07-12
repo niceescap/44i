@@ -23,7 +23,13 @@ app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 DISCLAIMER = "44 interprètes est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel."
 TOP_SLOTS = [f"{letter}1" for letter in "BCDEFGH"]
-SUPPORTED_LANGUAGES = {"fr", "en"}
+# Primary Latin-script languages, major Asian languages, and RTL languages
+# presented by the mobile language selector. Keep this explicit allow-list so a
+# malformed locale is never injected into the model prompt.
+SUPPORTED_LANGUAGES = {
+    "fr", "en", "es", "it", "de", "nl", "pt", "pl", "hu", "sr", "ru",
+    "ar", "he", "zh", "th", "ja", "ko", "hi", "id", "tr", "vi",
+}
 
 
 def normalize_language(locale: str | None) -> str:
