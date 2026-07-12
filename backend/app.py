@@ -170,26 +170,20 @@ def apply_command(session: Session, result: dict[str, Any] | None) -> None:
 
 
 def fallback_oracle(session: Session, message: str) -> str:
-    """Réponse locale non silencieuse lorsque OpenWebUI échoue ou est lent."""
+    """Useful local response when the remote oracle is unavailable."""
     cards = list(session.revealed.values())
-    context = interpretation(cards) if cards else "Aucune carte n’est encore révélée."
+    french = normalize_language(session.language) == "fr"
+    empty = "Aucune carte n’est encore révélée." if french else "No card has been revealed yet."
+    context = interpretation(cards) if cards else empty
     if not cards:
-        return "Le tapis est prêt. Choisis une carte face cachée pour commencer la lecture symbolique."
+        return "Le tapis est prêt. Choisis une carte face cachée pour commencer la lecture symbolique." if french else "The spread is ready. Choose a face-down card to begin the symbolic reading."
     if message:
-        return (
-            "Je garde ta question au centre de la consultation. Les cartes révélées "
-            "proposent des symboles à explorer, pas une réponse certaine.\n\n"
-            f"{context}\n\n"
-            "Observe ce qui résonne dans ta situation, puis choisis une nouvelle carte "
-            "si tu souhaites approfondir le contexte."
-        )
-    return (
-        "Une nouvelle carte vient d’entrer dans le contexte du tirage. "
-        "Voici les symboles actuellement présents :\n\n"
-        f"{context}\n\n"
-        "Que fait émerger cette combinaison pour toi ? Tu peux me répondre ou "
-        "choisir une autre carte face cachée."
-    )
+        prefix = "Je garde ta question au centre de la consultation. Les cartes révélées proposent des symboles à explorer, pas une réponse certaine." if french else "I will keep your question at the centre of this consultation. Revealed cards offer symbols to explore, not certain answers."
+        suffix = "Observe ce qui résonne dans ta situation, puis choisis une nouvelle carte si tu souhaites approfondir le contexte." if french else "Notice what resonates with your situation, then choose another card if you wish to explore further."
+        return f"{prefix}\n\n{context}\n\n{suffix}"
+    prefix = "Une nouvelle carte vient d’entrer dans le contexte du tirage. Voici les symboles actuellement présents :" if french else "A new card has entered the spread. Here are the symbols currently present:"
+    suffix = "Que fait émerger cette combinaison pour toi ? Tu peux me répondre ou choisir une autre carte face cachée." if french else "What does this combination bring up for you? You can reply or choose another face-down card."
+    return f"{prefix}\n\n{context}\n\n{suffix}"
 
 
 def parse_masterout(content: Any) -> dict[str, Any] | None:
