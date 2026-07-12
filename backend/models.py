@@ -23,6 +23,8 @@ class SessionState(BaseModel):
     available_slots: list[str] = Field(default_factory=list)
     messages: list[dict[str, str]] = Field(default_factory=list)
     summary: str = ""
+    active_column: str = "A"
+    themes: list[str] = Field(default_factory=list)
 
 
 class CreateSessionResponse(BaseModel):
