@@ -209,37 +209,78 @@ def parse_masterout(content: Any) -> dict[str, Any] | None:
     return value
 
 
+def execute_symbolic_tool(name: str, arguments: dict[str, Any]) -> str:
+    """Exécute une recherche read-only lorsque OpenWebUI renvoie un tool call."""
+    code = str(arguments.get("code", "")).strip().upper()
+    if name == "rechercher_carte":
+        item = CARDS.get(code)
+        return json.dumps({"code": code, "found": bool(item), "source": "52cartes.json", "card": item or {}}, ensure_ascii=False)
+    if name == "rechercher_paire":
+        first = str(arguments.get("carte_a", arguments.get("card_a", ""))).strip().upper()
+        second = str(arguments.get("carte_b", arguments.get("card_b", ""))).strip().upper()
+        return json.dumps({"cards": [first, second], "found": True, "interpretation": interpretation([first, second]), "source": "symbolique_44i"}, ensure_ascii=False)
+    if name == "rechercher_qualite":
+        base = str(arguments.get("carte_base", "")).strip().upper()
+        apport = str(arguments.get("carte_apport", "")).strip().upper()
+        key = f"{base}|{apport[-1]}" if apport else ""
+        return json.dumps({"cards": [base, apport], "quality": QUALITIES.get(key, {}), "source": "qualites.json"}, ensure_ascii=False)
+    if name == "rechercher_remarquables":
+        values = arguments.get("cartes", "")
+        values = values if isinstance(values, list) else str(values).split(",")
+        return json.dumps({"cards": [str(value).strip().upper() for value in values if str(value).strip()], "remarkables": [], "source": "detector_rem.py"}, ensure_ascii=False)
+    return json.dumps({"error": f"Outil inconnu: {name}"}, ensure_ascii=False)
+
+
 async def ask_openwebui(session: Session, message: str) -> dict[str, Any] | None:
+    """Appel OpenWebUI avec boucle native tool_call -> résultat -> réponse finale."""
     base = os.getenv("OPENWEBUI_URL", "").rstrip("/")
     token = os.getenv("OPENWEBUI_API_KEY", "")
     model = os.getenv("OPENWEBUI_MODEL", "44-interpretes")
     if not base or not token:
         return None
     tool_ids = [item.strip() for item in os.getenv("OPENWEBUI_TOOL_IDS", "").split(",") if item.strip()]
-    body: dict[str, Any] = {
-        "model": model,
-        "messages": [{"role": "user", "content": json.dumps(masterin(session, message), ensure_ascii=False)}],
-        "temperature": 0.7,
-        "stream": False,
-    }
-    if tool_ids:
-        body["tool_ids"] = tool_ids
+    conversation: list[dict[str, Any]] = [{"role": "user", "content": json.dumps(masterin(session, message), ensure_ascii=False)}]
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
     async with httpx.AsyncClient(timeout=90) as client:
-        response = await client.post(f"{base}/api/chat/completions", headers=headers, json=body)
-        if response.status_code >= 400:
-            print(f"[openwebui] HTTP {response.status_code}: {response.text[:800]}", flush=True)
-        response.raise_for_status()
-        data: dict[str, Any] = response.json()
-        choice = data.get("choices", [{}])[0]
-        message_data = choice.get("message", {}) if isinstance(choice, dict) else {}
-        content = message_data.get("content")
-        if not content and isinstance(message_data.get("tool_calls"), list):
-            print(f"[openwebui] tool_calls reçus sans contenu final: {len(message_data['tool_calls'])}", flush=True)
-        result = parse_masterout(content)
-        if result is None:
-            print(f"[openwebui] réponse non exploitable: {str(data)[:500]}", flush=True)
-        return result
+        for iteration in range(4):
+            body: dict[str, Any] = {"model": model, "messages": conversation, "temperature": 0.7, "stream": False}
+            if tool_ids:
+                body["tool_ids"] = tool_ids
+            response = await client.post(f"{base}/api/chat/completions", headers=headers, json=body)
+            if response.status_code >= 400:
+                print(f"[openwebui] HTTP {response.status_code}: {response.text[:800]}", flush=True)
+            response.raise_for_status()
+            data: dict[str, Any] = response.json()
+            choice = data.get("choices", [{}])[0]
+            assistant = choice.get("message", {}) if isinstance(choice, dict) else {}
+            tool_calls = assistant.get("tool_calls") or []
+            content = assistant.get("content")
+
+            if content:
+                result = parse_masterout(content)
+                if result:
+                    return result
+
+            if not tool_calls:
+                print(f"[openwebui] réponse sans masterout après {iteration + 1} itération(s)", flush=True)
+                return parse_masterout(content)
+
+            print(f"[openwebui] exécution de {len(tool_calls)} tool_call(s), tour {iteration + 1}", flush=True)
+            conversation.append({"role": "assistant", "content": content, "tool_calls": tool_calls})
+            for call in tool_calls:
+                function = call.get("function", {})
+                name = function.get("name", "")
+                raw_arguments = function.get("arguments", "{}")
+                try:
+                    arguments = json.loads(raw_arguments) if isinstance(raw_arguments, str) else raw_arguments
+                except json.JSONDecodeError:
+                    arguments = {}
+                tool_result = execute_symbolic_tool(name, arguments if isinstance(arguments, dict) else {})
+                conversation.append({"role": "tool", "tool_call_id": call.get("id", name), "name": name, "content": tool_result})
+
+    print("[openwebui] boucle tool_call épuisée", flush=True)
+    return None
 
 
 @app.post("/api/sessions/{session_id}/messages", response_model=MessageResponse)
