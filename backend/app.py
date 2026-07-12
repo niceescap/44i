@@ -71,6 +71,10 @@ def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     row = 2 + sum(1 for slot in session.revealed if slot.startswith(column))
     target = f"{column}{row}"
     session.revealed[target] = code
+    # Comme dans le prototype, une nouvelle ligne de distribution apparaît
+    # lorsque les cartes de la ligne supérieure ont toutes été choisies.
+    if not session.top and session.deck.cards:
+        session.top = {f"{letter}1": session.deck.draw() for letter in "BCDEFGH" if session.deck.cards}
     session.summary = interpretation(list(session.revealed.values()))
     return state_of(session)
 
