@@ -34,7 +34,7 @@ class Tools:
             os.getenv("SYMBOLIQUE_EXTRACTOR_DIR", "/data/44i/extractor")
         )
         self.chroma_dir = Path(
-            os.getenv("44I_CHROMA_DIR", "/data/44i/chroma_db")
+            os.getenv("SYMBOLIQUE_CHROMA_DIR", "/data/44i/chroma_db")
         )
         self.collection_name = os.getenv("44I_CHROMA_COLLECTION", "paires")
         self.cards = self._load_json("52cartes.json", [])
