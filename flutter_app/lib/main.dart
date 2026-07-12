@@ -264,7 +264,7 @@ class _CardTile extends StatelessWidget {
   final Map<String, dynamic> card;
   final VoidCallback? onTap;
   @override
-  Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(14), child: Container(width: 72, height: 108, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: const LinearGradient(colors: [Color(0xff6e2346), Color(0xff30132e)]), border: Border.all(color: const Color(0xffd6ad62), width: 2), boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 10)]), child: Center(child: Text(card['slot'] as String, style: const TextStyle(color: Color(0xffe9cf8a), fontWeight: FontWeight.bold, fontSize: 16))));
+  Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(14), child: Container(width: 72, height: 108, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: const LinearGradient(colors: [Color(0xff6e2346), Color(0xff30132e)]), border: Border.all(color: const Color(0xffd6ad62), width: 2), boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 10)]), child: Center(child: Text(card['slot'] as String, style: const TextStyle(color: Color(0xffe9cf8a), fontWeight: FontWeight.bold, fontSize: 16)))));
 }
 
 class ChatView extends StatefulWidget {
