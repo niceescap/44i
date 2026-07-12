@@ -215,7 +215,8 @@ async def message(session_id: str, payload: MessageRequest) -> MessageResponse:
         result = await ask_openwebui(session, text)
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
         result = None
-    answer = result["Chat"] if result else "L’oracle vous invite à observer les symboles révélés et ce qu’ils éveillent en vous.\n\n" + (session.summary or "Révélez une carte pour commencer la lecture.")
+    apply_command(session, result)
+    answer = result["Chat"] if result else fallback_oracle(session, text)
     session.messages.append({"role": "oracle", "content": answer})
     return MessageResponse(content=answer)
 
