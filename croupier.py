@@ -8,7 +8,7 @@ A1 = deck, B1-H1 = ligne de 7, A2-E12 = 5 colonnes.
 import json
 import os
 import re
-from randomizer_52 import tirer_carte, reset_deck
+from randomizer import tirer_carte, reset_deck
 
 
 class Dealer:
