@@ -246,7 +246,7 @@ class TapisView extends StatelessWidget {
         const SizedBox(height: 6),
         Text(tr('Choisis une carte face cachée pour poursuivre la consultation.', 'Choose a face-down card to continue the consultation.'), style: const TextStyle(color: Colors.white70)),
         const SizedBox(height: 12),
-        const Text(disclaimer, style: TextStyle(fontSize: 11, color: Colors.white54)),
+        Text(disclaimer, style: const TextStyle(fontSize: 11, color: Colors.white54)),
         if (error != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text(error!, style: const TextStyle(color: Colors.redAccent))),
         const SizedBox(height: 22),
         Wrap(alignment: WrapAlignment.center, spacing: 10, runSpacing: 12, children: faceDown.map((card) => _CardTile(card: card, onTap: busy ? null : () => onReveal(card['slot'] as String))).toList()),
