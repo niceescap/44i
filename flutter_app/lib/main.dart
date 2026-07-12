@@ -193,7 +193,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('44 interprètes'), actions: [IconButton(onPressed: _shareExport, icon: const Icon(Icons.ios_share), tooltip: tr('Exporter', 'Export'))]),
+        appBar: AppBar(
+          title: const Text('44 interprètes'),
+          actions: [
+            DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: language,
+                icon: const Icon(Icons.language),
+                dropdownColor: const Color(0xff24152e),
+                onChanged: busy ? null : _selectLanguage,
+                items: languageLabels.entries.map((entry) => DropdownMenuItem(
+                  value: entry.key,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(entry.value),
+                  ),
+                )).toList(),
+              ),
+            ),
+            IconButton(onPressed: _shareExport, icon: const Icon(Icons.ios_share), tooltip: tr('Exporter', 'Export')),
+          ],
+        ),
         body: SafeArea(child: _body()),
         bottomNavigationBar: NavigationBar(selectedIndex: tab, onDestinationSelected: (value) => setState(() => tab = value), destinations: [NavigationDestination(icon: const Icon(Icons.style), label: tr('Tapis', 'Spread')), NavigationDestination(icon: const Icon(Icons.chat_bubble_outline), label: 'Oracle'), NavigationDestination(icon: const Icon(Icons.info_outline), label: tr('À propos', 'About'))]),
       );
