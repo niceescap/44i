@@ -7,7 +7,8 @@ from typing import Any
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 
 from .models import Card, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
 from .session_store import Session, SessionStore
