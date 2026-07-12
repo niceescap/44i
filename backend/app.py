@@ -92,6 +92,9 @@ async def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     row = 2 + session.column_count(column)
     target = f"{column}{row}"
     session.revealed[target] = code
+    symbolic_result = session.symbolic.process(code, list(session.revealed.values()), session.active_col, row)
+    session.column_signal = symbolic_result.get("signal")
+    session.summary = symbolic_result.get("summary", session.summary)
     if not session.top and session.deck.cards:
         session.top = {f"{letter}1": session.deck.draw() for letter in "BCDEFGH" if session.deck.cards}
     session.summary = interpretation(list(session.revealed.values()))
