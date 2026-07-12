@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>44 interprètes</title>
+<style>
+:root{color-scheme:dark;--bg:#0d0717;--panel:#1e122b;--gold:#d6ad62;--purple:#9c6acb;--muted:#b9aec4}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#2a1740 0,var(--bg) 52%);color:#f8f0ff;font-family:Georgia,serif;min-height:100vh}.shell{max-width:1100px;margin:auto;padding:22px}.head{display:flex;justify-content:space-between;align-items:center;gap:12px}.head h1{margin:0;font-size:clamp(26px,5vw,44px)}button{font:inherit;border:1px solid var(--gold);border-radius:10px;padding:10px 14px;background:#3a2050;color:#fff;cursor:pointer}button:hover{filter:brightness(1.25)}button:disabled{opacity:.45;cursor:wait}.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:18px;margin-top:20px}.panel{background:rgba(30,18,43,.9);border:1px solid #573b6e;border-radius:18px;padding:18px;box-shadow:0 15px 40px #0006}.panel h2{margin-top:0}.notice{font:13px system-ui;color:var(--muted);line-height:1.5}.top{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:24px 0}.card{width:74px;height:112px;border:2px solid var(--gold);border-radius:12px;background:linear-gradient(135deg,#752747,#29132f);display:grid;place-items:center;color:#f5d891;font-weight:bold;box-shadow:0 8px 18px #0008}.revealed{display:flex;flex-direction:column;gap:8px}.revealed div{padding:11px;border-radius:10px;background:#291a38;border-left:3px solid var(--gold)}.chat{height:450px;display:flex;flex-direction:column}.messages{overflow:auto;flex:1;padding:4px}.msg{padding:11px 13px;margin:8px 0;border-radius:13px;white-space:pre-wrap;line-height:1.45}.user{background:#553770;margin-left:22px}.oracle{background:#291a38;margin-right:14px}.form{display:flex;gap:8px;margin-top:10px}.form input{flex:1;min-width:0;border-radius:10px;border:1px solid #6b4c83;background:#100a19;color:#fff;padding:12px;font:inherit}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.status{min-height:22px;color:var(--gold);font:13px system-ui}.error{color:#ff9b9b}.empty{color:var(--muted);font-style:italic}@media(max-width:760px){.layout{grid-template-columns:1fr}.chat{height:380px}.shell{padding:12px}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="head"><h1>44 interprètes</h1><button id="export">Exporter</button></header>
+<p class="notice">Application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel.</p>
+<div id="status" class="status">Initialisation du tapis…</div>
+<section class="layout">
+<div class="panel"><h2>Le tapis</h2><p class="notice">Choisis une carte face cachée pour poursuivre la consultation.</p><div id="top" class="top"></div><h2>Cartes révélées</h2><div id="revealed" class="revealed"><span class="empty">Aucune carte révélée.</span></div><div class="actions"><button id="new">Nouvelle consultation</button></div></div>
+<div class="panel chat"><h2>Oracle</h2><div id="messages" class="messages"><span class="empty">L’oracle vous écoute.</span></div><div class="form"><input id="input" placeholder="Écris à l’oracle…" maxlength="4000"><button id="send">Envoyer</button></div></div>
+</section>
+</main>
+<script>
+let sessionId=null,busy=false;const $=id=>document.getElementById(id);const status=t=>$('status').textContent=t;
+async function api(path,options={}){const r=await fetch(path,{headers:{'Content-Type':'application/json'},...options});const d=await r.json();if(!r.ok)throw Error(d.detail||'Erreur serveur');return d}
+function render(s){const cards=s.cards||[];$('top').innerHTML='';cards.filter(c=>c.face==='down').forEach(c=>{const b=document.createElement('button');b.className='card';b.textContent=c.slot;b.onclick=()=>reveal(c.slot);$('top').appendChild(b)});const up=cards.filter(c=>c.face==='up');$('revealed').innerHTML=up.length?up.map(c=>`<div><b>${c.name||c.code}</b> (${c.code}) — ${c.slot}<br><small>${c.symbol||''}</small></div>`).join(''):'<span class="empty">Aucune carte révélée.</span>';if(s.messages?.length){$('messages').innerHTML='';s.messages.forEach(m=>addMessage(m.role,m.content))}}
+function addMessage(role,text){const d=document.createElement('div');d.className='msg '+(role==='user'?'user':'oracle');d.textContent=text;$('messages').appendChild(d);$('messages').scrollTop=$('messages').scrollHeight}
+async function start(){busy=true;status('Préparation du tapis…');try{const d=await api('/api/sessions',{method:'POST',body:'{}'});sessionId=d.session_id;render(d.state);status('Le tapis est prêt.')}catch(e){$('status').className='status error';status(e.message)}finally{busy=false}}
+async function reveal(slot){if(busy)return;busy=true;status('L’oracle consulte les symboles…');try{const s=await api(`/api/sessions/${sessionId}/cards/reveal`,{method:'POST',body:JSON.stringify({slot})});render(s);status('La carte a été interprétée.')}catch(e){status(e.message)}finally{busy=false}}
+async function send(){const input=$('input'),text=input.value.trim();if(!text||busy)return;input.value='';addMessage('user',text);busy=true;status('L’oracle prépare sa réponse…');try{const d=await api(`/api/sessions/${sessionId}/messages`,{method:'POST',body:JSON.stringify({message:text})});addMessage('oracle',d.content);status('Réponse reçue.')}catch(e){status(e.message)}finally{busy=false}}
+$('send').onclick=send;$('input').onkeydown=e=>{if(e.key==='Enter')send()};$('new').onclick=start;$('export').onclick=()=>{if(sessionId)window.location=`/api/sessions/${sessionId}/export`};start();
+</script>
+</body>
+</html>
