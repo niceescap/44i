@@ -97,7 +97,6 @@ async def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     session.summary = symbolic_result.get("summary", session.summary)
     if not session.top and session.deck.cards:
         session.top = {f"{letter}1": session.deck.draw() for letter in "BCDEFGH" if session.deck.cards}
-    session.summary = interpretation(list(session.revealed.values()))
     try:
         result = await ask_openwebui(session, "")
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
