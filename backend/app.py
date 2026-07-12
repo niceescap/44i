@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any
 
 import httpx
-from fastapi import FastAPI, HTTPException, Path
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 
 from .models import Card, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
