@@ -136,7 +136,7 @@ def reset_session(session_id: str) -> CreateSessionResponse:
 
 
 @app.get("/api/symbolique/card")
-def symbolic_card(code: str = Path(pattern=r"^(10|[A2-9JQK])[CDHS]$")) -> dict[str, str]:
+def symbolic_card(code: str = Query(pattern=r"^(10|[A2-9JQK])[CDHS]$")) -> dict[str, str]:
     return {"code": code.upper(), **card_info(code)}
 
 
