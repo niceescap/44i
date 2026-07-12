@@ -129,8 +129,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _newSession() async {
     setState(() { busy = true; error = null; });
     try {
-      // The backend normalizes this BCP-47 value and keeps it for the whole anonymous session.
-      final result = await api.createSession(ui.PlatformDispatcher.instance.locale.toLanguageTag());
+      // The backend normalizes this value and keeps it for the whole anonymous session.
+      final result = await api.createSession(language);
       setState(() { sessionId = result['session_id'] as String; session = Map<String, dynamic>.from(result['state'] as Map); messages.clear(); });
     } catch (exception) {
       setState(() => error = exception.toString());
