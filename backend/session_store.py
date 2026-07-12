@@ -30,6 +30,8 @@ class Session:
     question: str | None = None
     summary: str = ""
     active_col: str = "A"
+    symbolic: SymbolicEngine = field(default_factory=SymbolicEngine)
+    column_signal: str | None = None
 
     def touch(self) -> None:
         self.expires_at = now() + timedelta(minutes=TTL_MINUTES)
