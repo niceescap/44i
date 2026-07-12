@@ -153,11 +153,10 @@ async def message(session_id: str, payload: MessageRequest) -> MessageResponse:
         session.question = text
     session.messages.append({"role": "user", "content": text})
     try:
-        answer = await ask_openwebui(session, text)
+        result = await ask_openwebui(session, text)
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
-        answer = None
-    if not answer:
-        answer = "L’oracle vous invite à observer les symboles révélés et ce qu’ils éveillent en vous.\n\n" + (session.summary or "Révélez une carte pour commencer la lecture.")
+        result = None
+    answer = result["Chat"] if result else "L’oracle vous invite à observer les symboles révélés et ce qu’ils éveillent en vous.\n\n" + (session.summary or "Révélez une carte pour commencer la lecture.")
     session.messages.append({"role": "oracle", "content": answer})
     return MessageResponse(content=answer)
 
