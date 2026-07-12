@@ -187,10 +187,18 @@ def parse_masterout(content: Any) -> dict[str, Any] | None:
     try:
         value = json.loads(cleaned)
     except json.JSONDecodeError:
-        # Laguna peut occasionnellement répondre en texte malgré le contrat JSON.
-        # On affiche alors sa réponse plutôt que de remplacer la consultation par
-        # un fallback générique.
-        return {"Chat": content.strip(), "Com": "no", "Theme": "", "Sources": []} if content.strip() else None
+        # Certains modèles ajoutent une phrase avant/après le JSON.
+        start, end = cleaned.find("{"), cleaned.rfind("}")
+        value = None
+        if start >= 0 and end > start:
+            try:
+                value = json.loads(cleaned[start:end + 1])
+            except json.JSONDecodeError:
+                value = None
+        if value is None:
+            # Laguna peut occasionnellement répondre en texte malgré le contrat
+            # JSON. On conserve alors sa réponse plutôt que de la perdre.
+            return {"Chat": content.strip(), "Com": "no", "Theme": "", "Sources": []} if content.strip() else None
     if not isinstance(value, dict) or not value.get("Chat"):
         return None
     command = str(value.get("Com", "no")).lower()
