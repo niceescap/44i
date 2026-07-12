@@ -73,8 +73,10 @@ def health() -> dict[str, str]:
 
 
 @app.post("/api/sessions", response_model=CreateSessionResponse, status_code=201)
-async def create_session() -> CreateSessionResponse:
-    session = store.create()
+async def create_session(payload: CreateSessionRequest | None = None) -> CreateSessionResponse:
+    # The mobile client sends the OS locale. Missing/unsupported values safely
+    # fall back to French so older clients remain compatible.
+    session = store.create(language=normalize_language(payload.locale if payload else None))
     try:
         result = await ask_openwebui(session, "")
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
