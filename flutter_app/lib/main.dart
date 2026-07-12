@@ -11,7 +11,7 @@ class ApiClient {
   ApiClient() : baseUrl = const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:3252');
   final String baseUrl;
 
-  Future<Map<String, dynamic>> createSession() async => _getPost('/api/sessions', {});
+  Future<Map<String, dynamic>> createSession(String locale) async => _getPost('/api/sessions', {'locale': locale});
   Future<Map<String, dynamic>> reveal(String id, String slot) async => _getPost('/api/sessions/$id/cards/reveal', {'slot': slot});
   Future<Map<String, dynamic>> state(String id) async => _get('/api/sessions/$id/state');
   Future<Map<String, dynamic>> message(String id, String value) async => _getPost('/api/sessions/$id/messages', {'message': value});
