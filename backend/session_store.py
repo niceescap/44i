@@ -10,7 +10,9 @@ from .symbolic_engine import SymbolicEngine
 
 TTL_MINUTES = 45
 DRAW_COLUMNS = "ABCDE"
-HARD_LIMIT = 11
+# Garde-fou V1 : sept cartes maximum par colonne pour préserver la lisibilité.
+# Les signaux symboliques peuvent clôturer une colonne plus tôt.
+HARD_LIMIT = 7
 
 
 def now() -> datetime:
