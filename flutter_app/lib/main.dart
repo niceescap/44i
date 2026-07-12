@@ -114,6 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int tab = 0;
   bool busy = false;
   String? error;
+  String language = initialLanguage();
 
   List<Map<String, dynamic>> get cards => ((session?['cards'] as List?) ?? []).map((item) => Map<String, dynamic>.from(item as Map)).toList();
   List<Map<String, dynamic>> get faceDown => cards.where((card) => card['face'] == 'down').toList();
