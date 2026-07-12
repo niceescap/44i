@@ -25,6 +25,7 @@ class SessionState(BaseModel):
     summary: str = ""
     active_column: str = "A"
     themes: list[str] = Field(default_factory=list)
+    column_signal: str | None = None
 
 
 class CreateSessionResponse(BaseModel):
