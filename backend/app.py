@@ -80,8 +80,8 @@ async def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     code = session.top.pop(payload.slot, None)
     if code is None:
         raise HTTPException(status_code=400, detail="Carte indisponible ou déjà révélée")
-    column = payload.slot[0]
-    row = 2 + sum(1 for slot in session.revealed if slot.startswith(column))
+    column = session.active_col
+    row = 2 + session.column_count(column)
     target = f"{column}{row}"
     session.revealed[target] = code
     if not session.top and session.deck.cards:
