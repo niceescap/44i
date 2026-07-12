@@ -171,6 +171,13 @@ def fallback_oracle(session: Session, message: str) -> str:
 
 
 def parse_masterout(content: Any) -> dict[str, Any] | None:
+    # Certains endpoints OpenAI-compatible renvoient parfois des segments de
+    # contenu au lieu d'une chaîne unique.
+    if isinstance(content, list):
+        content = "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in content
+        )
     if not isinstance(content, str):
         return None
     cleaned = content.strip()
