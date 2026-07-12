@@ -55,6 +55,22 @@ def card_info(code: str) -> dict[str, str]:
 def interpretation(codes: list[str]) -> str:
     lines: list[str] = []
     for code in codes:
+
+
+def pair_symbol(carte_a: str, carte_b: str) -> dict:
+    """Read a pair document from ChromaDB without any write operation."""
+    first, second = carte_a.upper(), carte_b.upper()
+    pair_id = "|".join(sorted([first, second]))
+    if _CHROMA_COLLECTION is None:
+        return {"cards": [first, second], "found": False, "source": "chromadb"}
+    try:
+        result = _CHROMA_COLLECTION.get(ids=[pair_id], include=["documents", "metadatas"])
+        documents = result.get("documents") or []
+        metadatas = result.get("metadatas") or []
+        return {"cards": [first, second], "found": bool(documents), "content": documents[0] if documents else "", "metadata": metadatas[0] if metadatas else {}, "source": "chromadb"}
+    except Exception as exc:
+        print(f"[symbolique] pair lookup failed: {exc}", flush=True)
+        return {"cards": [first, second], "found": False, "source": "chromadb"}
         info = card_info(code)
         lines.append(f"{info['name']} : {info['symbol'] or 'Carte à interpréter symboliquement.'}")
     return "\n".join(lines)
