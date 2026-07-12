@@ -79,7 +79,7 @@ class InterpretesApp extends StatelessWidget {
         builder: (context, selectedLanguage, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: '44 interprètes',
-        supportedLocales: const [Locale('fr'), Locale('en')],
+        supportedLocales: languageLabels.keys.map(Locale.new).toList(),
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
