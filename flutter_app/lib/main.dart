@@ -98,7 +98,9 @@ class InterpretesApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0xff0d0717),
           useMaterial3: true,
         ),
-        home: const HomeScreen(),
+          locale: Locale(selectedLanguage),
+          home: const HomeScreen(),
+        ),
       );
 }
 
