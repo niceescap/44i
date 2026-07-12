@@ -68,7 +68,8 @@ async def create_session() -> CreateSessionResponse:
     session = store.create()
     try:
         result = await ask_openwebui(session, "")
-    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
+    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
+        print(f"[openwebui] appel échoué: {type(exc).__name__}: {exc}", flush=True)
         result = None
     apply_command(session, result)
     session.messages.append({"role": "oracle", "content": result["Chat"] if result else fallback_oracle(session, "")})
