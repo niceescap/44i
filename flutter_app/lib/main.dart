@@ -56,6 +56,19 @@ class InterpretesApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: '44 interprètes',
+        supportedLocales: const [Locale('fr'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        localeResolutionCallback: (deviceLocale, supportedLocales) {
+          final language = deviceLocale?.languageCode.toLowerCase();
+          return supportedLocales.firstWhere(
+            (locale) => locale.languageCode == language,
+            orElse: () => const Locale('fr'),
+          );
+        },
         theme: ThemeData(
           brightness: Brightness.dark,
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff9c6acb), brightness: Brightness.dark),
