@@ -5,6 +5,7 @@ COPY backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY backend /app/backend
 COPY extractor /app/extractor
+COPY chroma_db /app/chroma_db
 
 ENV PYTHONUNBUFFERED=1
 EXPOSE 3252
