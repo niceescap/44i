@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
 from .deck import Deck
+from .symbolic_engine import SymbolicEngine
 
 TTL_MINUTES = 45
 DRAW_COLUMNS = "ABCDE"
