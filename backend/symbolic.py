@@ -12,7 +12,7 @@ except ImportError:
 ROOT = Path(__file__).resolve().parents[1]
 EXTRACTOR = ROOT / "extractor"
 
-RANKS = {"A": "As", "K": "Roi", "Q": "Dame", "J": "Valet", "10": "Dix", "9": "Neuf", "8": "Huit", "7": "Sept", "6": "Six", "5": "Cinq", "4": "Quatre", "3": "Trois", "2": "Deux"}
+RANKS = {"A": "As", "K": "Roi", "Q": "Dame", "J": "Valet", "T": "Dix", "10": "Dix", "9": "Neuf", "8": "Huit", "7": "Sept", "6": "Six", "5": "Cinq", "4": "Quatre", "3": "Trois", "2": "Deux"}
 SUITS = {"C": "Trèfle", "D": "Carreau", "H": "Cœur", "S": "Pique"}
 
 
