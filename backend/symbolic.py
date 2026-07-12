@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+
+try:
+    import chromadb
+except ImportError:
+    chromadb = None
 
 ROOT = Path(__file__).resolve().parents[1]
 EXTRACTOR = ROOT / "extractor"
