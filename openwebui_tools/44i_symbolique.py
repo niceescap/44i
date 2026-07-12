@@ -31,7 +31,7 @@ class Tools:
 
     def __init__(self):
         self.extractor_dir = Path(
-            os.getenv("44I_EXTRACTOR_DIR", "/data/44i/extractor")
+            os.getenv("SYMBOLIQUE_EXTRACTOR_DIR", "/data/44i/extractor")
         )
         self.chroma_dir = Path(
             os.getenv("44I_CHROMA_DIR", "/data/44i/chroma_db")
