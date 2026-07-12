@@ -35,6 +35,9 @@ class Session:
     symbolic: SymbolicEngine = field(default_factory=SymbolicEngine)
     column_signal: str | None = None
     last_symbolic_event: dict = field(default_factory=dict)
+    # Language is selected once when the anonymous session starts. It is never
+    # inferred from message content, which keeps every response consistent.
+    language: str = "fr"
 
     def touch(self) -> None:
         self.expires_at = now() + timedelta(minutes=TTL_MINUTES)
@@ -58,12 +61,13 @@ class SessionStore:
         self._sessions: dict[str, Session] = {}
         self._lock = threading.RLock()
 
-    def create(self) -> Session:
+    def create(self, language: str = "fr") -> Session:
         with self._lock:
             session = Session(
                 id=secrets.token_urlsafe(24),
                 created_at=now(),
                 expires_at=now() + timedelta(minutes=TTL_MINUTES),
+                language=language,
             )
             session.top = {f"{letter}1": session.deck.draw() for letter in "BCDEFGH"}
             self._sessions[session.id] = session
@@ -85,5 +89,9 @@ class SessionStore:
             return self._sessions.pop(session_id, None) is not None
 
     def reset(self, session_id: str) -> Session | None:
+        session = self.get(session_id)
+        if not session:
+            return None
+        language = session.language
         self.delete(session_id)
-        return self.create()
+        return self.create(language=language)

@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
-from .models import Card, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
+from .models import Card, CreateSessionRequest, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
 from .session_store import Session, SessionStore
 from .symbolic import CARDS, QUALITIES, card_info, interpretation, pair_symbol
 
@@ -23,6 +23,19 @@ app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 DISCLAIMER = "44 interprètes est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel."
 TOP_SLOTS = [f"{letter}1" for letter in "BCDEFGH"]
+# Primary Latin-script languages, major Asian languages, and RTL languages
+# presented by the mobile language selector. Keep this explicit allow-list so a
+# malformed locale is never injected into the model prompt.
+SUPPORTED_LANGUAGES = {
+    "fr", "en", "es", "it", "de", "nl", "pt", "pl", "hu", "sr", "ru",
+    "ar", "he", "zh", "th", "ja", "ko", "hi", "id", "tr", "vi",
+}
+
+
+def normalize_language(locale: str | None) -> str:
+    """Convert an OS locale (e.g. fr_FR or en-GB) to a supported language."""
+    language = (locale or "fr").replace("_", "-").split("-", 1)[0].lower()
+    return language if language in SUPPORTED_LANGUAGES else "fr"
 
 
 def state_of(session: Session) -> SessionState:
@@ -36,6 +49,7 @@ def state_of(session: Session) -> SessionState:
         status="active",
         created_at=session.created_at.isoformat(),
         expires_at=session.expires_at.isoformat(),
+        language=normalize_language(session.language),
         question=session.question,
         cards=cards,
         available_slots=list(session.top.keys()),
@@ -65,8 +79,10 @@ def health() -> dict[str, str]:
 
 
 @app.post("/api/sessions", response_model=CreateSessionResponse, status_code=201)
-async def create_session() -> CreateSessionResponse:
-    session = store.create()
+async def create_session(payload: CreateSessionRequest | None = None) -> CreateSessionResponse:
+    # The mobile client sends the OS locale. Missing/unsupported values safely
+    # fall back to French so older clients remain compatible.
+    session = store.create(language=normalize_language(payload.locale if payload else None))
     try:
         result = await ask_openwebui(session, "")
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
@@ -139,7 +155,7 @@ def masterin(session: Session, message: str) -> dict[str, Any]:
         "contraintes": {
             "lecture_symbolique": True,
             "prediction_certaine": False,
-            "langue": "fr",
+            "langue": normalize_language(session.language),
         },
     }
 
@@ -160,26 +176,20 @@ def apply_command(session: Session, result: dict[str, Any] | None) -> None:
 
 
 def fallback_oracle(session: Session, message: str) -> str:
-    """Réponse locale non silencieuse lorsque OpenWebUI échoue ou est lent."""
+    """Useful local response when the remote oracle is unavailable."""
     cards = list(session.revealed.values())
-    context = interpretation(cards) if cards else "Aucune carte n’est encore révélée."
+    french = normalize_language(session.language) == "fr"
+    empty = "Aucune carte n’est encore révélée." if french else "No card has been revealed yet."
+    context = interpretation(cards) if cards else empty
     if not cards:
-        return "Le tapis est prêt. Choisis une carte face cachée pour commencer la lecture symbolique."
+        return "Le tapis est prêt. Choisis une carte face cachée pour commencer la lecture symbolique." if french else "The spread is ready. Choose a face-down card to begin the symbolic reading."
     if message:
-        return (
-            "Je garde ta question au centre de la consultation. Les cartes révélées "
-            "proposent des symboles à explorer, pas une réponse certaine.\n\n"
-            f"{context}\n\n"
-            "Observe ce qui résonne dans ta situation, puis choisis une nouvelle carte "
-            "si tu souhaites approfondir le contexte."
-        )
-    return (
-        "Une nouvelle carte vient d’entrer dans le contexte du tirage. "
-        "Voici les symboles actuellement présents :\n\n"
-        f"{context}\n\n"
-        "Que fait émerger cette combinaison pour toi ? Tu peux me répondre ou "
-        "choisir une autre carte face cachée."
-    )
+        prefix = "Je garde ta question au centre de la consultation. Les cartes révélées proposent des symboles à explorer, pas une réponse certaine." if french else "I will keep your question at the centre of this consultation. Revealed cards offer symbols to explore, not certain answers."
+        suffix = "Observe ce qui résonne dans ta situation, puis choisis une nouvelle carte si tu souhaites approfondir le contexte." if french else "Notice what resonates with your situation, then choose another card if you wish to explore further."
+        return f"{prefix}\n\n{context}\n\n{suffix}"
+    prefix = "Une nouvelle carte vient d’entrer dans le contexte du tirage. Voici les symboles actuellement présents :" if french else "A new card has entered the spread. Here are the symbols currently present:"
+    suffix = "Que fait émerger cette combinaison pour toi ? Tu peux me répondre ou choisir une autre carte face cachée." if french else "What does this combination bring up for you? You can reply or choose another face-down card."
+    return f"{prefix}\n\n{context}\n\n{suffix}"
 
 
 def parse_masterout(content: Any) -> dict[str, Any] | None:

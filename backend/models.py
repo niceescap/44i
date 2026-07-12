@@ -13,11 +13,19 @@ class Card(BaseModel):
     symbol: str = ""
 
 
+class CreateSessionRequest(BaseModel):
+    """Client locale is advisory; the backend only persists a supported language."""
+
+    locale: str = Field(default="fr", min_length=2, max_length=35)
+
+
 class SessionState(BaseModel):
     session_id: str
     status: Literal["active", "expired"]
     created_at: str
     expires_at: str
+    # The API normalizes this to its explicit supported-language allow-list.
+    language: str = Field(default="fr", min_length=2, max_length=10)
     question: str | None = None
     cards: list[Card] = Field(default_factory=list)
     available_slots: list[str] = Field(default_factory=list)
