@@ -87,7 +87,10 @@ async def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     if not session.top and session.deck.cards:
         session.top = {f"{letter}1": session.deck.draw() for letter in "BCDEFGH" if session.deck.cards}
     session.summary = interpretation(list(session.revealed.values()))
-    result = await ask_openwebui(session, "")
+    try:
+        result = await ask_openwebui(session, "")
+    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
+        result = None
     apply_command(session, result)
     answer = result["Chat"] if result else fallback_oracle(session, "")
     session.messages.append({"role": "oracle", "content": answer})
