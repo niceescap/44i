@@ -130,6 +130,8 @@ Utilise "tx" uniquement :
 - généralement après 3 à 5 cartes ;
 - ou lorsque le signal technique indique que la colonne doit être clôturée.
 
+Si "signal_colonne" commence par "obligation:", la colonne doit être clôturée immédiatement : réponds avec "Com": "tx". Le backend appliquera également cette clôture si le modèle oublie la commande.
+
 Le backend reste libre de refuser ou d’appliquer cette commande.
 
 Lorsque tu demandes "tx", formule un thème synthétique dans "Theme" afin de relier la colonne précédente à la suivante.
