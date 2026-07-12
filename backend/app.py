@@ -111,6 +111,42 @@ def masterin(session: Session, message: str) -> dict[str, Any]:
         "version": "1",
         "message_utilisateur": message,
         "carte_revelee": revealed[-1] if revealed else None,
+
+
+def apply_command(session: Session, result: dict[str, Any] | None) -> None:
+    """Applique uniquement la commande de colonne validée par le backend."""
+    if not result or result.get("Com") != "tx":
+        return
+    next_column = session.next_column()
+    if next_column is None:
+        return
+    theme = result.get("Theme", "").strip()
+    if theme:
+        session.themes.append(theme)
+    session.active_col = next_column
+
+
+def fallback_oracle(session: Session, message: str) -> str:
+    """Réponse locale non silencieuse lorsque OpenWebUI échoue ou est lent."""
+    cards = list(session.revealed.values())
+    context = interpretation(cards) if cards else "Aucune carte n’est encore révélée."
+    if not cards:
+        return "Le tapis est prêt. Choisis une carte face cachée pour commencer la lecture symbolique."
+    if message:
+        return (
+            "Je garde ta question au centre de la consultation. Les cartes révélées "
+            "proposent des symboles à explorer, pas une réponse certaine.\n\n"
+            f"{context}\n\n"
+            "Observe ce qui résonne dans ta situation, puis choisis une nouvelle carte "
+            "si tu souhaites approfondir le contexte."
+        )
+    return (
+        "Une nouvelle carte vient d’entrer dans le contexte du tirage. "
+        "Voici les symboles actuellement présents :\n\n"
+        f"{context}\n\n"
+        "Que fait émerger cette combinaison pour toi ? Tu peux me répondre ou "
+        "choisir une autre carte face cachée."
+    )
         "cartes_revelees": revealed,
         "resume_symbolique": session.summary,
         "themes_precedents": [],
