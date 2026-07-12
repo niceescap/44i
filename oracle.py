@@ -1,12 +1,14 @@
-"""Point d'entrée de test compatible avec l'ancien oracle.py.
-
-L'application V1 est maintenant l'API FastAPI backend.app:app.
-"""
+"""Lanceur de test pour l'API 44 interprètes sur le port 3252."""
 
 import os
+from pathlib import Path
 
+from dotenv import load_dotenv
 import uvicorn
 
+
+ROOT = Path(__file__).resolve().parent
+load_dotenv(ROOT / "backend" / ".env")
 
 if __name__ == "__main__":
     uvicorn.run(
