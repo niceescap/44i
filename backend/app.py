@@ -132,6 +132,7 @@ def masterin(session: Session, message: str) -> dict[str, Any]:
         "historique_recent": session.messages[-10:],
         "colonne_active": session.active_col,
         "signal_colonne": session.column_signal,
+        "dernier_evenement_symbolique": session.last_symbolic_event,
         "contraintes": {
             "lecture_symbolique": True,
             "prediction_certaine": False,
