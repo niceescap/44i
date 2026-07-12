@@ -41,6 +41,8 @@ def state_of(session: Session) -> SessionState:
         available_slots=list(session.top.keys()),
         messages=session.messages,
         summary=session.summary,
+        active_column=session.active_col,
+        themes=session.themes,
     )
 
 
