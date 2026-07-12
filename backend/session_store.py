@@ -35,6 +35,9 @@ class Session:
     symbolic: SymbolicEngine = field(default_factory=SymbolicEngine)
     column_signal: str | None = None
     last_symbolic_event: dict = field(default_factory=dict)
+    # Language is selected once when the anonymous session starts. It is never
+    # inferred from message content, which keeps every response consistent.
+    language: str = "fr"
 
     def touch(self) -> None:
         self.expires_at = now() + timedelta(minutes=TTL_MINUTES)
