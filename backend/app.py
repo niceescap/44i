@@ -111,6 +111,17 @@ def masterin(session: Session, message: str) -> dict[str, Any]:
         "version": "1",
         "message_utilisateur": message,
         "carte_revelee": revealed[-1] if revealed else None,
+        "cartes_revelees": revealed,
+        "resume_symbolique": session.summary,
+        "themes_precedents": session.themes,
+        "historique_recent": session.messages[-10:],
+        "colonne_active": session.active_col,
+        "contraintes": {
+            "lecture_symbolique": True,
+            "prediction_certaine": False,
+            "langue": "fr",
+        },
+    }
 
 
 def apply_command(session: Session, result: dict[str, Any] | None) -> None:
@@ -147,16 +158,6 @@ def fallback_oracle(session: Session, message: str) -> str:
         "Que fait émerger cette combinaison pour toi ? Tu peux me répondre ou "
         "choisir une autre carte face cachée."
     )
-        "cartes_revelees": revealed,
-        "resume_symbolique": session.summary,
-        "themes_precedents": [],
-        "historique_recent": session.messages[-10:],
-        "contraintes": {
-            "lecture_symbolique": True,
-            "prediction_certaine": False,
-            "langue": "fr",
-        },
-    }
 
 
 def parse_masterout(content: Any) -> dict[str, Any] | None:
