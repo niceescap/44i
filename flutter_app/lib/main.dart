@@ -139,6 +139,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _selectLanguage(String? value) async {
+    if (value == null || value == language || busy) return;
+    setState(() {
+      language = value;
+      activeLanguage = value;
+    });
+    // A session has one language. Start a fresh anonymous consultation rather
+    // than mixing oracle messages or exports in different languages.
+    await _newSession();
+  }
+
   Future<void> _reveal(String slot) async {
     if (sessionId == null || busy) return;
     setState(() { busy = true; error = null; });
