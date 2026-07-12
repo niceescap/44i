@@ -61,12 +61,13 @@ class SessionStore:
         self._sessions: dict[str, Session] = {}
         self._lock = threading.RLock()
 
-    def create(self) -> Session:
+    def create(self, language: str = "fr") -> Session:
         with self._lock:
             session = Session(
                 id=secrets.token_urlsafe(24),
                 created_at=now(),
                 expires_at=now() + timedelta(minutes=TTL_MINUTES),
+                language=language,
             )
             session.top = {f"{letter}1": session.deck.draw() for letter in "BCDEFGH"}
             self._sessions[session.id] = session
