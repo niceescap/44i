@@ -149,7 +149,7 @@ def masterin(session: Session, message: str) -> dict[str, Any]:
         "contraintes": {
             "lecture_symbolique": True,
             "prediction_certaine": False,
-            "langue": "fr",
+            "langue": normalize_language(session.language),
         },
     }
 
