@@ -2,9 +2,9 @@
 
 À coller/importer dans OpenWebUI comme outil Python custom.
 Les chemins sont configurables par variables d'environnement :
-- 44I_EXTRACTOR_DIR (défaut: /data/44i/extractor)
-- 44I_CHROMA_DIR (défaut: /data/44i/chroma_db)
-- 44I_CHROMA_COLLECTION (défaut: paires)
+- SYMBOLIQUE_EXTRACTOR_DIR (défaut: /data/44i/extractor)
+- SYMBOLIQUE_CHROMA_DIR (défaut: /data/44i/chroma_db)
+- SYMBOLIQUE_CHROMA_COLLECTION (défaut: paires)
 
 L'outil ne modifie jamais une session, un deck, un historique ou un fichier.
 """
