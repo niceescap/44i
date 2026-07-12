@@ -203,7 +203,7 @@ class TapisView extends StatelessWidget {
         const SizedBox(height: 10),
         ...faceUp.map((card) => ListTile(leading: const Icon(Icons.auto_awesome, color: Color(0xffd6ad62)), title: Text('${card['name']} (${card['code']})'), subtitle: Text('${card['slot']} · ${card['symbol'] ?? ''}'))),
         const SizedBox(height: 16),
-        FilledButton.icon(onPressed: onChat, icon: const Icon(Icons.chat), label: const Text('Parler avec l’oracle')),
+        FilledButton.icon(onPressed: onChat, icon: const Icon(Icons.chat), label: Text(tr('Parler avec l’oracle', 'Talk to the oracle'))),
       ]);
 }
 
