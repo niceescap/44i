@@ -24,7 +24,8 @@ class SessionState(BaseModel):
     status: Literal["active", "expired"]
     created_at: str
     expires_at: str
-    language: Literal["fr", "en"] = "fr"
+    # The API normalizes this to its explicit supported-language allow-list.
+    language: str = Field(default="fr", min_length=2, max_length=10)
     question: str | None = None
     cards: list[Card] = Field(default_factory=list)
     available_slots: list[str] = Field(default_factory=list)
