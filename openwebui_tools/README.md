@@ -9,7 +9,7 @@ L’outil attend par défaut :
 ```txt
 /data/44i/extractor/52cartes.json
 /data/44i/extractor/qualites.json
-/data/44i/chroma_db/
+/data/44i/extractor/chroma_db/
 ```
 
 Variables optionnelles :
