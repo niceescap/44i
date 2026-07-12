@@ -6,7 +6,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
 
-const disclaimer = '44 interprètes est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel.';
+String tr(String french, String english) => ui.PlatformDispatcher.instance.locale.languageCode.toLowerCase() == 'en' ? english : french;
+
+String get disclaimer => tr(
+  '44 interprètes est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel.',
+  '44 interpreters is a symbolic entertainment application. Interpretations do not replace medical, legal, financial, or professional advice.',
+);
 
 class ApiClient {
   ApiClient() : baseUrl = const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:3252');
