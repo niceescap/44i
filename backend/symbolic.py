@@ -23,6 +23,16 @@ def load(name: str, default):
         return default
 
 
+
+_CHROMA_COLLECTION = None
+try:
+    chroma_path = os.getenv("SYMBOLIQUE_CHROMA_DIR", str(EXTRACTOR / "chroma_db"))
+    if chromadb and Path(chroma_path).exists():
+        _CHROMA_COLLECTION = chromadb.PersistentClient(path=chroma_path).get_collection(
+            os.getenv("SYMBOLIQUE_CHROMA_COLLECTION", "paires")
+        )
+except Exception as exc:
+    print(f"[symbolique] ChromaDB indisponible: {exc}", flush=True)
 _raw_cards = load("52cartes.json", [])
 CARDS = {item.get("carte"): item for item in _raw_cards if item.get("carte")}
 QUALITIES = load("qualites.json", {})
