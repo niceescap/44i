@@ -7,5 +7,5 @@ COPY backend /app/backend
 COPY extractor /app/extractor
 
 ENV PYTHONUNBUFFERED=1
-EXPOSE 8000
-CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 3252
+CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "3252"]
