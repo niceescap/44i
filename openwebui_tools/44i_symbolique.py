@@ -36,7 +36,7 @@ class Tools:
         self.chroma_dir = Path(
             os.getenv("SYMBOLIQUE_CHROMA_DIR", "/data/44i/chroma_db")
         )
-        self.collection_name = os.getenv("44I_CHROMA_COLLECTION", "paires")
+        self.collection_name = os.getenv("SYMBOLIQUE_CHROMA_COLLECTION", "paires")
         self.cards = self._load_json("52cartes.json", [])
         self.cards_by_code = {
             item.get("carte", "").upper(): item
