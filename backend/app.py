@@ -218,6 +218,8 @@ async def ask_openwebui(session: Session, message: str) -> dict[str, Any] | None
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     async with httpx.AsyncClient(timeout=90) as client:
         response = await client.post(f"{base}/api/chat/completions", headers=headers, json=body)
+        if response.status_code >= 400:
+            print(f"[openwebui] HTTP {response.status_code}: {response.text[:800]}", flush=True)
         response.raise_for_status()
         data: dict[str, Any] = response.json()
         choice = data.get("choices", [{}])[0]
