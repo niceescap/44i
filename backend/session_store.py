@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
 from .deck import Deck
 
 TTL_MINUTES = 45
+DRAW_COLUMNS = "ABCDE"
+HARD_LIMIT = 11
 
 
 def now() -> datetime:
@@ -23,11 +25,26 @@ class Session:
     top: dict[str, str] = field(default_factory=dict)
     revealed: dict[str, str] = field(default_factory=dict)
     messages: list[dict[str, str]] = field(default_factory=list)
+    themes: list[str] = field(default_factory=list)
     question: str | None = None
     summary: str = ""
+    active_col: str = "A"
 
     def touch(self) -> None:
         self.expires_at = now() + timedelta(minutes=TTL_MINUTES)
+
+    def column_count(self, column: str) -> int:
+        return sum(1 for slot in self.revealed if slot.startswith(column))
+
+    def next_column(self) -> str | None:
+        try:
+            start = DRAW_COLUMNS.index(self.active_col) + 1
+        except ValueError:
+            start = 0
+        for column in DRAW_COLUMNS[start:]:
+            if self.column_count(column) < HARD_LIMIT:
+                return column
+        return None
 
 
 class SessionStore:
