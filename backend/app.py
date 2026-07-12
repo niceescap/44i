@@ -17,6 +17,9 @@ from .symbolic import card_info, interpretation
 app = FastAPI(title="44 interprètes API", version="1.0.0")
 store = SessionStore()
 
+WEB_DIR = Path(__file__).resolve().parent / "static"
+app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
+
 DISCLAIMER = "44 interprètes est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel."
 TOP_SLOTS = [f"{letter}1" for letter in "BCDEFGH"]
 
