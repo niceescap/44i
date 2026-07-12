@@ -190,9 +190,9 @@ class TapisView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [
-        const Text('Le tapis', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        Text(tr('Le tapis', 'The spread'), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        const Text('Choisis une carte face cachée pour poursuivre la consultation.', style: TextStyle(color: Colors.white70)),
+        Text(tr('Choisis une carte face cachée pour poursuivre la consultation.', 'Choose a face-down card to continue the consultation.'), style: const TextStyle(color: Colors.white70)),
         const SizedBox(height: 12),
         const Text(disclaimer, style: TextStyle(fontSize: 11, color: Colors.white54)),
         if (error != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text(error!, style: const TextStyle(color: Colors.redAccent))),
