@@ -43,6 +43,7 @@ def state_of(session: Session) -> SessionState:
         summary=session.summary,
         active_column=session.active_col,
         themes=session.themes,
+        column_signal=session.column_signal,
     )
 
 
