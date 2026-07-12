@@ -23,6 +23,13 @@ app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 DISCLAIMER = "44 interprètes est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel."
 TOP_SLOTS = [f"{letter}1" for letter in "BCDEFGH"]
+SUPPORTED_LANGUAGES = {"fr", "en"}
+
+
+def normalize_language(locale: str | None) -> str:
+    """Convert an OS locale (e.g. fr_FR or en-GB) to a supported language."""
+    language = (locale or "fr").replace("_", "-").split("-", 1)[0].lower()
+    return language if language in SUPPORTED_LANGUAGES else "fr"
 
 
 def state_of(session: Session) -> SessionState:
