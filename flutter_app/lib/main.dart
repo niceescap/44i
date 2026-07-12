@@ -74,7 +74,9 @@ class InterpretesApp extends StatelessWidget {
   const InterpretesApp({super.key});
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
+  Widget build(BuildContext context) => ValueListenableBuilder<String>(
+        valueListenable: activeLanguage,
+        builder: (context, selectedLanguage, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: '44 interprètes',
         supportedLocales: const [Locale('fr'), Locale('en')],
