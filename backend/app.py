@@ -95,7 +95,15 @@ async def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
 
 def masterin(session: Session, message: str) -> dict[str, Any]:
     revealed = [
-        {"code": code, "slot": slot, **card_info(code)}
+        {
+            "code": code,
+            "valeur": code,
+            "slot": slot,
+            "emplacement": slot,
+            "name": card_info(code)["name"],
+            "nom": card_info(code)["name"],
+            "symbol": card_info(code)["symbol"],
+        }
         for slot, code in session.revealed.items()
     ]
     return {
