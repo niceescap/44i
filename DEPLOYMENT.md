@@ -17,7 +17,9 @@ Placez l'API derrière un proxy TLS (Nginx, Caddy ou équivalent) et exposez uni
 
 ## Langue
 
-L'application Flutter lit la locale de l'OS au démarrage et envoie son tag BCP-47 (`fr-FR`, `en-GB`, etc.) à `POST /api/sessions`. L'API le normalise vers `fr` ou `en`, avec le français comme repli, puis conserve cette langue pendant toute la session. La langue est retournée dans `state.language` et transmise au modèle OpenWebUI.
+L'application Flutter initialise le sélecteur avec la locale de l'OS puis envoie la langue choisie à `POST /api/sessions`. Le menu comprend le français, anglais, espagnol, italien, allemand, néerlandais, portugais, polonais, hongrois, serbe, russe, arabe, hébreu, chinois, thaï, japonais, coréen, hindi, indonésien, turc et vietnamien. L'API applique une liste d'autorisation, conserve la langue pendant toute la session et la transmet au modèle OpenWebUI. Toute langue inconnue utilise le français comme repli.
+
+Changer la langue démarre volontairement une nouvelle session anonyme : cela évite de mélanger messages et export dans plusieurs langues. Les réponses de l'oracle suivent la langue de session. Les libellés Flutter disposent pour l'instant de traductions intégrées française et anglaise ; les autres catalogues `.arb` devront être ajoutés et relus avant une publication Play Store entièrement localisée.
 
 Les clients plus anciens restent compatibles : une création de session sans corps ou sans `locale` utilise le français.
 
