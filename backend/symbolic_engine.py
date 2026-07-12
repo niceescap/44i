@@ -82,24 +82,17 @@ class SymbolicEngine:
         }
 
     def remarkable(self, cards: list[str]) -> list[dict]:
-        groups: list[dict] = []
-        by_rank: dict[str, list[str]] = {}
-        for code in cards:
-            by_rank.setdefault(self.rank(code), []).append(code)
-        associations = {
-            "2_A": "Union, mariage, réconciliation.",
-            "2_8": "Dispute, mésentente dans le couple.",
-            "2_9": "Changements professionnels, gains.",
-            "3_A": "Équilibre, harmonie.",
-            "3_Q": "Commérages, mésentente, tension dans le domaine affectif.",
-            "4_A": "Un grand succès. La chance frappe à votre porte, saisissez l'opportunité.",
-            "4_Q": "Risque de médisances, de rivalités : faites preuve de prudence.",
-        }
-        for rank, same in by_rank.items():
-            if len(same) >= 2:
-                key = f"{len(same)}_{rank}"
-                groups.append({"type": "remarquable", "sous_type": {2: "paire", 3: "tierce"}.get(len(same), "carre"), "cartes": same, "signification": associations.get(key), "qualite": "harmonie"})
-        return groups
+        """Réutilise le détecteur validé, avec normalisation T -> 10."""
+        try:
+            import sys
+            if str(EXTRACTOR) not in sys.path:
+                sys.path.insert(0, str(EXTRACTOR))
+            from detector_rem import detecter_remarquables
+            normalized = [f"10{code[-1]}" if self.rank(code) == "10" and code[:-1] == "T" else code for code in cards]
+            return detecter_remarquables(normalized)
+        except Exception as exc:
+            print(f"[symbolique] remarquables indisponibles: {exc}", flush=True)
+            return []
 
     def process(self, code: str, placed: list[str], column: str, row: int) -> dict:
         code = code.upper()
