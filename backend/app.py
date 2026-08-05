@@ -52,6 +52,7 @@ def state_of(session: Session) -> SessionState:
 @app.get("/", include_in_schema=False)
 def browser_app() -> FileResponse:
     return FileResponse(WEB_DIR / "index.html")
+
 def get_session(session_id: str) -> Session:
     session = store.get(session_id)
     if not session:
@@ -95,8 +96,9 @@ async def reveal_card(session_id: str, payload: RevealRequest) -> SessionState:
     symbolic_result = session.symbolic.process(code, list(session.revealed.values()), session.active_col, row)
     session.last_symbolic_event = symbolic_result.get("event", {})
     session.column_signal = symbolic_result.get("signal")
-    if row >= 8 and not session.column_signal:
-        session.column_signal = "obligation:cloture_sept_cartes"
+    # Garde-fou absolu si le moteur n'a pas émis de signal (row 11 = limite engine)
+    if row >= 11 and not session.column_signal:
+        session.column_signal = "obligation:cloture_immediate"
     session.summary = symbolic_result.get("summary", session.summary)
     if not session.top and session.deck.cards:
         session.top = {f"{letter}1": session.deck.draw() for letter in "BCDEFGH" if session.deck.cards}
@@ -131,6 +133,7 @@ def masterin(session: Session, message: str) -> dict[str, Any]:
         "carte_revelee": revealed[-1] if revealed else None,
         "cartes_revelees": revealed,
         "resume_symbolique": session.summary,
+        "theme_proposal": session.last_symbolic_event.get("theme_proposal", ""),
         "themes_precedents": session.themes,
         "historique_recent": session.messages[-10:],
         "colonne_active": session.active_col,
@@ -152,7 +155,9 @@ def apply_command(session: Session, result: dict[str, Any] | None) -> None:
     next_column = session.next_column()
     if next_column is None:
         return
-    theme = result.get("Theme", "").strip()
+    theme = (result.get("Theme", "") if result else "").strip()
+    if not theme and session.last_symbolic_event.get("type") == "theme":
+        theme = session.last_symbolic_event.get("theme_proposal", "")
     if theme:
         session.themes.append(theme)
     session.active_col = next_column

@@ -12,7 +12,7 @@ TTL_MINUTES = 45
 DRAW_COLUMNS = "ABCDE"
 # Garde-fou V1 : sept cartes maximum par colonne pour préserver la lisibilité.
 # Les signaux symboliques peuvent clôturer une colonne plus tôt.
-HARD_LIMIT = 7
+HARD_LIMIT = 5
 
 
 def now() -> datetime:

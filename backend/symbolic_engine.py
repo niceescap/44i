@@ -15,16 +15,22 @@ EXTRACTOR = ROOT / "extractor"
 
 
 class SymbolicEngine:
-    """État symbolique isolé par consultation, dérivé de via."""
+    """État symbolique isolé par consultation, cycle de 5 cartes par colonne."""
+
+    STAGES = ["designation", "paire", "apport", "qualite_en_paire", "theme"]
 
     def __init__(self) -> None:
         self.cards = self._load("52cartes.json", [])
         self.cards_by_code = {item.get("carte"): item for item in self.cards if item.get("carte")}
         self.qualities = self._load("qualites.json", {})
-        self.steps: list[dict] = []
-        self.previous: str | None = None
-        self.stage = "designation"
         self.pairs = self._load_pairs()
+        # Historique global de la consultation
+        self.steps: list[str] = []
+        # État du cycle courant (par colonne)
+        self._stage_idx = 0
+        self.base_card: str | None = None
+        self.pair_anchor: tuple[str, str] | None = None
+        self.column_cards: list[str] = []
 
     @staticmethod
     def _load(name: str, default):
@@ -38,7 +44,9 @@ class SymbolicEngine:
         if chromadb is None or not Path(path).exists():
             return None
         try:
-            collection = chromadb.PersistentClient(path=path).get_collection(os.getenv("SYMBOLIQUE_CHROMA_COLLECTION", "paires"))
+            collection = chromadb.PersistentClient(path=path).get_collection(
+                os.getenv("SYMBOLIQUE_CHROMA_COLLECTION", "paires")
+            )
             print(f"[symbolique] ChromaDB chargée pour session: {path}", flush=True)
             return collection
         except Exception as exc:
@@ -88,33 +96,125 @@ class SymbolicEngine:
             if str(EXTRACTOR) not in sys.path:
                 sys.path.insert(0, str(EXTRACTOR))
             from detector_rem import detecter_remarquables
-            normalized = [f"10{code[-1]}" if self.rank(code) == "10" and code[:-1] == "T" else code for code in cards]
+            normalized = [
+                f"10{code[-1]}" if self.rank(code) == "10" and code[:-1] == "T" else code
+                for code in cards
+            ]
             return detecter_remarquables(normalized)
         except Exception as exc:
             print(f"[symbolique] remarquables indisponibles: {exc}", flush=True)
             return []
 
+    def _advance(self) -> None:
+        """Passe à l'étape suivante du cycle. Après 'theme', reset pour la colonne suivante."""
+        self._stage_idx += 1
+        if self._stage_idx >= len(self.STAGES):
+            self._stage_idx = 0
+            self.base_card = None
+            self.pair_anchor = None
+            self.column_cards = []
+
+    def propose_theme(self, column_cards: list[str]) -> str:
+        """Propose un thème synthétique pour la colonne terminée."""
+        if not column_cards:
+            return "Colonne vide"
+        names = [self.name(c) for c in column_cards]
+        symbols = [self.symbol(c) for c in column_cards]
+        fragment = " — ".join(s[:60] for s in symbols if s)
+        return f"{' / '.join(names)}. {fragment}"
+
     def process(self, code: str, placed: list[str], column: str, row: int) -> dict:
         code = code.upper()
         self.steps.append(code)
+        self.column_cards.append(code)
+        stage = self.STAGES[self._stage_idx]
         remarks = self.remarkable(self.steps)
-        event: dict = {"type": "designation", "card": code, "name": self.name(code), "symbol": self.symbol(code), "remarkables": remarks}
-        if self.stage == "paire" and self.previous:
-            event = {"type": "paire", "cards": [self.previous, code], "content": self.pair(self.previous, code), "remarkables": remarks}
-            self.stage = "apport"
-        elif self.stage == "apport" and self.previous:
-            event = {"type": "apport", "card": code, "sur": self.previous, **self.quality(self.previous, code), "remarkables": remarks}
-            self.stage = "paire"
-        else:
-            self.stage = "paire"
-        self.previous = code
+        event: dict = {}
+
+        # ---------- ÉTAPE 1 : Désignation ----------
+        if stage == "designation":
+            self.base_card = code
+            event = {
+                "type": "designation",
+                "card": code,
+                "name": self.name(code),
+                "symbol": self.symbol(code),
+                "remarkables": remarks,
+            }
+            self._advance()
+
+        # ---------- ÉTAPE 2 : Symbolique de la paire ----------
+        elif stage == "paire":
+            if self.base_card is None:
+                # Sécurité : changement manuel de colonne sans base
+                self.base_card = code
+                event = {
+                    "type": "designation",
+                    "card": code,
+                    "name": self.name(code),
+                    "symbol": self.symbol(code),
+                    "remarkables": remarks,
+                }
+            else:
+                event = {
+                    "type": "paire",
+                    "cards": [self.base_card, code],
+                    "content": self.pair(self.base_card, code),
+                    "remarkables": remarks,
+                }
+                self.pair_anchor = (self.base_card, code)
+            self._advance()
+
+        # ---------- ÉTAPE 3 : Qualité + interprétation ----------
+        elif stage == "apport":
+            # La carte s'apporte à la 2ème carte de la paire (pivot)
+            anchor = self.pair_anchor[1] if self.pair_anchor else (self.base_card or code)
+            event = {
+                "type": "apport",
+                "card": code,
+                "sur": anchor,
+                **self.quality(anchor, code),
+                "remarkables": remarks,
+            }
+            self._advance()
+
+        # ---------- ÉTAPE 4 : Qualité en paire ----------
+        elif stage == "qualite_en_paire":
+            # La carte 4 apporte sa qualité par rapport à la carte de base (ancrage)
+            base = self.base_card or (self.pair_anchor[0] if self.pair_anchor else code)
+            event = {
+                "type": "qualite_en_paire",
+                "card": code,
+                "base_card": base,
+                "quality_vs_base": self.quality(base, code),
+                "pair_context": list(self.pair_anchor) if self.pair_anchor else [],
+                "remarkables": remarks,
+            }
+            self._advance()
+
+        # ---------- ÉTAPE 5 : Thème + cloture automatique ----------
+        elif stage == "theme":
+            event = {
+                "type": "theme",
+                "card": code,
+                "column_cards": list(self.column_cards),
+                "theme_proposal": self.propose_theme(self.column_cards),
+                "remarkables": remarks,
+            }
+            self._advance()
+
+        # ---------- Signaux ----------
         signal = None
-        if Counter(self.rank(c) for c in self.steps)["A"] >= 2:
+        # 5ème carte = cloture automatique et obligatoire de la colonne
+        if stage == "theme":
+            signal = "obligation:cloture_colonnette_complete"
+        elif Counter(self.rank(c) for c in self.steps)["A"] >= 2:
             signal = "obligation:cloture_deuxieme_as"
         elif row >= 11:
             signal = "obligation:cloture_immediate"
         elif row >= 5:
             signal = "conseil:cloture_bientot"
+
         return {"event": event, "signal": signal, "summary": self.summary()}
 
     def summary(self) -> str:
