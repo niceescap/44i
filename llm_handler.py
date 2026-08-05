@@ -245,7 +245,7 @@ def interroger_llm(user_text=None, context=None, signal=None, carte_revelee=None
             {"role": "user", "content": user_prompt}
         ],
         "temperature": 0.7,
-        "max_tokens": 500,
+        "max_tokens": 1200,
     }
 
     headers = {

@@ -261,7 +261,7 @@ async def ask_openwebui(session: Session, message: str) -> dict[str, Any] | None
 
     async with httpx.AsyncClient(timeout=90) as client:
         for iteration in range(4):
-            body: dict[str, Any] = {"model": model, "messages": conversation, "temperature": 0.55, "max_tokens": 500, "stream": False}
+            body: dict[str, Any] = {"model": model, "messages": conversation, "temperature": 0.55, "max_tokens": 1200, "stream": False}
             if tool_ids:
                 body["tool_ids"] = tool_ids
             response = await client.post(f"{base}/api/chat/completions", headers=headers, json=body)
