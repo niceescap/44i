@@ -409,10 +409,13 @@
       padding: 0;
     }
     .chat-actions {
+      position: relative;
+      z-index: 3;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      padding: 0 12px 10px;
+      width: min(960px, 100%);
+      padding: 8px 12px 20px;
     }
     .chat-actions .btn-solid {
       flex: 1;
