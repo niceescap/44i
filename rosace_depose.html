@@ -689,7 +689,7 @@
   }
   const heart = document.getElementById("deck-heart");
   const btnShuffle = document.getElementById("btn-shuffle");
-  const btnHide = document.getElementById("btn-hide");
+  const btnHide = document.getElementById("btn-hide") || { disabled: false };
   let seed = 0;
   let sessionId = "";
   let lastSymbolique = [];
