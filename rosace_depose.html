@@ -73,8 +73,13 @@
     .stage-wrap {
       position: relative; z-index: 2;
       width: min(960px, 100vw);
-      aspect-ratio: 1;
+      height: min(960px, 100vw);
+      flex: 0 0 auto;
+      transition: height .95s cubic-bezier(.22, .8, .2, 1);
     }
+    body.oracle .stage-wrap { height: 196px; }
+    body.oracle header { padding-top: 10px; padding-bottom: 0; }
+    body.oracle header h1 span { display: none; }
     #stage {
       position: absolute; inset: 18px;
       border-radius: 24px;
@@ -87,6 +92,25 @@
         0 24px 70px rgba(0,0,0,.65),
         inset 0 0 90px rgba(0,0,0,.45);
       overflow: hidden;
+      transition:
+        background .7s ease,
+        border-color .7s ease,
+        box-shadow .7s ease,
+        inset .7s ease;
+    }
+    body.oracle #stage {
+      inset: 0;
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      overflow: visible;
+    }
+    body.oracle #rosace,
+    body.oracle .burst,
+    body.oracle #deck-heart {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .45s ease;
     }
     #stage.dealing,
     #stage.recalling { cursor: default; }
