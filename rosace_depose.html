@@ -468,12 +468,19 @@
   }
 
   function toCanvas(sites) {
-    return sites.map((s) => Object.assign({}, s, {
-      x: CX + R * s.ux,
-      y: CY + R * s.uy,
-      radius: Math.hypot(s.ux, s.uy),
-      angle: Math.atan2(s.uy, s.ux)
-    }));
+    return sites.map(function (s) {
+      const r = Math.hypot(s.ux, s.uy);
+      const angle = Math.atan2(s.uy, s.ux);
+      /* Les croisements internes sont tirés vers le centre
+         pour sortir de sous les cartes plus externes. Les pointes restent. */
+      const pull = (r < 0.92 && r > 1e-6) ? Math.pow(r, 0.88) : 1;
+      return Object.assign({}, s, {
+        x: CX + R * s.ux * pull,
+        y: CY + R * s.uy * pull,
+        radius: r,
+        angle: angle
+      });
+    });
   }
 
   function fullDeck() {
