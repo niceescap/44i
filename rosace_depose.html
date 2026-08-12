@@ -976,18 +976,30 @@
     });
   }
 
+  function formatRem(list) {
+    if (!list || !list.length) return "";
+    return list.map(function (b) {
+      var sig = b.signification ? " — " + b.signification : "";
+      return "REMARQUABLE " + (b.sous_type || "").toUpperCase() + " " + (b.cartes || []).join("+") + sig;
+    }).join("\n");
+  }
+
   function formatEvent(ev) {
     if (!ev) return "";
+    var rem = formatRem(ev.remarquables);
+    var body = "";
     if (ev.type === "designation") {
-      return "DÉSIGNATION " + ev.carte + " — " + ev.contenu;
+      body = "DÉSIGNATION " + ev.carte + " — " + (ev.designation || ev.contenu || "");
+    } else if (ev.type === "paire") {
+      body = "PAIRE " + (ev.cartes || []).join("+") + "\n"
+        + (ev.contenu_enrichi || ((ev.designation || "") + " — " + (ev.contenu || "")));
+    } else if (ev.type === "apport") {
+      body = "APPORT " + ev.carte + " sur " + ev.sur + "\n"
+        + (ev.contenu_enrichi || ((ev.designation || "") + " — " + (ev.qualite || "") + " | " + (ev.conclusion || "")));
+    } else {
+      body = JSON.stringify(ev, null, 2);
     }
-    if (ev.type === "paire") {
-      return "PAIRE " + (ev.cartes || []).join("+") + " — " + ev.contenu;
-    }
-    if (ev.type === "apport") {
-      return "APPORT " + ev.carte + " sur " + ev.sur + " — " + ev.qualite + " | " + ev.conclusion;
-    }
-    return JSON.stringify(ev, null, 2);
+    return rem ? body + "\n" + rem : body;
   }
 
   function openChat() {
