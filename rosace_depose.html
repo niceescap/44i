@@ -448,7 +448,6 @@
       const rot = Number(el.dataset.rot);
       const spin = (rank % 2 ? -1 : 1) * (110 + (rank * 11) % 70);
       const delay = (rank / n) * STAGGER_MS;
-      el.style.zIndex = String(600 - rank);
 
       const anim = el.animate([
         {
