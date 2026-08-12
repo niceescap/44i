@@ -84,8 +84,10 @@
         inset 0 0 90px rgba(0,0,0,.45);
       overflow: hidden;
     }
-    #stage.dealing { cursor: default; }
-    #stage.dealing .card { pointer-events: none; }
+    #stage.dealing,
+    #stage.recalling { cursor: default; }
+    #stage.dealing .card,
+    #stage.recalling .card { pointer-events: none; }
     #rosace {
       position: absolute; inset: 0;
       width: 100%; height: 100%;
@@ -131,10 +133,17 @@
     #stage.dealing .burst {
       animation: burst 4.4s cubic-bezier(.15,.8,.2,1) both;
     }
+    #stage.recalling .burst {
+      animation: unburst 3.2s cubic-bezier(.2,.15,.2,1) both;
+    }
     @keyframes burst {
       0%   { width: 12px; height: 12px; margin: -6px 0 0 -6px; border-color: rgba(201,168,76,.55); opacity: .8; }
       35%  { opacity: .25; }
       100% { width: 780px; height: 780px; margin: -390px 0 0 -390px; border-color: rgba(201,168,76,0); opacity: 0; }
+    }
+    @keyframes unburst {
+      0%   { width: 780px; height: 780px; margin: -390px 0 0 -390px; border-color: rgba(201,168,76,.35); opacity: .35; }
+      100% { width: 12px; height: 12px; margin: -6px 0 0 -6px; border-color: rgba(201,168,76,0); opacity: 0; }
     }
     .card {
       position: absolute;
@@ -144,11 +153,15 @@
       transform-style: preserve-3d;
       cursor: pointer;
       transition: filter .2s ease;
-      will-change: left, top, transform;
+      will-change: left, top, transform, opacity;
     }
-    #stage:not(.dealing) .card:hover {
+    #stage:not(.dealing):not(.recalling) .card:not(.in-hand):hover {
       filter: brightness(1.18) drop-shadow(0 0 10px rgba(201,168,76,.55));
       z-index: 400 !important;
+    }
+    .card.in-hand {
+      cursor: default;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,.45));
     }
     .card-inner {
       position: absolute; inset: 0;
@@ -244,6 +257,14 @@
   const DEAL_MS = 4400;
   const STAGGER_MS = 1680;
   const FLIGHT_MS = DEAL_MS - STAGGER_MS;
+  const RECALL_STAGGER = 1200;
+  const RECALL_FLIGHT = 2000;
+  const HAND_MS = 1600;
+  const HAND_SLOTS = [
+    { left: "45.2%", top: "74%", rot: -11, z: 260 },
+    { left: "50.0%", top: "73%", rot: 2, z: 261 },
+    { left: "54.8%", top: "74%", rot: 12, z: 262 }
+  ];
   const RANKS = ["A","2","3","4","5","6","7","8","9","T","J","Q","K"];
   const SUITS = [
     { id: "S", pip: "♠", red: false, name: "pique" },
@@ -362,6 +383,8 @@
   const btnHide = document.getElementById("btn-hide");
   let seed = 0;
   let placements = [];
+  let chosen = [];
+  let phase = "table";
   let dealing = false;
   let dealTimer = 0;
   let dealId = 0;
@@ -375,11 +398,26 @@
     }
   }
 
+  function replayBurst() {
+    const burst = stage.querySelector(".burst");
+    if (!burst) return;
+    const clone = burst.cloneNode(true);
+    burst.parentNode.replaceChild(clone, burst);
+  }
+
   function dealOrder() {
     return placements
       .map(function (p, idx) { return { idx: idx, r: p.site.radius, a: p.site.angle }; })
       .sort(function (u, v) { return u.r - v.r || u.a - v.a; })
       .map(function (o) { return o.idx; });
+  }
+
+  function recallOrder() {
+    return placements
+      .map(function (p, idx) { return { idx: idx, r: p.site.radius, a: p.site.angle }; })
+      .sort(function (u, v) { return v.r - u.r || u.a - v.a; })
+      .map(function (o) { return o.idx; })
+      .filter(function (idx) { return chosen.indexOf(idx) === -1; });
   }
 
   function stackByDeal() {
@@ -414,11 +452,21 @@
         "</div>" +
       "</div>";
     el.addEventListener("click", function () {
-      if (dealing) return;
-      p.revealed = !p.revealed;
-      el.classList.toggle("revealed", p.revealed);
-      el.title = p.revealed ? p.card.label : "Face cachée";
+      if (dealing || phase !== "table") return;
+      if (p.revealed) {
+        p.revealed = false;
+        el.classList.remove("revealed");
+        chosen = chosen.filter(function (i) { return i !== idx; });
+        el.title = "Face cachée";
+        updateList();
+        return;
+      }
+      p.revealed = true;
+      el.classList.add("revealed");
+      chosen.push(idx);
+      el.title = p.card.label;
       updateList();
+      if (chosen.length >= 3) gatherToHand();
     });
     return el;
   }
@@ -426,16 +474,14 @@
   function throwDeal() {
     stopAnims();
     dealing = true;
+    phase = "table";
     const thisDeal = ++dealId;
     stage.classList.add("dealing");
+    stage.classList.remove("recalling", "hand");
     btnShuffle.disabled = true;
     btnHide.disabled = true;
     heart.classList.add("visible");
-    const burst = stage.querySelector(".burst");
-    if (burst) {
-      const clone = burst.cloneNode(true);
-      burst.parentNode.replaceChild(clone, burst);
-    }
+    replayBurst();
 
     const order = dealOrder();
     const n = Math.max(order.length - 1, 1);
@@ -479,7 +525,6 @@
 
     document.getElementById("revealed").innerHTML = "<em>Lancé — les cartes trouvent leurs sites…</em>";
 
-    /* Le tas se vide au départ de la dernière carte, pas à la fin du vol. */
     dealTimer = setTimeout(function () {
       heart.classList.remove("visible");
     }, STAGGER_MS);
@@ -501,6 +546,126 @@
     });
   }
 
+  function gatherToHand() {
+    if (phase !== "table") return;
+    phase = "recalling";
+    dealing = true;
+    const thisDeal = ++dealId;
+    stopAnims();
+    stage.classList.add("recalling");
+    btnShuffle.disabled = true;
+    btnHide.disabled = true;
+    replayBurst();
+
+    const keep = chosen.slice(0, 3);
+    const returning = recallOrder();
+    const n = Math.max(returning.length - 1, 1);
+
+    keep.forEach(function (idx, i) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      const slot = HAND_SLOTS[i];
+      if (!el || !slot) return;
+      el.classList.add("in-hand", "revealed");
+      const fromRot = Number(el.dataset.rot);
+      const anim = el.animate([
+        {
+          offset: 0,
+          left: el.dataset.tx,
+          top: el.dataset.ty,
+          transform: "translate(-50%, -50%) rotate(" + fromRot + "deg) scale(1)"
+        },
+        {
+          offset: 0.55,
+          left: slot.left,
+          top: slot.top,
+          transform: "translate(-50%, -58%) rotate(" + (slot.rot * 0.4) + "deg) scale(1.42)"
+        },
+        {
+          offset: 1,
+          left: slot.left,
+          top: slot.top,
+          transform: "translate(-50%, -50%) rotate(" + slot.rot + "deg) scale(1.52)"
+        }
+      ], {
+        duration: HAND_MS,
+        delay: i * 70,
+        easing: "cubic-bezier(0.16, 0.84, 0.18, 1)",
+        fill: "forwards"
+      });
+      el.style.zIndex = String(slot.z);
+      running.push(anim);
+    });
+
+    returning.forEach(function (idx, rank) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      if (!el) return;
+      const rot = Number(el.dataset.rot);
+      const spin = (rank % 2 ? 1 : -1) * (100 + (rank * 9) % 70);
+      const delay = (rank / n) * RECALL_STAGGER;
+      const anim = el.animate([
+        {
+          offset: 0,
+          left: el.dataset.tx,
+          top: el.dataset.ty,
+          opacity: 1,
+          transform: "translate(-50%, -50%) rotate(" + rot + "deg) scale(1)"
+        },
+        {
+          offset: 0.84,
+          left: "50%",
+          top: "50%",
+          opacity: 1,
+          transform: "translate(-50%, -50%) rotate(" + spin + "deg) scale(0.88)"
+        },
+        {
+          offset: 1,
+          left: "50%",
+          top: "50%",
+          opacity: 0,
+          transform: "translate(-50%, -50%) rotate(" + spin + "deg) scale(0.55)"
+        }
+      ], {
+        duration: RECALL_FLIGHT,
+        delay: delay,
+        easing: "cubic-bezier(0.18, 0.12, 0.2, 1)",
+        fill: "forwards"
+      });
+      running.push(anim);
+    });
+
+    document.getElementById("revealed").innerHTML = "<em>Rappel — la main se forme, le reste rentre…</em>";
+
+    dealTimer = setTimeout(function () {
+      heart.classList.add("visible");
+    }, Math.round(RECALL_FLIGHT * 0.72));
+
+    Promise.all(running.map(function (a) { return a.finished.catch(function () {}); })).then(function () {
+      if (thisDeal !== dealId) return;
+      heart.classList.remove("visible");
+      returning.forEach(function (idx) {
+        const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+        if (el) el.remove();
+      });
+      keep.forEach(function (idx, i) {
+        const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+        const slot = HAND_SLOTS[i];
+        if (!el || !slot) return;
+        el.style.left = slot.left;
+        el.style.top = slot.top;
+        el.style.transform = "translate(-50%, -50%) rotate(" + slot.rot + "deg) scale(1.52)";
+        el.style.zIndex = String(slot.z);
+      });
+      running.length = 0;
+      dealing = false;
+      phase = "hand";
+      stage.classList.remove("recalling");
+      stage.classList.add("hand");
+      btnShuffle.disabled = false;
+      btnHide.disabled = true;
+      updateList();
+    });
+  }
+
   function deal(nextSeed) {
     seed = nextSeed >>> 0;
     if (!seed) seed = (Math.random() * 0xffffffff) >>> 0;
@@ -509,6 +674,8 @@
     if (SITES.length !== 52) {
       console.error("Sites:", SITES.length, "attendu 52");
     }
+    chosen = [];
+    phase = "table";
     placements = SITES.map(function (site, i) {
       return { site: site, card: deck[i], revealed: false };
     });
@@ -519,6 +686,7 @@
   function render(withThrow) {
     stopAnims();
     stage.querySelectorAll(".card").forEach(function (el) { el.remove(); });
+    stage.classList.remove("hand", "recalling");
     drawMat(SITES);
     placements.forEach(function (p, idx) {
       stage.appendChild(makeCard(p, idx));
@@ -533,7 +701,8 @@
         el.style.transform = "translate(-50%, -50%) rotate(" + el.dataset.rot + "deg)";
       });
       dealing = false;
-      stage.classList.remove("dealing");
+      phase = "table";
+      stage.classList.remove("dealing", "recalling", "hand");
       heart.classList.remove("visible");
       btnShuffle.disabled = false;
       btnHide.disabled = false;
@@ -542,12 +711,18 @@
   }
 
   function updateList() {
-    const up = placements.filter(function (p) { return p.revealed; }).map(function (p) { return p.card.label; });
     const box = document.getElementById("revealed");
-    if (!up.length) {
+    const labels = chosen.map(function (idx) { return placements[idx].card.label; });
+    if (phase === "hand") {
+      box.textContent = "Main — " + labels.join("   ");
+      return;
+    }
+    if (!labels.length) {
       box.innerHTML = "<em>Clique une carte pour la révéler.</em>";
+    } else if (labels.length < 3) {
+      box.textContent = labels.length + " / 3 — " + labels.join("   ");
     } else {
-      box.textContent = up.length + " révélée" + (up.length > 1 ? "s" : "") + " — " + up.join("   ");
+      box.textContent = labels.join("   ");
     }
   }
 
@@ -556,7 +731,8 @@
     deal((Math.random() * 0xffffffff) >>> 0);
   });
   btnHide.addEventListener("click", function () {
-    if (dealing) return;
+    if (dealing || phase !== "table") return;
+    chosen = [];
     placements.forEach(function (p) { p.revealed = false; });
     render(false);
   });
