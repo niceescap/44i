@@ -860,6 +860,8 @@
     }
     chosen = [];
     phase = "table";
+    document.body.classList.remove("oracle");
+    document.getElementById("chat-log").innerHTML = "";
     placements = SITES.map(function (site, i) {
       return { site: site, card: deck[i], revealed: false };
     });
