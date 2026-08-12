@@ -405,13 +405,17 @@
 <body>
   <div class="ambient"></div>
   <header>
-    <h1>Dépose rosace {13/4} <span>13 pointes · 39 intersections · 52 cartes</span></h1>
+    <div>
+      <h1>44 interprètes</h1>
+      <p class="tagline">Consultation symbolique anonyme · l’Oracle vous guide</p>
+    </div>
     <div class="toolbar">
       <span class="meta" id="seed-label"></span>
-      <button type="button" id="btn-shuffle">Nouvelle donne</button>
-      <button type="button" id="btn-hide">Recacher</button>
+      <button type="button" id="btn-shuffle">Nouveau tirage</button>
     </div>
   </header>
+  <div id="status">Choisis trois cartes face cachée.</div>
+  <div id="symbol-log" aria-live="polite"></div>
   <div id="hand-rail" aria-label="Main de trois cartes"></div>
   <div class="stage-wrap">
     <div id="stage">
