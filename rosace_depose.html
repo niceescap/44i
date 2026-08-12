@@ -609,7 +609,8 @@
     ].join("");
   }
 
-  const SITES = toCanvas(sitesUnit());
+  const GEOM = toCanvas(sitesUnit());
+  let SITES = GEOM.slice();
   const stage = document.getElementById("stage");
   const heart = document.getElementById("deck-heart");
   const btnShuffle = document.getElementById("btn-shuffle");
