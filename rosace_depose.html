@@ -1190,7 +1190,23 @@
     log.scrollTop = log.scrollHeight;
   }
 
+  function resetWorkflow() {
+    dealId += 1;
+    stopAnims();
+    dealing = false;
+    phase = "table";
+    document.body.classList.remove("oracle");
+    stage.classList.remove("dealing", "recalling", "hand");
+    heart.classList.remove("visible");
+    document.getElementById("hand-rail").innerHTML = "";
+    document.getElementById("chat-log").innerHTML = "";
+    deal();
+  }
+
   async function deal() {
+    dealId += 1;
+    stopAnims();
+    dealing = false;
     chosen = [];
     lastSymbolique = [];
     lastLogs = [];
