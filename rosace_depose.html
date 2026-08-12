@@ -1224,12 +1224,10 @@
           revealed: false
         };
       });
-      document.getElementById("seed-label").textContent = "session " + sessionId.slice(0, 8) + " · " + SITES.length + " sites · Python";
       render(true);
     } catch (err) {
       console.error(err);
-      document.getElementById("seed-label").textContent = "API indisponible — lance le backend :8001";
-      document.getElementById("revealed").textContent = String(err.message || err);
+      setStatus("Le tapis n’a pas pu se préparer. Réessaie.");
     }
   }
 
