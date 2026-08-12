@@ -1140,31 +1140,31 @@
 
   btnShuffle.addEventListener("click", function () {
     if (dealing) return;
-    (function startDeal() {
-    if (!relayoutSites()) {
-      requestAnimationFrame(startDeal);
-      return;
-    }
-    deal((Math.random() * 0xffffffff) >>> 0);
-  })();
+    deal();
   });
   btnHide.addEventListener("click", function () {
     if (dealing || phase !== "table") return;
-    chosen = [];
-    placements.forEach(function (p) { p.revealed = false; });
-    render(false);
+    deal();
   });
-  document.getElementById("chat-form").addEventListener("submit", function (ev) {
+  document.getElementById("chat-form").addEventListener("submit", async function (ev) {
     ev.preventDefault();
-    if (phase !== "oracle") return;
+    if (phase !== "oracle" || !sessionId) return;
     const input = document.getElementById("chat-input");
     const text = (input.value || "").trim();
     if (!text) return;
-    appendBubble("user", text);
     input.value = "";
+    appendBubble("user", text);
+    try {
+      await api("/api/v2/sessions/" + sessionId + "/messages", {
+        method: "POST",
+        body: JSON.stringify({ message: text })
+      });
+    } catch (err) {
+      appendBubble("oracle", "Message non enregistré : " + err.message);
+    }
   });
 
-  deal((Math.random() * 0xffffffff) >>> 0);
+  deal();
 })();
 </script>
 </body>
