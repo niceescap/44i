@@ -353,9 +353,11 @@
       to   { opacity: 1; transform: none; }
     }
     #chat-log {
-      flex: 1;
-      min-height: 0;
+      flex: 0 0 auto;
+      min-height: 120px;
+      max-height: 40vh;
       overflow-y: auto;
+      overscroll-behavior: contain;
       padding: 18px 18px 10px;
       display: flex;
       flex-direction: column;
