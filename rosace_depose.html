@@ -776,14 +776,78 @@
         el.style.zIndex = String(slot.z);
       });
       running.length = 0;
-      dealing = false;
-      phase = "hand";
       stage.classList.remove("recalling");
       stage.classList.add("hand");
+      unveilOracle(keep, thisDeal);
+    });
+  }
+
+  function unveilOracle(keep, thisDeal) {
+    phase = "oracle";
+    document.body.classList.add("oracle");
+    heart.classList.remove("visible");
+
+    keep.forEach(function (idx, i) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      const from = HAND_SLOTS[i];
+      const to = ORACLE_SLOTS[i];
+      if (!el || !from || !to) return;
+      const anim = el.animate([
+        {
+          left: from.left,
+          top: from.top,
+          transform: "translate(-50%, -50%) rotate(" + from.rot + "deg) scale(1.52)"
+        },
+        {
+          left: to.left,
+          top: to.top,
+          transform: "translate(-50%, -50%) rotate(" + to.rot + "deg) scale(2.15)"
+        }
+      ], {
+        duration: UNVEIL_MS,
+        delay: i * 50,
+        easing: "cubic-bezier(0.2, 0.8, 0.18, 1)",
+        fill: "forwards"
+      });
+      el.style.zIndex = String(to.z);
+      running.push(anim);
+    });
+
+    Promise.all(running.map(function (a) { return a.finished.catch(function () {}); })).then(function () {
+      if (thisDeal !== dealId) return;
+      keep.forEach(function (idx, i) {
+        const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+        const to = ORACLE_SLOTS[i];
+        if (!el || !to) return;
+        el.style.left = to.left;
+        el.style.top = to.top;
+        el.style.transform = "translate(-50%, -50%) rotate(" + to.rot + "deg) scale(2.15)";
+        el.style.zIndex = String(to.z);
+      });
+      running.length = 0;
+      dealing = false;
       btnShuffle.disabled = false;
       btnHide.disabled = true;
       updateList();
+      openChat();
     });
+  }
+
+  function openChat() {
+    const log = document.getElementById("chat-log");
+    log.innerHTML = "";
+    appendBubble("oracle", "Trois cartes. Une question.");
+    const input = document.getElementById("chat-input");
+    if (input) input.focus();
+  }
+
+  function appendBubble(who, text) {
+    const log = document.getElementById("chat-log");
+    const el = document.createElement("div");
+    el.className = "bubble " + who;
+    el.textContent = text;
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;
   }
 
   function deal(nextSeed) {
