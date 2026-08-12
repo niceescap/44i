@@ -479,7 +479,7 @@
     }, STAGGER_MS);
 
     Promise.all(running.map(function (a) { return a.finished.catch(function () {}); })).then(function () {
-      if (!dealing) return;
+      if (thisDeal !== dealId) return;
       dealing = false;
       stage.classList.remove("dealing");
       heart.classList.remove("visible");
