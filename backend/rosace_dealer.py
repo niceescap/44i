@@ -36,6 +36,8 @@ class RosaceSession:
     chosen: list[dict[str, Any]] = field(default_factory=list)
     pipeline: QueryPipeline = field(default_factory=QueryPipeline)
     messages: list[dict[str, str]] = field(default_factory=list)
+    llm_messages: list[dict[str, str]] = field(default_factory=list)
+    interpreted: bool = False
     question: str | None = None
 
     def touch(self) -> None:
