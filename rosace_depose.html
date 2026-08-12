@@ -1269,6 +1269,35 @@
     if (dealing) return;
     deal();
   });
+  document.getElementById("btn-don").addEventListener("click", function () {
+    window.open("https://paypal.me/NiceeCap/2", "_blank", "noopener");
+  });
+  document.getElementById("btn-export").addEventListener("click", function () {
+    var lines = [
+      "# 44 interprètes",
+      "",
+      "Consultation symbolique anonyme",
+      "",
+      "## Avertissement",
+      "",
+      "44 interprètes est une application de divertissement. Les interprétations sont issues d'ouvrages ésotériques et générées par intelligence artificielle.",
+      "",
+      "## Contexte symbolique",
+      ""
+    ];
+    (logLines || []).forEach(function (l) { lines.push("- " + l); });
+    lines.push("", "## Échanges", "");
+    document.querySelectorAll("#chat-log .bubble").forEach(function (el) {
+      var who = el.classList.contains("user") ? "Utilisateur" : "Oracle";
+      lines.push("**" + who + " :**", "", el.textContent, "");
+    });
+    var blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "44-interpretes-consultation.md";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
   document.getElementById("chat-form").addEventListener("submit", async function (ev) {
     ev.preventDefault();
     if (phase !== "oracle" || !sessionId) return;
