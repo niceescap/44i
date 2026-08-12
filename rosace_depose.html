@@ -1265,6 +1265,9 @@
     if (box) box.textContent = "";
   }
 
+  document.getElementById("chat-input").addEventListener("pointerdown", function () {
+    this.removeAttribute("readonly");
+  });
   btnShuffle.addEventListener("click", function () {
     if (dealing) return;
     deal();
