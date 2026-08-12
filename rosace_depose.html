@@ -470,17 +470,94 @@
   function toCanvas(sites) {
     return sites.map(function (s) {
       const r = Math.hypot(s.ux, s.uy);
-      const angle = Math.atan2(s.uy, s.ux);
-      /* Les croisements internes sont tirés vers le centre
-         pour sortir de sous les cartes plus externes. Les pointes restent. */
-      const pull = (r < 0.92 && r > 1e-6) ? Math.pow(r, 0.88) : 1;
       return Object.assign({}, s, {
-        x: CX + R * s.ux * pull,
-        y: CY + R * s.uy * pull,
+        x: CX + R * s.ux,
+        y: CY + R * s.uy,
         radius: r,
-        angle: angle
+        angle: Math.atan2(s.uy, s.ux)
       });
     });
+  }
+
+  const CARD_PX_W = 34.5;
+  const CARD_PX_H = 49.5;
+  const MAX_COVER = 0.65;
+
+  function cardBoxInSiteUnits() {
+    const rect = stage.getBoundingClientRect();
+    const sx = Math.max(rect.width, 1);
+    const sy = Math.max(rect.height, 1);
+    return { w: CARD_PX_W / sx * 1000, h: CARD_PX_H / sy * 1000 };
+  }
+
+  function overlapArea(a, b, w, h) {
+    const ox = Math.max(0, w - Math.abs(a.x - b.x));
+    const oy = Math.max(0, h - Math.abs(a.y - b.y));
+    return ox * oy;
+  }
+
+  function separationScale(dx, dy, w, h, maxArea) {
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+    function ov(k) {
+      return Math.max(0, w - k * ax) * Math.max(0, h - k * ay);
+    }
+    if (ov(1) <= maxArea) return 1;
+    let lo = 1;
+    let hi = 1;
+    if (ax > 1e-9) hi = Math.max(hi, w / ax);
+    if (ay > 1e-9) hi = Math.max(hi, h / ay);
+    hi += 0.08;
+    for (let n = 0; n < 22; n++) {
+      const mid = (lo + hi) / 2;
+      if (ov(mid) > maxArea) lo = mid;
+      else hi = mid;
+    }
+    return hi;
+  }
+
+  function separateSites(geom, w, h) {
+    const pts = geom.map(function (s) { return Object.assign({}, s); });
+    const n = pts.length;
+    const limit = MAX_COVER * w * h;
+    for (let iter = 0; iter < 80; iter++) {
+      let worst = 0;
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const ov = overlapArea(pts[i], pts[j], w, h);
+          if (ov > worst) worst = ov;
+          if (ov <= limit + 1e-4) continue;
+          let dx = pts[j].x - pts[i].x;
+          let dy = pts[j].y - pts[i].y;
+          let dist = Math.hypot(dx, dy);
+          if (dist < 1e-6) {
+            const ang = (pts[i].angle || 0) + (i + 1) * 0.31;
+            dx = Math.cos(ang);
+            dy = Math.sin(ang);
+            dist = 1;
+          }
+          const k = separationScale(dx, dy, w, h, limit);
+          if (k <= 1) continue;
+          const ux = dx / dist;
+          const uy = dy / dist;
+          const push = (k - 1) * dist;
+          const mi = 1.2 - 0.75 * Math.min(pts[i].radius, 1);
+          const mj = 1.2 - 0.75 * Math.min(pts[j].radius, 1);
+          const sum = mi + mj;
+          pts[i].x -= ux * push * (mi / sum);
+          pts[i].y -= uy * push * (mi / sum);
+          pts[j].x += ux * push * (mj / sum);
+          pts[j].y += uy * push * (mj / sum);
+        }
+      }
+      if (worst <= limit + 1e-4) break;
+    }
+    const margin = Math.max(w, h) * 0.55;
+    pts.forEach(function (p) {
+      p.x = Math.min(1000 - margin, Math.max(margin, p.x));
+      p.y = Math.min(1000 - margin, Math.max(margin, p.y));
+    });
+    return pts;
   }
 
   function fullDeck() {
