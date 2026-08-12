@@ -976,12 +976,67 @@
     });
   }
 
+  function formatEvent(ev) {
+    if (!ev) return "";
+    if (ev.type === "designation") {
+      return "DÉSIGNATION " + ev.carte + " — " + ev.contenu;
+    }
+    if (ev.type === "paire") {
+      return "PAIRE " + (ev.cartes || []).join("+") + " — " + ev.contenu;
+    }
+    if (ev.type === "apport") {
+      return "APPORT " + ev.carte + " sur " + ev.sur + " — " + ev.qualite + " | " + ev.conclusion;
+    }
+    return JSON.stringify(ev, null, 2);
+  }
+
   function openChat() {
     const log = document.getElementById("chat-log");
     log.innerHTML = "";
-    appendBubble("oracle", "Trois cartes. Une question.");
+    if (lastSymbolique.length) {
+      lastSymbolique.forEach(function (ev) {
+        appendBubble("oracle", formatEvent(ev));
+      });
+    } else {
+      appendBubble("oracle", "Trois cartes. En attente du contexte Python.");
+    }
     const input = document.getElementById("chat-input");
     if (input) input.focus();
+  }
+
+  async function revealOnServer(idx, el) {
+    const p = placements[idx];
+    if (!sessionId || !p || p.revealed) return;
+    dealing = true;
+    try {
+      const data = await api("/api/v2/sessions/" + sessionId + "/reveal", {
+        method: "POST",
+        body: JSON.stringify({ site_id: p.site.id })
+      });
+      const hit = (data.chosen || []).find(function (c) { return c.site_id === p.site.id; });
+      if (!hit) throw new Error("réponse sans carte");
+      p.card = cardFromCode(hit.card);
+      p.revealed = true;
+      el.classList.add("revealed");
+      el.title = p.card.label;
+      const front = el.querySelector(".front");
+      if (front) {
+        front.className = "face front" + (p.card.red ? " red" : "");
+        front.innerHTML =
+          '<div class="corner tl">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>" +
+          '<div class="pip">' + p.card.pip + "</div>" +
+          '<div class="corner br">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>";
+      }
+      chosen.push(idx);
+      lastSymbolique = data.symbolique || [];
+      updateList();
+      dealing = false;
+      if (chosen.length >= 3) gatherToHand();
+    } catch (err) {
+      dealing = false;
+      console.error(err);
+      document.getElementById("revealed").textContent = "Erreur serveur : " + err.message;
+    }
   }
 
   function appendBubble(who, text) {
