@@ -431,8 +431,30 @@ def v2_reveal(session_id: str, payload: V2RevealRequest) -> dict[str, Any]:
     return session.public_state()
 
 
+@app.post("/api/v2/sessions/{session_id}/interpret")
+async def v2_interpret(session_id: str) -> dict[str, Any]:
+    session = _rosace_session(session_id)
+    if session.phase != "oracle":
+        raise HTTPException(status_code=400, detail="L'interprétation suit la troisième carte")
+    if session.interpreted and session.messages:
+        last = next((m for m in reversed(session.messages) if m.get("role") == "oracle"), None)
+        return {"content": last["content"] if last else "", "messages": session.messages}
+    logs = session.pipeline.logs()
+    if not session.llm_messages:
+        session.llm_messages.append({"role": "user", "content": cold_start_message(logs)})
+    try:
+        reply = await complete(session.llm_messages)
+    except Exception as exc:
+        print(f"[llm_v2] interprétation échouée: {exc}", flush=True)
+        raise HTTPException(status_code=502, detail="L'oracle est silencieux un instant.")
+    session.llm_messages.append({"role": "assistant", "content": reply})
+    session.messages.append({"role": "oracle", "content": reply})
+    session.interpreted = True
+    return {"content": reply, "messages": session.messages}
+
+
 @app.post("/api/v2/sessions/{session_id}/messages")
-def v2_message(session_id: str, payload: MessageRequest) -> dict[str, Any]:
+async def v2_message(session_id: str, payload: MessageRequest) -> dict[str, Any]:
     session = _rosace_session(session_id)
     if session.phase != "oracle":
         raise HTTPException(status_code=400, detail="La conversation s'ouvre après la troisième carte")
@@ -440,7 +462,15 @@ def v2_message(session_id: str, payload: MessageRequest) -> dict[str, Any]:
     if not session.question:
         session.question = text
     session.messages.append({"role": "user", "content": text})
-    return {
-        "symbolique": session.pipeline.snapshot()["symbolique"],
-        "messages": session.messages,
-    }
+    if not session.llm_messages:
+        session.llm_messages.append({"role": "user", "content": cold_start_message(session.pipeline.logs())})
+    session.llm_messages.append({"role": "user", "content": text})
+    try:
+        reply = await complete(session.llm_messages)
+    except Exception as exc:
+        print(f"[llm_v2] chat échoué: {exc}", flush=True)
+        raise HTTPException(status_code=502, detail="L'oracle est silencieux un instant.")
+    session.llm_messages.append({"role": "assistant", "content": reply})
+    session.messages.append({"role": "oracle", "content": reply})
+    session.interpreted = True
+    return {"content": reply, "messages": session.messages}
