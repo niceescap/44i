@@ -422,6 +422,32 @@
     { id: "C", pip: "♣", red: false, name: "trèfle" }
   ];
   const RANK_FACE = { A:"A", T:"10", J:"V", Q:"D", K:"R" };
+  const API = (location.protocol === "file:") ? "http://127.0.0.1:3252" : "";
+
+  function cardFromCode(code) {
+    const rank = code.slice(0, -1);
+    const suitId = code.slice(-1);
+    const suit = SUITS.find(function (s) { return s.id === suitId; }) || SUITS[0];
+    return {
+      code: code,
+      rank: rank,
+      suit: suit.id,
+      pip: suit.pip,
+      red: suit.red,
+      label: (RANK_FACE[rank] || rank) + suit.pip
+    };
+  }
+
+  async function api(path, opts) {
+    const res = await fetch(API + path, Object.assign({
+      headers: { "Content-Type": "application/json" }
+    }, opts || {}));
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(t || res.statusText);
+    }
+    return res.json();
+  }
 
   function vertex(i) {
     const a = -Math.PI / 2 + (2 * Math.PI * i) / N;
