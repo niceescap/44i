@@ -382,18 +382,25 @@
       .map(function (o) { return o.idx; });
   }
 
+  function stackByDeal() {
+    dealOrder().forEach(function (idx, rank) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      if (!el) return;
+      const z = 30 + rank;
+      el.style.zIndex = String(z);
+      el.dataset.z = String(z);
+    });
+  }
+
   function makeCard(p, idx) {
     const rot = ((p.site.id * 17) % 13) - 6;
-    const z = 20 + Math.round(p.site.y) + (p.site.kind === "tip" ? 80 : 0);
     const el = document.createElement("div");
     el.className = "card" + (p.revealed ? " revealed" : "");
     el.style.left = "50%";
     el.style.top = "50%";
     el.style.setProperty("--rot", rot + "deg");
-    el.style.zIndex = String(z);
     el.dataset.idx = String(idx);
     el.dataset.rot = String(rot);
-    el.dataset.z = String(z);
     el.dataset.tx = (p.site.x / 10).toFixed(4) + "%";
     el.dataset.ty = (p.site.y / 10).toFixed(4) + "%";
     el.title = p.revealed ? p.card.label : "Face cachée";
