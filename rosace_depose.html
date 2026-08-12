@@ -471,7 +471,13 @@
 
     document.getElementById("revealed").innerHTML = "<em>Lancé — les cartes trouvent leurs sites…</em>";
 
+    /* Le tas se vide au départ de la dernière carte, pas à la fin du vol. */
     dealTimer = setTimeout(function () {
+      heart.classList.remove("visible");
+    }, STAGGER_MS);
+
+    Promise.all(running.map(function (a) { return a.finished.catch(function () {}); })).then(function () {
+      if (!dealing) return;
       dealing = false;
       stage.classList.remove("dealing");
       heart.classList.remove("visible");
@@ -483,9 +489,9 @@
         el.style.transform = "translate(-50%, -50%) rotate(" + el.dataset.rot + "deg)";
         el.style.zIndex = el.dataset.z;
       });
-      stopAnims();
+      running.length = 0;
       updateList();
-    }, DEAL_MS);
+    });
   }
 
   function deal(nextSeed) {
