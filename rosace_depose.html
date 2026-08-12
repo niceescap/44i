@@ -523,6 +523,7 @@
     placements.forEach(function (p, idx) {
       stage.appendChild(makeCard(p, idx));
     });
+    stackByDeal();
     if (withThrow) {
       throwDeal();
     } else {
