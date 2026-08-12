@@ -82,9 +82,9 @@ async def complete(messages: list[dict[str, str]]) -> str:
 
     headers = {
         "Authorization": f"Bearer {cfg['key']}",
-        "Content-Type": "application/json",
+        "Content-Type": "application/json; charset=utf-8",
         "HTTP-Referer": "https://44i.webredirect.org",
-        "X-Title": "44 interprètes v2",
+        "X-Title": "44-interpretes-v2",
     }
     body: dict[str, Any] = {
         "model": cfg["model"],
@@ -92,8 +92,9 @@ async def complete(messages: list[dict[str, str]]) -> str:
         "temperature": 0.7,
         "max_tokens": 1200,
     }
+    payload = json.dumps(body, ensure_ascii=False).encode("utf-8")
     async with httpx.AsyncClient(timeout=90) as client:
-        response = await client.post(cfg["url"], headers=headers, json=body)
+        response = await client.post(cfg["url"], headers=headers, content=payload)
         if response.status_code >= 400:
             print(f"[llm_v2] HTTP {response.status_code}: {response.text[:800]}", flush=True)
         response.raise_for_status()
