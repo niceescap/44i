@@ -39,9 +39,14 @@ def _load_paires():
     except ImportError:
         print("[query] chromadb absent", flush=True)
         return None
-    path = EXTRACTOR / "chroma_db"
-    if not path.exists():
-        print(f"[query] chroma_db introuvable: {path}", flush=True)
+    candidates = [
+        Path(os.getenv("SYMBOLIQUE_CHROMA_DIR", "")) if os.getenv("SYMBOLIQUE_CHROMA_DIR") else None,
+        ROOT / "chroma_db",
+        EXTRACTOR / "chroma_db",
+    ]
+    path = next((p for p in candidates if p and p.exists()), None)
+    if path is None:
+        print("[query] chroma_db introuvable (essayé ~/44i/chroma_db et extractor/chroma_db)", flush=True)
         return None
     try:
         client = chromadb.PersistentClient(path=str(path))
