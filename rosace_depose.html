@@ -1292,8 +1292,7 @@
     this.removeAttribute("readonly");
   });
   btnShuffle.addEventListener("click", function () {
-    if (dealing) return;
-    deal();
+    resetWorkflow();
   });
   document.getElementById("btn-don").addEventListener("click", function () {
     window.open("https://paypal.me/NiceeCap/2", "_blank", "noopener");
