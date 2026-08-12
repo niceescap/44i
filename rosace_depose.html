@@ -49,12 +49,48 @@
       justify-content: space-between;
     }
     h1 {
-      font-size: 18px;
-      font-weight: normal;
-      letter-spacing: .08em;
-      color: var(--gold);
+      font-family: "Segoe Print", "Bradley Hand", Georgia, serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 600;
+      letter-spacing: .02em;
+      color: #f6db9b;
     }
-    h1 span { opacity: .55; font-size: 13px; letter-spacing: .04em; }
+    .tagline {
+      font-size: 13px;
+      color: #9a8150;
+      margin-top: 2px;
+    }
+    #status {
+      position: relative; z-index: 3;
+      width: min(960px, 100%);
+      padding: 4px 20px 0;
+      color: var(--gold);
+      font-size: 14px;
+      letter-spacing: .03em;
+    }
+    #symbol-log {
+      position: relative; z-index: 3;
+      width: min(960px, 100%);
+      padding: 8px 20px 4px;
+      max-height: 28vh;
+      overflow-y: auto;
+      flex: 0 0 auto;
+    }
+    #symbol-log .line {
+      margin: 5px 0;
+      padding: 6px 10px;
+      border-left: 2px solid var(--gold);
+      color: #e9d58f;
+      font-size: 13px;
+      line-height: 1.4;
+      background: linear-gradient(90deg, rgba(30, 20, 40, .45), transparent);
+    }
+    #symbol-log .line.hint {
+      border-left-color: #6b4c8a;
+      color: #9a8150;
+      font-style: italic;
+      background: none;
+    }
     .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     button {
       background: transparent;
