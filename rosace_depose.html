@@ -994,7 +994,7 @@
     document.getElementById("hand-rail").innerHTML = "";
     stage.querySelectorAll(".card").forEach(function (el) { el.remove(); });
     stage.classList.remove("hand", "recalling");
-    drawMat(SITES);
+    drawMat(GEOM);
     placements.forEach(function (p, idx) {
       stage.appendChild(makeCard(p, idx));
     });
