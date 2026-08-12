@@ -63,7 +63,8 @@
       border-radius: 999px;
       cursor: pointer;
     }
-    button:hover { border-color: var(--gold); background: rgba(201,168,76,.08); }
+    button:hover:not(:disabled) { border-color: var(--gold); background: rgba(201,168,76,.08); }
+    button:disabled { opacity: .4; cursor: default; }
     .meta { font-size: 12px; color: #9a8150; letter-spacing: .04em; }
     .stage-wrap {
       position: relative; z-index: 2;
@@ -83,21 +84,65 @@
         inset 0 0 90px rgba(0,0,0,.45);
       overflow: hidden;
     }
+    #stage.dealing { cursor: default; }
+    #stage.dealing .card { pointer-events: none; }
     #rosace {
       position: absolute; inset: 0;
       width: 100%; height: 100%;
       pointer-events: none;
     }
+    #deck-heart {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 48px; height: 68px;
+      transform: translate(-50%, -50%);
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      background: linear-gradient(135deg, #5a1830 0%, #7a2040 32%, #3d1020 100%);
+      border: 2px solid var(--gold);
+      box-shadow:
+        3px 3px 0 #4a1224,
+        6px 6px 0 #3a0e1c,
+        0 0 24px rgba(201,168,76,.25);
+      z-index: 2;
+    }
+    #deck-heart.visible { opacity: 1; }
+    #deck-heart::after {
+      content: "✦";
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(201,168,76,.55);
+    }
+    .burst {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 12px; height: 12px;
+      margin: -6px 0 0 -6px;
+      border: 1px solid rgba(201,168,76,.0);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    #stage.dealing .burst {
+      animation: burst 4.4s cubic-bezier(.15,.8,.2,1) both;
+    }
+    @keyframes burst {
+      0%   { width: 12px; height: 12px; margin: -6px 0 0 -6px; border-color: rgba(201,168,76,.55); opacity: .8; }
+      35%  { opacity: .25; }
+      100% { width: 780px; height: 780px; margin: -390px 0 0 -390px; border-color: rgba(201,168,76,0); opacity: 0; }
+    }
     .card {
       position: absolute;
       width: 46px; height: 66px;
-      left: 0; top: 0;
+      left: 50%; top: 50%;
       transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
       transform-style: preserve-3d;
       cursor: pointer;
-      transition: filter .2s ease, transform .25s ease;
+      transition: filter .2s ease;
+      will-change: left, top, transform;
     }
-    .card:hover {
+    #stage:not(.dealing) .card:hover {
       filter: brightness(1.18) drop-shadow(0 0 10px rgba(201,168,76,.55));
       z-index: 400 !important;
     }
@@ -181,6 +226,8 @@
   <div class="stage-wrap">
     <div id="stage">
       <svg id="rosace" viewBox="0 0 1000 1000" aria-hidden="true"></svg>
+      <div class="burst"></div>
+      <div id="deck-heart"></div>
     </div>
   </div>
   <footer>
@@ -190,6 +237,9 @@
 <script>
 (function () {
   const N = 13, K = 4, CX = 500, CY = 500, R = 392;
+  const DEAL_MS = 4400;
+  const STAGGER_MS = 1680;
+  const FLIGHT_MS = DEAL_MS - STAGGER_MS;
   const RANKS = ["A","2","3","4","5","6","7","8","9","T","J","Q","K"];
   const SUITS = [
     { id: "S", pip: "♠", red: false, name: "pique" },
@@ -246,7 +296,9 @@
   function toCanvas(sites) {
     return sites.map((s) => Object.assign({}, s, {
       x: CX + R * s.ux,
-      y: CY + R * s.uy
+      y: CY + R * s.uy,
+      radius: Math.hypot(s.ux, s.uy),
+      angle: Math.atan2(s.uy, s.ux)
     }));
   }
 
@@ -301,8 +353,137 @@
 
   const SITES = toCanvas(sitesUnit());
   const stage = document.getElementById("stage");
+  const heart = document.getElementById("deck-heart");
+  const btnShuffle = document.getElementById("btn-shuffle");
+  const btnHide = document.getElementById("btn-hide");
   let seed = 0;
   let placements = [];
+  let dealing = false;
+  let dealTimer = 0;
+  const running = [];
+
+  function stopAnims() {
+    running.splice(0).forEach(function (a) { try { a.cancel(); } catch (e) {} });
+    if (dealTimer) {
+      clearTimeout(dealTimer);
+      dealTimer = 0;
+    }
+  }
+
+  function dealOrder() {
+    return placements
+      .map(function (p, idx) { return { idx: idx, r: p.site.radius, a: p.site.angle }; })
+      .sort(function (u, v) { return u.r - v.r || u.a - v.a; })
+      .map(function (o) { return o.idx; });
+  }
+
+  function makeCard(p, idx) {
+    const rot = ((p.site.id * 17) % 13) - 6;
+    const z = 20 + Math.round(p.site.y) + (p.site.kind === "tip" ? 80 : 0);
+    const el = document.createElement("div");
+    el.className = "card" + (p.revealed ? " revealed" : "");
+    el.style.left = "50%";
+    el.style.top = "50%";
+    el.style.setProperty("--rot", rot + "deg");
+    el.style.zIndex = String(z);
+    el.dataset.idx = String(idx);
+    el.dataset.rot = String(rot);
+    el.dataset.z = String(z);
+    el.dataset.tx = (p.site.x / 10).toFixed(4) + "%";
+    el.dataset.ty = (p.site.y / 10).toFixed(4) + "%";
+    el.title = p.revealed ? p.card.label : "Face cachée";
+    el.innerHTML =
+      '<div class="card-inner">' +
+        '<div class="face back"></div>' +
+        '<div class="face front' + (p.card.red ? " red" : "") + '">' +
+          '<div class="corner tl">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>" +
+          '<div class="pip">' + p.card.pip + "</div>" +
+          '<div class="corner br">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>" +
+        "</div>" +
+      "</div>";
+    el.addEventListener("click", function () {
+      if (dealing) return;
+      p.revealed = !p.revealed;
+      el.classList.toggle("revealed", p.revealed);
+      el.title = p.revealed ? p.card.label : "Face cachée";
+      updateList();
+    });
+    return el;
+  }
+
+  function throwDeal() {
+    stopAnims();
+    dealing = true;
+    stage.classList.add("dealing");
+    btnShuffle.disabled = true;
+    btnHide.disabled = true;
+    heart.classList.add("visible");
+    const burst = stage.querySelector(".burst");
+    if (burst) {
+      const clone = burst.cloneNode(true);
+      burst.parentNode.replaceChild(clone, burst);
+    }
+
+    const order = dealOrder();
+    const n = Math.max(order.length - 1, 1);
+
+    order.forEach(function (idx, rank) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      if (!el) return;
+      const tx = el.dataset.tx;
+      const ty = el.dataset.ty;
+      const rot = Number(el.dataset.rot);
+      const spin = (rank % 2 ? -1 : 1) * (110 + (rank * 11) % 70);
+      const delay = (rank / n) * STAGGER_MS;
+      el.style.zIndex = String(600 - rank);
+
+      const anim = el.animate([
+        {
+          offset: 0,
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%) rotate(" + spin + "deg) scale(0.86)",
+          easing: "ease-out"
+        },
+        {
+          offset: 0.62,
+          left: tx,
+          top: ty,
+          transform: "translate(-50%, -58%) rotate(" + (rot * 0.35) + "deg) scale(1.08)"
+        },
+        {
+          offset: 1,
+          left: tx,
+          top: ty,
+          transform: "translate(-50%, -50%) rotate(" + rot + "deg) scale(1)"
+        }
+      ], {
+        duration: FLIGHT_MS,
+        delay: delay,
+        easing: "cubic-bezier(0.14, 0.82, 0.18, 1)",
+        fill: "forwards"
+      });
+      running.push(anim);
+    });
+
+    document.getElementById("revealed").innerHTML = "<em>Lancé — les cartes trouvent leurs sites…</em>";
+
+    dealTimer = setTimeout(function () {
+      dealing = false;
+      stage.classList.remove("dealing");
+      heart.classList.remove("visible");
+      btnShuffle.disabled = false;
+      btnHide.disabled = false;
+      stage.querySelectorAll(".card").forEach(function (el) {
+        el.style.left = el.dataset.tx;
+        el.style.top = el.dataset.ty;
+        el.style.transform = "translate(-50%, -50%) rotate(" + el.dataset.rot + "deg)";
+        el.style.zIndex = el.dataset.z;
+      });
+      stopAnims();
+      updateList();
+    }, DEAL_MS);
+  }
 
   function deal(nextSeed) {
     seed = nextSeed >>> 0;
@@ -312,49 +493,39 @@
     if (SITES.length !== 52) {
       console.error("Sites:", SITES.length, "attendu 52");
     }
-    placements = SITES.map((site, i) => ({
-      site, card: deck[i], revealed: false
-    }));
-    document.getElementById("seed-label").textContent = "seed " + seed + " · " + SITES.length + " sites";
-    render();
+    placements = SITES.map(function (site, i) {
+      return { site: site, card: deck[i], revealed: false };
+    });
+    document.getElementById("seed-label").textContent = "seed " + seed + " · " + SITES.length + " sites · 4,4 s";
+    render(true);
   }
 
-  function render() {
-    stage.querySelectorAll(".card").forEach((el) => el.remove());
+  function render(withThrow) {
+    stopAnims();
+    stage.querySelectorAll(".card").forEach(function (el) { el.remove(); });
     drawMat(SITES);
-    placements.forEach((p, idx) => {
-      const rot = ((p.site.id * 17) % 13) - 6;
-      const z = 20 + Math.round(p.site.y) + (p.site.kind === "tip" ? 80 : 0);
-      const el = document.createElement("div");
-      el.className = "card" + (p.revealed ? " revealed" : "");
-      el.style.left = (p.site.x / 10) + "%";
-      el.style.top = (p.site.y / 10) + "%";
-      el.style.setProperty("--rot", rot + "deg");
-      el.style.zIndex = String(z);
-      el.dataset.idx = String(idx);
-      el.title = p.revealed ? p.card.label : "Face cachée";
-      el.innerHTML =
-        '<div class="card-inner">' +
-          '<div class="face back"></div>' +
-          '<div class="face front' + (p.card.red ? " red" : "") + '">' +
-            '<div class="corner tl">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>" +
-            '<div class="pip">' + p.card.pip + "</div>" +
-            '<div class="corner br">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>" +
-          "</div>" +
-        "</div>";
-      el.addEventListener("click", function () {
-        p.revealed = !p.revealed;
-        el.classList.toggle("revealed", p.revealed);
-        el.title = p.revealed ? p.card.label : "Face cachée";
-        updateList();
-      });
-      stage.appendChild(el);
+    placements.forEach(function (p, idx) {
+      stage.appendChild(makeCard(p, idx));
     });
-    updateList();
+    if (withThrow) {
+      throwDeal();
+    } else {
+      stage.querySelectorAll(".card").forEach(function (el) {
+        el.style.left = el.dataset.tx;
+        el.style.top = el.dataset.ty;
+        el.style.transform = "translate(-50%, -50%) rotate(" + el.dataset.rot + "deg)";
+      });
+      dealing = false;
+      stage.classList.remove("dealing");
+      heart.classList.remove("visible");
+      btnShuffle.disabled = false;
+      btnHide.disabled = false;
+      updateList();
+    }
   }
 
   function updateList() {
-    const up = placements.filter((p) => p.revealed).map((p) => p.card.label);
+    const up = placements.filter(function (p) { return p.revealed; }).map(function (p) { return p.card.label; });
     const box = document.getElementById("revealed");
     if (!up.length) {
       box.innerHTML = "<em>Clique une carte pour la révéler.</em>";
@@ -363,12 +534,14 @@
     }
   }
 
-  document.getElementById("btn-shuffle").addEventListener("click", function () {
+  btnShuffle.addEventListener("click", function () {
+    if (dealing) return;
     deal((Math.random() * 0xffffffff) >>> 0);
   });
-  document.getElementById("btn-hide").addEventListener("click", function () {
-    placements.forEach((p) => { p.revealed = false; });
-    render();
+  btnHide.addEventListener("click", function () {
+    if (dealing) return;
+    placements.forEach(function (p) { p.revealed = false; });
+    render(false);
   });
 
   deal((Math.random() * 0xffffffff) >>> 0);
