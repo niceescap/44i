@@ -1114,6 +1114,9 @@
     const log = document.getElementById("chat-log");
     log.innerHTML = "";
     setStatus("L’oracle prépare l’interprétation…");
+    if (document.activeElement && document.activeElement.blur) {
+      document.activeElement.blur();
+    }
     requestInterpretation();
   }
 
