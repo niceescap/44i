@@ -1130,10 +1130,23 @@
     requestInterpretation();
   }
 
-  function requestInterpretation() {
-    /* Prochaine étape : POST /api/v2/sessions/{id}/interpret
-       Le premier message du chat sera la synthèse LLM.
-       Les logs (désignations + paire + apport + remarquables) formeront le contexte. */
+  async function requestInterpretation() {
+    if (!sessionId) return;
+    setStatus("L’oracle prépare l’interprétation…");
+    try {
+      const data = await api("/api/v2/sessions/" + sessionId + "/interpret", {
+        method: "POST",
+        body: "{}"
+      });
+      if (data.content) {
+        appendBubble("oracle", data.content);
+      }
+      setStatus("");
+    } catch (err) {
+      appendBubble("oracle", "L’oracle est silencieux un instant.");
+      setStatus("");
+      console.error(err);
+    }
   }
 
   async function revealOnServer(idx, el) {
