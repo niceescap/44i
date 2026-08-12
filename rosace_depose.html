@@ -1020,44 +1020,76 @@
     });
   }
 
-  function formatRem(list) {
-    if (!list || !list.length) return "";
-    return list.map(function (b) {
-      var sig = b.signification ? " — " + b.signification : "";
-      return "REMARQUABLE " + (b.sous_type || "").toUpperCase() + " " + (b.cartes || []).join("+") + sig;
-    }).join("\n");
+  function setStatus(text) {
+    const el = document.getElementById("status");
+    if (el) el.textContent = text;
   }
 
-  function formatEvent(ev) {
-    if (!ev) return "";
-    var rem = formatRem(ev.remarquables);
-    var body = "";
-    if (ev.type === "designation") {
-      body = "DÉSIGNATION " + ev.carte + " — " + (ev.designation || ev.contenu || "");
-    } else if (ev.type === "paire") {
-      body = "PAIRE " + (ev.cartes || []).join("+") + "\n"
-        + (ev.contenu_enrichi || ((ev.designation || "") + " — " + (ev.contenu || "")));
-    } else if (ev.type === "apport") {
-      body = "APPORT " + ev.carte + " sur " + ev.sur + "\n"
-        + (ev.contenu_enrichi || ((ev.designation || "") + " — " + (ev.qualite || "") + " | " + (ev.conclusion || "")));
-    } else {
-      body = JSON.stringify(ev, null, 2);
+  function renderSymbolLog() {
+    const box = document.getElementById("symbol-log");
+    if (!box) return;
+    if (!logLines.length) {
+      box.innerHTML = '<div class="line hint">Choisis trois cartes face cachée.</div>';
+      return;
     }
-    return rem ? body + "\n" + rem : body;
+    box.innerHTML = logLines.map(function (t) {
+      return '<div class="line"></div>';
+    }).join("");
+    Array.prototype.forEach.call(box.querySelectorAll(".line"), function (el, i) {
+      el.textContent = logLines[i];
+    });
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function addLog(text) {
+    if (!text) return;
+    logLines.push(text);
+    renderSymbolLog();
+  }
+
+  function appendDesignationFromEvent(ev) {
+    if (!ev) return;
+    var n = logLines.filter(function (l) { return /^\d+\s·/.test(l); }).length + 1;
+    addLog(n + " · " + (ev.carte || "") + " — " + (ev.designation || ev.contenu || ""));
+  }
+
+  function appendContextLogs() {
+    if (contextLogsAdded) return;
+    contextLogsAdded = true;
+    if (lastLogs && lastLogs.length) {
+      lastLogs.forEach(function (line) {
+        if (/^\d+\s·/.test(line)) return;
+        addLog(line);
+      });
+      return;
+    }
+    lastSymbolique.forEach(function (ev) {
+      if (ev.type === "paire") {
+        addLog("Paire " + (ev.cartes || []).join("+") + " — " + (ev.contenu_enrichi || ev.contenu || ""));
+      } else if (ev.type === "apport") {
+        addLog("Apport " + ev.carte + " sur " + ev.sur + " — " + (ev.contenu_enrichi || ev.conclusion || ""));
+      }
+      (ev.remarquables || []).forEach(function (b) {
+        var extra = b.signification || b.qualite || "";
+        addLog(("Remarquable " + (b.sous_type || "") + " " + (b.cartes || []).join("+") + (extra ? " — " + extra : "")).trim());
+      });
+    });
   }
 
   function openChat() {
+    appendContextLogs();
     const log = document.getElementById("chat-log");
     log.innerHTML = "";
-    if (lastSymbolique.length) {
-      lastSymbolique.forEach(function (ev) {
-        appendBubble("oracle", formatEvent(ev));
-      });
-    } else {
-      appendBubble("oracle", "Trois cartes. En attente du contexte Python.");
-    }
+    setStatus("L’oracle prépare l’interprétation…");
     const input = document.getElementById("chat-input");
     if (input) input.focus();
+    requestInterpretation();
+  }
+
+  function requestInterpretation() {
+    /* Prochaine étape : POST /api/v2/sessions/{id}/interpret
+       Le premier message du chat sera la synthèse LLM.
+       Les logs (désignations + paire + apport + remarquables) formeront le contexte. */
   }
 
   async function revealOnServer(idx, el) {
