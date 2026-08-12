@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .models import Card, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
+from .llm_handler_v2 import cold_start_message, complete
 from .rosace_dealer import RosaceStore
 from .session_store import Session, SessionStore
 from .symbolic import CARDS, QUALITIES, card_info, interpretation, pair_symbol
