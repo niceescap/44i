@@ -95,7 +95,7 @@
       position: absolute;
       left: 50%; top: 50%;
       width: 48px; height: 68px;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%) scale(0.72);
       border-radius: 6px;
       pointer-events: none;
       opacity: 0;
@@ -106,8 +106,12 @@
         6px 6px 0 #3a0e1c,
         0 0 24px rgba(201,168,76,.25);
       z-index: 2;
+      transition: opacity .22s ease, transform .22s ease;
     }
-    #deck-heart.visible { opacity: 1; }
+    #deck-heart.visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
     #deck-heart::after {
       content: "✦";
       position: absolute; inset: 0;
