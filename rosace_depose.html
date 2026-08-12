@@ -1230,27 +1230,11 @@
 
   function updateList() {
     const box = document.getElementById("revealed");
-    const labels = chosen.map(function (idx) { return placements[idx].card.label; });
-    const last = lastSymbolique.length ? lastSymbolique[lastSymbolique.length - 1] : null;
-    const encart = last ? (last.designation || last.contenu || "") : "";
-    if (phase === "hand" || phase === "oracle") {
-      box.textContent = "Main — " + labels.join("   ");
-      return;
-    }
-    if (!labels.length) {
-      box.innerHTML = "<em>Clique une carte pour la révéler.</em>";
-    } else {
-      box.textContent = labels.length + " / 3 — " + labels.join("   ")
-        + (encart ? "  ·  " + encart : "");
-    }
+    if (box) box.textContent = "";
   }
 
   btnShuffle.addEventListener("click", function () {
     if (dealing) return;
-    deal();
-  });
-  btnHide.addEventListener("click", function () {
-    if (dealing || phase !== "table") return;
     deal();
   });
   document.getElementById("chat-form").addEventListener("submit", async function (ev) {
