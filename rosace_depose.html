@@ -723,20 +723,8 @@
       "</div>";
     el.addEventListener("click", function () {
       if (dealing || phase !== "table") return;
-      if (p.revealed) {
-        p.revealed = false;
-        el.classList.remove("revealed");
-        chosen = chosen.filter(function (i) { return i !== idx; });
-        el.title = "Face cachée";
-        updateList();
-        return;
-      }
-      p.revealed = true;
-      el.classList.add("revealed");
-      chosen.push(idx);
-      el.title = p.card.label;
-      updateList();
-      if (chosen.length >= 3) gatherToHand();
+      if (p.revealed) return;
+      revealOnServer(idx, el);
     });
     return el;
   }
