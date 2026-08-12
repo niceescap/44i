@@ -422,7 +422,7 @@
     { id: "C", pip: "♣", red: false, name: "trèfle" }
   ];
   const RANK_FACE = { A:"A", T:"10", J:"V", Q:"D", K:"R" };
-  const API = (location.protocol === "file:") ? "http://127.0.0.1:3252" : "";
+  const API = (location.protocol === "file:") ? "http://127.0.0.1:8001" : "";
 
   function cardFromCode(code) {
     const rank = code.slice(0, -1);
