@@ -131,6 +131,13 @@ class QueryPipeline:
             pass
         return "(paire non trouvée)"
 
+    def designation(self, code: str) -> str:
+        return str(self.cartes.get(code, {}).get("symbole", ""))
+
+    def nom(self, code: str) -> str:
+        item = self.cartes.get(code, {})
+        return str(item.get("nom") or item.get("intitule") or code)
+
     def fetch_qualite(self, carte_base: str, carte_apport: str) -> dict[str, str]:
         cle = f"{carte_base}|{carte_apport[-1]}"
         q_data = self.qualites.get(cle, {}) if isinstance(self.qualites, dict) else {}
