@@ -1048,25 +1048,50 @@
     log.scrollTop = log.scrollHeight;
   }
 
-  function deal(nextSeed) {
-    relayoutSites();
-    seed = nextSeed >>> 0;
-    if (!seed) seed = (Math.random() * 0xffffffff) >>> 0;
-    const rnd = mulberry32(seed);
-    const deck = shuffle(fullDeck(), rnd);
-    if (SITES.length !== 52) {
-      console.error("Sites:", SITES.length, "attendu 52");
-    }
+  async function deal() {
     chosen = [];
+    lastSymbolique = [];
     phase = "table";
     document.body.classList.remove("oracle");
     document.getElementById("hand-rail").innerHTML = "";
     document.getElementById("chat-log").innerHTML = "";
-    placements = SITES.map(function (site, i) {
-      return { site: site, card: deck[i], revealed: false };
-    });
-    document.getElementById("seed-label").textContent = "seed " + seed + " · " + SITES.length + " sites · 4,4 s";
-    render(true);
+    const rect = stage.getBoundingClientRect();
+    try {
+      const data = await api("/api/v2/sessions", {
+        method: "POST",
+        body: JSON.stringify({
+          stage_width: rect.width || 360,
+          stage_height: rect.height || 360
+        })
+      });
+      sessionId = data.session_id;
+      SITES = (data.sites || []).map(function (s) {
+        return {
+          id: s.id,
+          kind: s.kind,
+          x: s.x,
+          y: s.y,
+          radius: Math.hypot((s.x - 500) / 392, (s.y - 500) / 392),
+          angle: Math.atan2(s.y - 500, s.x - 500)
+        };
+      });
+      if (SITES.length !== 52) {
+        console.error("Sites:", SITES.length, "attendu 52");
+      }
+      placements = SITES.map(function (site) {
+        return {
+          site: site,
+          card: { code: "?", rank: "?", suit: "?", pip: "✦", red: false, label: "✦" },
+          revealed: false
+        };
+      });
+      document.getElementById("seed-label").textContent = "session " + sessionId.slice(0, 8) + " · " + SITES.length + " sites · Python";
+      render(true);
+    } catch (err) {
+      console.error(err);
+      document.getElementById("seed-label").textContent = "API indisponible — lance le backend :3252";
+      document.getElementById("revealed").textContent = String(err.message || err);
+    }
   }
 
   function render(withThrow) {
