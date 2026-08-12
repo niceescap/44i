@@ -57,10 +57,18 @@ def _load_paires():
         return None
 
 
+def _normalize_code(code: str) -> str:
+    """detector_rem attend 10X, pas TX."""
+    code = code.upper()
+    if len(code) >= 2 and code[:-1] == "T":
+        return "10" + code[-1]
+    return code
+
+
 def _detecter(cartes: list[str]) -> list[dict]:
     try:
         from detector_rem import detecter_remarquables
-        return detecter_remarquables(cartes)
+        return detecter_remarquables([_normalize_code(c) for c in cartes])
     except Exception as exc:
         print(f"[query] remarquables indisponibles: {exc}", flush=True)
         return []
