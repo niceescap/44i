@@ -612,6 +612,14 @@
   const GEOM = toCanvas(sitesUnit());
   let SITES = GEOM.slice();
   const stage = document.getElementById("stage");
+
+  function relayoutSites() {
+    const rect = stage.getBoundingClientRect();
+    if (rect.width < 40 || rect.height < 40) return false;
+    const box = cardBoxInSiteUnits();
+    SITES = separateSites(GEOM, box.w, box.h);
+    return true;
+  }
   const heart = document.getElementById("deck-heart");
   const btnShuffle = document.getElementById("btn-shuffle");
   const btnHide = document.getElementById("btn-hide");
