@@ -379,3 +379,67 @@ def symbolic_remarkables(cards: str = Query(description="Codes séparés par des
 def symbolic_summary(session_id: str) -> dict[str, str]:
     session = get_session(session_id)
     return {"summary": session.summary or interpretation(list(session.revealed.values()))}
+
+
+# ---------- Workflow v2 : rosace 52 + 3 clics + brut testeur_query ----------
+
+class V2CreateRequest(BaseModel):
+    stage_width: float = 360
+    stage_height: float = 360
+
+
+class V2RevealRequest(BaseModel):
+    site_id: int = Field(ge=0, le=51)
+
+
+def _rosace_session(session_id: str):
+    session = rosace_store.get(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session inexistante ou expirée")
+    return session
+
+
+@app.get("/rosace", include_in_schema=False)
+def rosace_page() -> FileResponse:
+    html = REPO_ROOT / "rosace_depose.html"
+    if not html.exists():
+        raise HTTPException(status_code=404, detail="rosace_depose.html introuvable")
+    return FileResponse(html)
+
+
+@app.post("/api/v2/sessions")
+def v2_create_session(payload: V2CreateRequest | None = None) -> dict[str, Any]:
+    body = payload or V2CreateRequest()
+    session = rosace_store.create(body.stage_width, body.stage_height)
+    return session.public_state()
+
+
+@app.get("/api/v2/sessions/{session_id}")
+def v2_get_session(session_id: str) -> dict[str, Any]:
+    return _rosace_session(session_id).public_state()
+
+
+@app.post("/api/v2/sessions/{session_id}/reveal")
+def v2_reveal(session_id: str, payload: V2RevealRequest) -> dict[str, Any]:
+    try:
+        session = rosace_store.reveal(session_id, payload.site_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Session inexistante ou expirée")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return session.public_state()
+
+
+@app.post("/api/v2/sessions/{session_id}/messages")
+def v2_message(session_id: str, payload: MessageRequest) -> dict[str, Any]:
+    session = _rosace_session(session_id)
+    if session.phase != "oracle":
+        raise HTTPException(status_code=400, detail="La conversation s'ouvre après la troisième carte")
+    text = payload.message.strip()
+    if not session.question:
+        session.question = text
+    session.messages.append({"role": "user", "content": text})
+    return {
+        "symbolique": session.pipeline.snapshot()["symbolique"],
+        "messages": session.messages,
+    }
