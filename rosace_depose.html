@@ -1152,7 +1152,12 @@
   async function deal() {
     chosen = [];
     lastSymbolique = [];
+    lastLogs = [];
+    logLines = [];
+    contextLogsAdded = false;
     phase = "table";
+    setStatus("Choisis trois cartes face cachée.");
+    renderSymbolLog();
     document.body.classList.remove("oracle");
     document.getElementById("hand-rail").innerHTML = "";
     document.getElementById("chat-log").innerHTML = "";
