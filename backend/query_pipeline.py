@@ -155,12 +155,15 @@ class QueryPipeline:
         self.cartes_posees.append(carte)
         balises = _detecter(self.cartes_posees)
 
+        desig = self.designation(carte)
+
         if self.etat == "designation":
-            carte_def = self.cartes[carte]
             self.symbolique.append({
                 "carte": carte,
+                "nom": self.nom(carte),
                 "type": "designation",
-                "contenu": carte_def.get("symbole", ""),
+                "designation": desig,
+                "contenu": desig,
                 "remarquables": balises,
             })
             self.carte_paire = carte
@@ -168,25 +171,39 @@ class QueryPipeline:
             self.etat = "paire"
 
         elif self.etat == "paire":
-            sig = self.fetch_paire(self.carte_paire or carte, carte)
+            base = self.carte_paire or carte
+            sig = self.fetch_paire(base, carte)
             self.symbolique.append({
-                "cartes": [self.carte_paire, carte],
+                "cartes": [base, carte],
                 "type": "paire",
+                "designation": desig,
+                "designations": {
+                    base: self.designation(base),
+                    carte: desig,
+                },
                 "contenu": sig,
+                "contenu_enrichi": f"{desig} — {sig}",
                 "remarquables": balises,
             })
             self.carte_courante = carte
             self.etat = "apport"
 
         elif self.etat == "apport":
-            q = self.fetch_qualite(self.carte_courante or carte, carte)
+            sur = self.carte_courante or carte
+            q = self.fetch_qualite(sur, carte)
+            expression = " | ".join(
+                part for part in (q["texte"], q["qualite"], q["conclusion"]) if part
+            )
             self.symbolique.append({
                 "carte": carte,
+                "nom": self.nom(carte),
                 "type": "apport",
-                "sur": self.carte_courante,
+                "sur": sur,
+                "designation": desig,
                 "texte": q["texte"],
                 "qualite": q["qualite"],
                 "conclusion": q["conclusion"],
+                "contenu_enrichi": f"{desig} — {expression}",
                 "remarquables": balises,
             })
             self.carte_paire = carte
@@ -195,9 +212,34 @@ class QueryPipeline:
 
         return self.snapshot()
 
+    def contexte_llm(self) -> dict[str, Any]:
+        """Payload prêt pour le LLM : désignations + paire + apport + remarquables."""
+        by_type = {item.get("type"): item for item in self.symbolique}
+        remarquables: list[dict] = []
+        seen: set[str] = set()
+        for item in self.symbolique:
+            for balise in item.get("remarquables") or []:
+                key = json.dumps(balise, ensure_ascii=False, sort_keys=True)
+                if key in seen:
+                    continue
+                seen.add(key)
+                remarquables.append(balise)
+        return {
+            "type": "consultation_3cartes",
+            "version": "2",
+            "cartes_revelees": list(self.cartes_posees),
+            "triple_contexte": {
+                "designation": by_type.get("designation"),
+                "paire": by_type.get("paire"),
+                "apport": by_type.get("apport"),
+            },
+            "remarquables": remarquables,
+        }
+
     def snapshot(self) -> dict[str, Any]:
         return {
             "symbolique": list(self.symbolique),
             "etat": self.etat,
             "cartes_posees": list(self.cartes_posees),
+            "contexte_llm": self.contexte_llm(),
         }
