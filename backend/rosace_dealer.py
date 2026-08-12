@@ -72,6 +72,7 @@ class RosaceSession:
             "sites": sites,
             "chosen": list(self.chosen),
             "symbolique": snap["symbolique"],
+            "logs": snap.get("logs", []),
             "contexte_llm": snap.get("contexte_llm", {}),
             "messages": list(self.messages),
         }
