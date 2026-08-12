@@ -8,15 +8,28 @@ from typing import Any
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from .models import Card, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
+from .rosace_dealer import RosaceStore
 from .session_store import Session, SessionStore
 from .symbolic import CARDS, QUALITIES, card_info, interpretation, pair_symbol
 
 app = FastAPI(title="44 interprètes API", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 store = SessionStore()
+rosace_store = RosaceStore()
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 WEB_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
