@@ -60,13 +60,41 @@ def _detecter(cartes: list[str]) -> list[dict]:
         return []
 
 
+_CARTES: dict | None = None
+_QUALITES = None
+_PAIRES = None
+_PAIRES_READY = False
+
+
+def _shared_cartes() -> dict:
+    global _CARTES
+    if _CARTES is None:
+        _CARTES = _load_cartes()
+    return _CARTES
+
+
+def _shared_qualites():
+    global _QUALITES
+    if _QUALITES is None:
+        _QUALITES = _load_json("qualites.json", {})
+    return _QUALITES
+
+
+def _shared_paires():
+    global _PAIRES, _PAIRES_READY
+    if not _PAIRES_READY:
+        _PAIRES = _load_paires()
+        _PAIRES_READY = True
+    return _PAIRES
+
+
 class QueryPipeline:
     """État designation → paire → apport, stoppable à 3 cartes."""
 
     def __init__(self) -> None:
-        self.cartes = _load_cartes()
-        self.qualites = _load_json("qualites.json", {})
-        self.col_paires = _load_paires()
+        self.cartes = _shared_cartes()
+        self.qualites = _shared_qualites()
+        self.col_paires = _shared_paires()
         self.reset()
 
     def reset(self) -> None:
