@@ -922,6 +922,15 @@
     placements.forEach(function (p) { p.revealed = false; });
     render(false);
   });
+  document.getElementById("chat-form").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (phase !== "oracle") return;
+    const input = document.getElementById("chat-input");
+    const text = (input.value || "").trim();
+    if (!text) return;
+    appendBubble("user", text);
+    input.value = "";
+  });
 
   deal((Math.random() * 0xffffffff) >>> 0);
 })();
