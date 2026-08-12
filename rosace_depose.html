@@ -899,7 +899,7 @@
   function updateList() {
     const box = document.getElementById("revealed");
     const labels = chosen.map(function (idx) { return placements[idx].card.label; });
-    if (phase === "hand") {
+    if (phase === "hand" || phase === "oracle") {
       box.textContent = "Main — " + labels.join("   ");
       return;
     }
