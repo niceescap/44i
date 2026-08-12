@@ -419,6 +419,7 @@
   function throwDeal() {
     stopAnims();
     dealing = true;
+    const thisDeal = ++dealId;
     stage.classList.add("dealing");
     btnShuffle.disabled = true;
     btnHide.disabled = true;
