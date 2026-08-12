@@ -1044,7 +1044,13 @@
 
   btnShuffle.addEventListener("click", function () {
     if (dealing) return;
+    (function startDeal() {
+    if (!relayoutSites()) {
+      requestAnimationFrame(startDeal);
+      return;
+    }
     deal((Math.random() * 0xffffffff) >>> 0);
+  })();
   });
   btnHide.addEventListener("click", function () {
     if (dealing || phase !== "table") return;
