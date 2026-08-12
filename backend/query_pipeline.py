@@ -236,10 +236,46 @@ class QueryPipeline:
             "remarquables": remarquables,
         }
 
+    def logs(self) -> list[str]:
+        """Lignes destinées à l'affichage et, plus tard, au LLM."""
+        lines: list[str] = []
+        n = 0
+        seen: set[str] = set()
+        for item in self.symbolique:
+            kind = item.get("type")
+            if kind == "designation":
+                n += 1
+                lines.append(
+                    f"{n} · {item.get('carte')} — {item.get('designation') or item.get('contenu') or ''}"
+                )
+            elif kind == "paire":
+                cartes = "+".join(item.get("cartes") or [])
+                lines.append(
+                    f"Paire {cartes} — {item.get('contenu_enrichi') or item.get('contenu') or ''}"
+                )
+            elif kind == "apport":
+                lines.append(
+                    f"Apport {item.get('carte')} sur {item.get('sur')} — "
+                    f"{item.get('contenu_enrichi') or item.get('conclusion') or ''}"
+                )
+            for balise in item.get("remarquables") or []:
+                key = json.dumps(balise, ensure_ascii=False, sort_keys=True)
+                if key in seen:
+                    continue
+                seen.add(key)
+                extra = balise.get("signification") or balise.get("qualite") or ""
+                cards = "+".join(balise.get("cartes") or [])
+                line = f"Remarquable {balise.get('sous_type', '')} {cards}".strip()
+                if extra:
+                    line += f" — {extra}"
+                lines.append(line)
+        return lines
+
     def snapshot(self) -> dict[str, Any]:
         return {
             "symbolique": list(self.symbolique),
             "etat": self.etat,
             "cartes_posees": list(self.cartes_posees),
+            "logs": self.logs(),
             "contexte_llm": self.contexte_llm(),
         }
