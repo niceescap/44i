@@ -811,45 +811,49 @@
 
   function unveilOracle(keep, thisDeal) {
     phase = "oracle";
-    document.body.classList.add("oracle");
     heart.classList.remove("visible");
+    const rail = document.getElementById("hand-rail");
 
-    keep.forEach(function (idx, i) {
+    const first = keep.map(function (idx, i) {
       const el = stage.querySelector('.card[data-idx="' + idx + '"]');
-      const from = HAND_SLOTS[i];
-      const to = ORACLE_SLOTS[i];
-      if (!el || !from || !to) return;
-      const anim = el.animate([
-        {
-          left: from.left,
-          top: from.top,
-          transform: "translate(-50%, -50%) rotate(" + from.rot + "deg) scale(1.52)"
-        },
-        {
-          left: to.left,
-          top: to.top,
-          transform: "translate(-50%, -50%) rotate(" + to.rot + "deg) scale(2.15)"
-        }
+      if (!el) return null;
+      el.getAnimations().forEach(function (a) { try { a.cancel(); } catch (e) {} });
+      return { el: el, rect: el.getBoundingClientRect(), rot: HAND_SLOTS[i].rot };
+    }).filter(Boolean);
+
+    first.forEach(function (item, i) {
+      const slot = ORACLE_SLOTS[i];
+      item.el.style.left = "auto";
+      item.el.style.top = "auto";
+      item.el.style.transform = "rotate(" + slot.rot + "deg) scale(2.15)";
+      item.el.style.zIndex = String(slot.z);
+      rail.appendChild(item.el);
+    });
+
+    document.body.classList.add("oracle");
+
+    first.forEach(function (item, i) {
+      const slot = ORACLE_SLOTS[i];
+      const last = item.el.getBoundingClientRect();
+      const dx = item.rect.left - last.left;
+      const dy = item.rect.top - last.top;
+      const anim = item.el.animate([
+        { transform: "translate(" + dx + "px," + dy + "px) rotate(" + item.rot + "deg) scale(1.52)" },
+        { transform: "rotate(" + slot.rot + "deg) scale(2.15)" }
       ], {
         duration: UNVEIL_MS,
-        delay: i * 50,
+        delay: i * 40,
         easing: "cubic-bezier(0.2, 0.8, 0.18, 1)",
         fill: "forwards"
       });
-      el.style.zIndex = String(to.z);
       running.push(anim);
     });
 
     Promise.all(running.map(function (a) { return a.finished.catch(function () {}); })).then(function () {
       if (thisDeal !== dealId) return;
-      keep.forEach(function (idx, i) {
-        const el = stage.querySelector('.card[data-idx="' + idx + '"]');
-        const to = ORACLE_SLOTS[i];
-        if (!el || !to) return;
-        el.style.left = to.left;
-        el.style.top = to.top;
-        el.style.transform = "translate(-50%, -50%) rotate(" + to.rot + "deg) scale(2.15)";
-        el.style.zIndex = String(to.z);
+      first.forEach(function (item, i) {
+        const slot = ORACLE_SLOTS[i];
+        item.el.style.transform = "rotate(" + slot.rot + "deg) scale(2.15)";
       });
       running.length = 0;
       dealing = false;
