@@ -587,15 +587,104 @@ def _prospect_path() -> Path:
 def _empty_prospects() -> dict[str, Any]:
     return {
         "updated_at": None,
-        "unique_clicks": 0,
-        "total_clicks": 0,
-        "unique_dons": 0,
-        "total_dons": 0,
-        "emails_count": 0,
-        "clicks": [],
-        "dons": [],
-        "emails": [],
+        "visits": [],
+        "stats": {
+            "visits": 0,
+            "unique_visitors": 0,
+            "unique_ips": 0,
+            "premium_clicks": 0,
+            "unique_premium_visitors": 0,
+            "emails": 0,
+            "don_clicks": 0,
+            "unique_don_ips": 0,
+            "audio_clicks": 0,
+        },
     }
+
+
+def _recompute_stats(data: dict[str, Any]) -> None:
+    visits = data.get("visits") or []
+    premium_visitors: set[str] = set()
+    don_ips: set[str] = set()
+    visitors: set[str] = set()
+    ips: set[str] = set()
+    emails: set[str] = set()
+    premium_clicks = don_clicks = audio_clicks = 0
+    for visit in visits:
+        if visit.get("visitor_id"):
+            visitors.add(visit["visitor_id"])
+        if visit.get("ip"):
+            ips.add(visit["ip"])
+        for ev in visit.get("events") or []:
+            kind = ev.get("type")
+            if kind == "premium_click":
+                premium_clicks += 1
+                if visit.get("visitor_id"):
+                    premium_visitors.add(visit["visitor_id"])
+            elif kind == "don_click":
+                don_clicks += 1
+                if visit.get("ip"):
+                    don_ips.add(visit["ip"])
+            elif kind == "audio_click":
+                audio_clicks += 1
+            elif kind == "premium_email" and ev.get("email"):
+                emails.add(ev["email"])
+    data["stats"] = {
+        "visits": len(visits),
+        "unique_visitors": len(visitors),
+        "unique_ips": len(ips),
+        "premium_clicks": premium_clicks,
+        "unique_premium_visitors": len(premium_visitors),
+        "emails": len(emails),
+        "don_clicks": don_clicks,
+        "unique_don_ips": len(don_ips),
+        "audio_clicks": audio_clicks,
+    }
+
+
+def _migrate_prospects(data: dict[str, Any]) -> dict[str, Any]:
+    if isinstance(data.get("visits"), list):
+        _recompute_stats(data)
+        return data
+    fresh = _empty_prospects()
+    bucket: dict[str, dict[str, Any]] = {}
+
+    def visit_for(visitor: str, ip: str, session_id: str | None) -> dict[str, Any]:
+        key = visitor or ip or "unknown"
+        if key not in bucket:
+            bucket[key] = {
+                "visit_id": f"legacy-{key}",
+                "visitor_id": visitor,
+                "ip": ip,
+                "started_at": None,
+                "session_id": session_id,
+                "events": [],
+            }
+        item = bucket[key]
+        if session_id and not item.get("session_id"):
+            item["session_id"] = session_id
+        if ip and not item.get("ip"):
+            item["ip"] = ip
+        return item
+
+    for row in data.get("clicks") or []:
+        visit = visit_for(row.get("visitor_id") or "", row.get("ip") or "", row.get("session_id"))
+        visit["events"].append({"ts": row.get("ts"), "type": "premium_click"})
+        if not visit["started_at"]:
+            visit["started_at"] = row.get("ts")
+    for row in data.get("dons") or []:
+        visit = visit_for(row.get("visitor_id") or "", row.get("ip") or "", row.get("session_id"))
+        visit["events"].append({"ts": row.get("ts"), "type": "don_click"})
+        if not visit["started_at"]:
+            visit["started_at"] = row.get("ts")
+    for row in data.get("emails") or []:
+        visit = visit_for(row.get("visitor_id") or "", row.get("ip") or "", row.get("session_id"))
+        visit["events"].append({"ts": row.get("ts"), "type": "premium_email", "email": row.get("email")})
+        if not visit["started_at"]:
+            visit["started_at"] = row.get("ts")
+    fresh["visits"] = list(bucket.values())
+    _recompute_stats(fresh)
+    return fresh
 
 
 def _load_prospects() -> dict[str, Any]:
@@ -608,15 +697,7 @@ def _load_prospects() -> dict[str, Any]:
         return _empty_prospects()
     if not isinstance(data, dict):
         return _empty_prospects()
-    data.setdefault("clicks", [])
-    data.setdefault("dons", [])
-    data.setdefault("emails", [])
-    data.setdefault("unique_clicks", 0)
-    data.setdefault("total_clicks", 0)
-    data.setdefault("unique_dons", 0)
-    data.setdefault("total_dons", 0)
-    data.setdefault("emails_count", 0)
-    return data
+    return _migrate_prospects(data)
 
 
 def _save_prospects(data: dict[str, Any]) -> None:
