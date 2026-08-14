@@ -58,6 +58,20 @@
         radial-gradient(ellipse at 72% 82%, rgba(120, 40, 60, .18), transparent 50%),
         radial-gradient(ellipse at 50% 50%, #140a22, #060309);
     }
+    .page-rosace {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: url("/static/brand/rosace.png") center / min(118vmin, 980px) no-repeat;
+      opacity: 0;
+      filter: saturate(1.08);
+      mix-blend-mode: lighten;
+      transition: opacity 1.15s ease;
+    }
+    body.oracle .page-rosace {
+      opacity: .48;
+    }
     header {
       position: relative; z-index: 3;
       width: min(960px, 100%);
