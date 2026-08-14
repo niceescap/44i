@@ -3,14 +3,14 @@ Module de tableau de bord pour la consultation des logs prospects.
 Ajoute la route /logs protégée par un code d'accès.
 """
 import os
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 from collections import Counter
 import json
 
-from fastapi import APIRouter, Request, Response, Depends, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from dotenv import load_dotenv
 
@@ -28,7 +28,15 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY doit être défini dans le fichier .env")
 
-LOG_FILE = os.getenv("PROSPECTS_LOG_FILE", "../logs/prospects.json")
+# Définition robuste du chemin du fichier de logs
+# Le module est dans backend/, donc on remonte d'un cran pour atteindre la racine du projet
+BASE_DIR = Path(__file__).resolve().parent.parent
+DEFAULT_LOG_FILE = BASE_DIR / "logs" / "prospects.json"
+
+# Si PROSPECTS_LOG_FILE est défini dans .env, on l'utilise (chemin absolu ou relatif au CWD)
+# Sinon on utilise le chemin par défaut basé sur l'emplacement du module
+LOG_FILE = os.getenv("PROSPECTS_LOG_FILE", str(DEFAULT_LOG_FILE))
+
 SESSION_COOKIE_NAME = "log_session"
 SESSION_MAX_AGE = 24 * 3600  # 24 heures
 
@@ -303,6 +311,8 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
             border-radius: 0.375rem;
             cursor: pointer;
             font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
         }}
         .btn-logout:hover {{ background: #e9ecef; }}
     </style>
@@ -310,7 +320,11 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
 <body>
     <div class="header">
         <h1>📊 Tableau de bord des logs prospects</h1>
-        <a href="/logs/logout" class="btn-logout">Déconnexion</a>
+        <div style="display: flex; gap: 0.5rem;">
+            <button onclick="location.reload()" class="btn-logout">🔄 Rafraîchir</button>
+            <a href="/logs/export.md" class="btn-logout" target="_blank">📄 Exporter MD</a>
+            <a href="/logs/logout" class="btn-logout">Déconnexion</a>
+        </div>
     </div>
     <p class="updated">Dernière mise à jour : {updated_at}</p>
 
@@ -430,6 +444,76 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
 </html>"""
     return html
 
+# ----------------------------------------------------------------------
+# Génération du Markdown
+# ----------------------------------------------------------------------
+def generate_markdown(data: dict, updated_at: str) -> str:
+    visits = data.get("visits", [])
+    visits_sorted = sorted(visits, key=lambda v: parse_ts(v["started_at"]), reverse=True)
+    stats = recalc_stats(visits)
+
+    # Collecte des emails
+    emails = []
+    for v in visits:
+        email = get_email_from_visit(v)
+        if email:
+            emails.append({
+                "email": email,
+                "visitor_id": v["visitor_id"],
+                "ip": v["ip"],
+                "date": v["started_at"]
+            })
+
+    lines = []
+    lines.append("# Rapport des logs prospects\n")
+    lines.append(f"**Dernière mise à jour** : {updated_at}\n")
+    lines.append("## Statistiques globales\n")
+    lines.append("| Métrique | Valeur |")
+    lines.append("|----------|--------|")
+    lines.append(f"| Visites | {stats['visits']} |")
+    lines.append(f"| Visiteurs uniques | {stats['unique_visitors']} |")
+    lines.append(f"| IP uniques | {stats['unique_ips']} |")
+    lines.append(f"| Clics Premium | {stats['premium_clicks']} |")
+    lines.append(f"| Visiteurs Premium | {stats['unique_premium_visitors']} |")
+    lines.append(f"| Emails | {stats['emails']} |")
+    lines.append(f"| Clics Don | {stats['don_clicks']} |")
+    lines.append(f"| IPs Don uniques | {stats['unique_don_ips']} |")
+    lines.append(f"| Clics Audio | {stats['audio_clicks']} |")
+    lines.append(f"| Deals | {stats['deals']} |\n")
+
+    lines.append("## Visites détaillées\n")
+    for visit in visits_sorted:
+        events = sort_events(visit.get("events", []))
+        duration = get_visit_duration(visit)
+        email = get_email_from_visit(visit)
+        started = visit['started_at'][:19].replace('T', ' ')
+        lines.append(f"### Visite du {started} - IP {visit['ip']}\n")
+        lines.append(f"- **Visiteur** : {visit['visitor_id']}")
+        lines.append(f"- **Début** : {started}")
+        lines.append(f"- **Durée** : {duration}s")
+        if email:
+            lines.append(f"- **Email** : {email}")
+        lines.append(f"- **Session ID** : {visit['session_id']}")
+        lines.append("- **Événements** :")
+        for i, e in enumerate(events, 1):
+            etype = e["type"]
+            ts = e['ts'][:19].replace('T', ' ')
+            email_info = f" (email: {e.get('email', '')})" if etype == "premium_email" else ""
+            lines.append(f"  {i}. `{etype}` à {ts}{email_info}")
+        lines.append("")
+
+    lines.append("## Emails collectés\n")
+    if emails:
+        for em in emails:
+            lines.append(f"- {em['email']} (visiteur {em['visitor_id']}, IP {em['ip']}, le {em['date'][:19].replace('T', ' ')})")
+    else:
+        lines.append("- Aucun email collecté.")
+
+    return "\n".join(lines)
+
+# ----------------------------------------------------------------------
+# Génération de la page de connexion
+# ----------------------------------------------------------------------
 def generate_login_html(error: Optional[str] = None) -> str:
     error_msg = f"<p style='color:red;'>{error}</p>" if error else ""
     return f"""<!DOCTYPE html>
@@ -507,7 +591,7 @@ async def login_submit(request: Request):
     code = form.get("code", "")
     if code == LOG_ACCESS_CODE:
         token = create_session_token()
-        response = RedirectResponse(url="/logs", status_code=status.HTTP_303_SEE_OTHER)
+        response = RedirectResponse(url="/logs", status_code=303)
         response.set_cookie(SESSION_COOKIE_NAME, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax")
         return response
     else:
@@ -519,6 +603,22 @@ async def logout():
     response = RedirectResponse(url="/logs/login")
     response.delete_cookie(SESSION_COOKIE_NAME)
     return response
+
+@router.get("/export.md", response_class=PlainTextResponse)
+async def export_markdown(request: Request):
+    """Exporte les logs au format Markdown (protégé)."""
+    if not get_current_auth(request):
+        return RedirectResponse(url="/logs/login")
+    try:
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        updated_at = data.get("updated_at", "inconnu")
+        md = generate_markdown(data, updated_at)
+        return PlainTextResponse(content=md, media_type="text/markdown")
+    except FileNotFoundError:
+        return PlainTextResponse(content=f"Fichier de logs introuvable : {LOG_FILE}", status_code=500)
+    except json.JSONDecodeError as e:
+        return PlainTextResponse(content=f"Erreur de parsing JSON : {e}", status_code=500)
 
 @router.get("", response_class=HTMLResponse)
 async def dashboard(request: Request):
@@ -532,6 +632,10 @@ async def dashboard(request: Request):
         html = generate_dashboard_html(data, updated_at)
         return HTMLResponse(content=html)
     except FileNotFoundError:
-        return HTMLResponse(content="<h1>Fichier de logs introuvable</h1>", status_code=500)
+        return HTMLResponse(content=f"<h1>Fichier de logs introuvable</h1><p>{LOG_FILE}</p>", status_code=500)
     except json.JSONDecodeError as e:
         return HTMLResponse(content=f"<h1>Erreur de parsing JSON</h1><p>{e}</p>", status_code=500)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return HTMLResponse(content=f"<h1>Erreur interne</h1><p>{str(e)}</p>", status_code=500)
