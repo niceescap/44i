@@ -1429,35 +1429,99 @@
   document.getElementById("chat-input").addEventListener("pointerdown", function () {
     this.removeAttribute("readonly");
   });
+  function visitorId() {
+    var key = "la-rosace-visitor";
+    var id = "";
+    try { id = localStorage.getItem(key) || ""; } catch (e) {}
+    if (!id) {
+      id = (crypto.randomUUID && crypto.randomUUID()) || ("v-" + Date.now() + "-" + Math.random().toString(16).slice(2));
+      try { localStorage.setItem(key, id); } catch (e) {}
+    }
+    return id;
+  }
+
+  function closePremium() {
+    document.getElementById("premium-modal").hidden = true;
+  }
+
+  function openPremium() {
+    document.getElementById("premium-modal").hidden = false;
+    api("/api/v2/prospects/click", {
+      method: "POST",
+      body: JSON.stringify({
+        visitor_id: visitorId(),
+        session_id: sessionId || null
+      })
+    }).catch(function (err) { console.error(err); });
+  }
+
   btnShuffle.addEventListener("click", function () {
     resetWorkflow();
   });
   document.getElementById("btn-don").addEventListener("click", function () {
     window.open("https://paypal.me/NiceeCap/2", "_blank", "noopener");
   });
+  document.getElementById("btn-premium").addEventListener("click", openPremium);
+  document.getElementById("premium-close").addEventListener("click", closePremium);
+  document.querySelector("[data-close-premium]").addEventListener("click", closePremium);
+  document.getElementById("premium-form").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    var input = document.getElementById("premium-email");
+    var email = (input.value || "").trim();
+    if (!email) return;
+    try {
+      await api("/api/v2/prospects/email", {
+        method: "POST",
+        body: JSON.stringify({
+          visitor_id: visitorId(),
+          email: email,
+          session_id: sessionId || null
+        })
+      });
+      input.value = "";
+      document.getElementById("premium-form").hidden = true;
+      document.getElementById("premium-thanks").hidden = false;
+    } catch (err) {
+      console.error(err);
+      document.getElementById("premium-thanks").hidden = false;
+      document.getElementById("premium-thanks").textContent = "L’enregistrement n’a pas abouti. Réessaie dans un instant.";
+    }
+  });
   document.getElementById("btn-export").addEventListener("click", function () {
+    var now = new Date();
+    var pad = function (n) { return String(n).padStart(2, "0"); };
+    var stamp = pad(now.getDate()) + "/" + pad(now.getMonth() + 1) + "/" + now.getFullYear()
+      + " " + pad(now.getHours()) + ":" + pad(now.getMinutes());
     var lines = [
-      "# 44 interprètes",
+      "# La Rosace",
       "",
-      "Consultation symbolique anonyme",
+      "Consultation Symbolique anonyme",
+      "l’Oracle vous guide",
+      "",
+      "Code de session : " + (sessionId || "inconnu"),
+      "Date : " + stamp,
       "",
       "## Avertissement",
       "",
-      "44 interprètes est une application de divertissement. Les interprétations sont issues d'ouvrages ésotériques et générées par intelligence artificielle.",
+      "La Rosace est une application de divertissement. Les interprétations sont issues d'ouvrages ésotériques et générées par intelligence artificielle.",
       "",
-      "## Contexte symbolique",
+      "## Chat",
       ""
     ];
-    (logLines || []).forEach(function (l) { lines.push("- " + l); });
-    lines.push("", "## Échanges", "");
-    document.querySelectorAll("#chat-log .bubble").forEach(function (el) {
-      var who = el.classList.contains("user") ? "Utilisateur" : "Oracle";
-      lines.push("**" + who + " :**", "", el.textContent, "");
-    });
+    var bubbles = document.querySelectorAll("#chat-log .bubble");
+    if (!bubbles.length) {
+      lines.push("(aucun échange)");
+    } else {
+      bubbles.forEach(function (el) {
+        var who = el.classList.contains("user") ? "utilisateur" : "oracle";
+        lines.push(who + ": " + el.textContent);
+        lines.push("");
+      });
+    }
     var blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/markdown;charset=utf-8" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "44-interpretes-consultation.md";
+    a.download = "la-rosace-consultation.md";
     a.click();
     URL.revokeObjectURL(a.href);
   });
