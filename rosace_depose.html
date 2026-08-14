@@ -27,6 +27,16 @@
       flex-direction: column;
       align-items: center;
     }
+    header { order: 1; }
+    #chat-panel { order: 2; }
+    #hand-rail { order: 3; }
+    .stage-wrap { order: 4; }
+    .chat-actions { order: 5; }
+    footer { order: 6; }
+    body.oracle #hand-rail { order: 2; }
+    body.oracle #chat-panel { order: 3; }
+    body.oracle .stage-wrap { order: 4; }
+    body.oracle .chat-actions { order: 5; }
     html, body {
       overflow-x: hidden;
       overflow-y: auto;
