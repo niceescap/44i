@@ -1744,13 +1744,7 @@
 
   function openPremium() {
     document.getElementById("premium-modal").hidden = false;
-    api("/api/v2/prospects/click", {
-      method: "POST",
-      body: JSON.stringify({
-        visitor_id: visitorId(),
-        session_id: sessionId || null
-      })
-    }).catch(function (err) { console.error(err); });
+    trackEvent("premium_click");
   }
 
   btnShuffle.addEventListener("click", function () {
