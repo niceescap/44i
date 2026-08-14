@@ -455,6 +455,122 @@ async def v2_interpret(session_id: str) -> dict[str, Any]:
     return {"content": reply, "messages": session.messages}
 
 
+# ---------- Prospects Premium : clics uniques + e-mails ----------
+
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+_PROSPECT_LOCK = threading.Lock()
+
+
+class ProspectClickRequest(BaseModel):
+    visitor_id: str = Field(min_length=8, max_length=80)
+    session_id: str | None = None
+
+
+class ProspectEmailRequest(BaseModel):
+    visitor_id: str = Field(min_length=8, max_length=80)
+    email: str = Field(min_length=5, max_length=254)
+    session_id: str | None = None
+
+
+def _prospect_dir() -> Path:
+    preferred = Path(os.getenv("ROSACE_LOG_DIR", "/home/44i/logs"))
+    try:
+        preferred.mkdir(parents=True, exist_ok=True)
+        probe = preferred / ".writable"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return preferred
+    except OSError as exc:
+        fallback = REPO_ROOT / "logs"
+        fallback.mkdir(parents=True, exist_ok=True)
+        print(f"[prospects] {preferred} inaccessible ({exc}); fallback {fallback}", flush=True)
+        return fallback
+
+
+def _prospect_path() -> Path:
+    return _prospect_dir() / "prospects.json"
+
+
+def _empty_prospects() -> dict[str, Any]:
+    return {
+        "updated_at": None,
+        "unique_clicks": 0,
+        "total_clicks": 0,
+        "emails_count": 0,
+        "clicks": [],
+        "emails": [],
+    }
+
+
+def _load_prospects() -> dict[str, Any]:
+    path = _prospect_path()
+    if not path.exists():
+        return _empty_prospects()
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return _empty_prospects()
+    if not isinstance(data, dict):
+        return _empty_prospects()
+    data.setdefault("clicks", [])
+    data.setdefault("emails", [])
+    data.setdefault("unique_clicks", 0)
+    data.setdefault("total_clicks", 0)
+    data.setdefault("emails_count", 0)
+    return data
+
+
+def _save_prospects(data: dict[str, Any]) -> None:
+    data["updated_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    path = _prospect_path()
+    tmp = path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(path)
+
+
+def _now_iso() -> str:
+    return datetime.now().astimezone().isoformat(timespec="seconds")
+
+
+@app.post("/api/v2/prospects/click")
+def prospect_click(payload: ProspectClickRequest) -> dict[str, Any]:
+    visitor = payload.visitor_id.strip()
+    with _PROSPECT_LOCK:
+        data = _load_prospects()
+        already = any(item.get("visitor_id") == visitor for item in data["clicks"])
+        data["clicks"].append({
+            "ts": _now_iso(),
+            "visitor_id": visitor,
+            "session_id": payload.session_id,
+            "unique": not already,
+        })
+        data["total_clicks"] = len(data["clicks"])
+        data["unique_clicks"] = sum(1 for item in data["clicks"] if item.get("unique"))
+        _save_prospects(data)
+    return {"ok": True, "unique": not already, "unique_clicks": data["unique_clicks"]}
+
+
+@app.post("/api/v2/prospects/email")
+def prospect_email(payload: ProspectEmailRequest) -> dict[str, Any]:
+    email = payload.email.strip().lower()
+    if not EMAIL_RE.match(email):
+        raise HTTPException(status_code=400, detail="Adresse e-mail invalide")
+    visitor = payload.visitor_id.strip()
+    with _PROSPECT_LOCK:
+        data = _load_prospects()
+        already = any(item.get("email") == email for item in data["emails"])
+        if not already:
+            data["emails"].append({
+                "ts": _now_iso(),
+                "email": email,
+                "visitor_id": visitor,
+                "session_id": payload.session_id,
+            })
+            data["emails_count"] = len(data["emails"])
+            _save_prospects(data)
+    return {"ok": True, "stored": not already, "emails_count": data["emails_count"]}
+
+
 @app.post("/api/v2/sessions/{session_id}/messages")
 async def v2_message(session_id: str, payload: MessageRequest) -> dict[str, Any]:
     session = _rosace_session(session_id)
