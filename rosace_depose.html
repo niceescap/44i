@@ -1527,31 +1527,35 @@
   }
 
   function openChat() {
-    appendContextLogs();
-    const log = document.getElementById("chat-log");
-    log.innerHTML = "";
-    setStatus("L’oracle prépare l’interprétation…");
     if (document.activeElement && document.activeElement.blur) {
       document.activeElement.blur();
     }
+    addGuide(pickPhrase("wait", SAY_WAIT) + " " + pickPhrase("disc", SAY_DISCLAIMER), true);
     requestInterpretation();
   }
 
   async function requestInterpretation() {
     if (!sessionId) return;
-    setStatus("L’oracle prépare l’interprétation…");
     try {
-      const data = await api("/api/v2/sessions/" + sessionId + "/interpret", {
-        method: "POST",
-        body: "{}"
+      var frame = appendOracleFrame();
+      var textEl = frame.querySelector(".bubble-text");
+      var started = false;
+      var content = await readSse("/api/v2/sessions/" + sessionId + "/interpret/stream", {}, function (acc) {
+        if (!started) {
+          started = true;
+          stopGuidePulse();
+        }
+        textEl.textContent = acc;
       });
-      if (data.content) {
-        appendBubble("oracle", data.content);
-      }
-      setStatus("");
+      if (!content) textEl.textContent = "L’oracle est silencieux un instant.";
+      attachAudioButton(frame);
+      enableChatInput();
     } catch (err) {
-      appendBubble("oracle", "L’oracle est silencieux un instant.");
-      setStatus("");
+      stopGuidePulse();
+      var fallback = appendOracleFrame();
+      fallback.querySelector(".bubble-text").textContent = "L’oracle est silencieux un instant.";
+      attachAudioButton(fallback);
+      enableChatInput();
       console.error(err);
     }
   }
