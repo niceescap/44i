@@ -538,6 +538,18 @@ def _now_iso() -> str:
     return datetime.now().astimezone().isoformat(timespec="seconds")
 
 
+def _client_ip(request: Request) -> str:
+    forwarded = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
+    if forwarded:
+        return forwarded
+    real = (request.headers.get("x-real-ip") or "").strip()
+    if real:
+        return real
+    if request.client and request.client.host:
+        return request.client.host
+    return "unknown"
+
+
 @app.post("/api/v2/prospects/click")
 def prospect_click(payload: ProspectClickRequest) -> dict[str, Any]:
     visitor = payload.visitor_id.strip()
