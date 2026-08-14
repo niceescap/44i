@@ -83,38 +83,7 @@
       letter-spacing: .08em;
       font-style: italic;
     }
-    #status {
-      position: relative; z-index: 3;
-      width: min(960px, 100%);
-      padding: 4px 20px 0;
-      color: var(--gold);
-      font-size: 14px;
-      letter-spacing: .03em;
-    }
-    #symbol-log {
-      position: relative; z-index: 3;
-      width: min(960px, 100%);
-      padding: 4px 20px 2px;
-      max-height: 21vh;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      flex: 0 0 auto;
-    }
-    #symbol-log .line {
-      margin: 3px 0;
-      padding: 4px 8px;
-      border-left: 2px solid var(--gold);
-      color: #e9d58f;
-      font-size: 10px;
-      line-height: 1.35;
-      background: linear-gradient(90deg, rgba(30, 20, 40, .45), transparent);
-    }
-    #symbol-log .line.hint {
-      border-left-color: #6b4c8a;
-      color: #9a8150;
-      font-style: italic;
-      background: none;
-    }
+    #status, #symbol-log { display: none; }
     .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     button {
       background: transparent;
