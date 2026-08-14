@@ -1763,14 +1763,7 @@
     var email = (input.value || "").trim();
     if (!email) return;
     try {
-      await api("/api/v2/prospects/email", {
-        method: "POST",
-        body: JSON.stringify({
-          visitor_id: visitorId(),
-          email: email,
-          session_id: sessionId || null
-        })
-      });
+      await trackEvent("premium_email", { email: email });
       input.value = "";
       document.getElementById("premium-form").hidden = true;
       document.getElementById("premium-thanks").hidden = false;
