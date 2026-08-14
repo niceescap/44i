@@ -21,7 +21,14 @@ from .rosace_dealer import RosaceStore
 from .session_store import Session, SessionStore
 from .symbolic import CARDS, QUALITIES, card_info, interpretation, pair_symbol
 
+# --- AJOUT : import du module de logs ---
+from .log_module import router as log_router
+
 app = FastAPI(title="La Rosace API", version="2.0.0")
+
+# --- AJOUT : inclusion du routeur de logs ---
+app.include_router(log_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,13 +36,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 store = SessionStore()
 rosace_store = RosaceStore()
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-
 WEB_DIR = Path(__file__).resolve().parent / "static"
+
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
+
+# ... la suite de ton code continue ici
 
 DISCLAIMER = "La Rosace est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel."
 TOP_SLOTS = [f"{letter}1" for letter in "BCDEFGH"]
