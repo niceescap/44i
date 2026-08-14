@@ -339,45 +339,85 @@
       overflow: hidden;
     }
     .back {
-      background: linear-gradient(135deg, #5a1830 0%, #7a2040 32%, #5a1830 62%, #3d1020 100%);
-      border: 2px solid var(--gold);
-      box-shadow: inset 0 0 0 1px rgba(201,168,76,.28), inset 0 0 12px rgba(0,0,0,.55);
+      background:
+        radial-gradient(ellipse at 50% 38%, #7a2848 0%, #4a1428 58%, #2a0c18 100%);
+      border: 1.5px solid var(--gold);
+      box-shadow: inset 0 0 0 1px rgba(201,168,76,.34), inset 0 0 10px rgba(0,0,0,.5);
     }
     .back::before {
       content: "";
-      position: absolute; inset: 4px;
-      border: 1px solid rgba(201,168,76,.22);
+      position: absolute; inset: 2.5px;
+      border: 1px solid rgba(201,168,76,.3);
       border-radius: 3px;
       background-image:
-        repeating-linear-gradient(45deg, transparent 0 5px, rgba(201,168,76,.09) 5px 6px),
-        repeating-linear-gradient(-45deg, transparent 0 5px, rgba(201,168,76,.09) 5px 6px);
+        repeating-linear-gradient(45deg, transparent 0 3.5px, rgba(201,168,76,.08) 3.5px 4.5px),
+        repeating-linear-gradient(-45deg, transparent 0 3.5px, rgba(201,168,76,.08) 3.5px 4.5px);
     }
     .back::after {
-      content: "✦";
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      color: rgba(201,168,76,.55);
-      font-size: 16px;
+      content: "";
+      position: absolute;
+      inset: 16% 12%;
+      background: url("/static/brand/rosace.png") center / contain no-repeat;
+      mix-blend-mode: lighten;
+      opacity: .86;
+      filter: saturate(1.08);
     }
     .front {
-      background: linear-gradient(160deg, #fdf6e3, #f0e2b8);
+      background:
+        radial-gradient(ellipse at 50% 36%, #fffaf0 0%, #f6e7c4 62%, #e8d09a 100%);
       border: 1px solid #c9a84c;
+      box-shadow: inset 0 0 0 1px rgba(154, 92, 28, .18);
       transform: rotateY(180deg);
       color: var(--black);
+    }
+    .front::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border: 1px solid rgba(120, 48, 48, .16);
+      border-radius: 4px;
+      pointer-events: none;
     }
     .front.red { color: var(--red); }
     .front .corner {
       position: absolute;
-      font-size: 10px; font-weight: bold; line-height: 1.05;
+      font-size: .72em;
+      font-weight: 700;
+      line-height: 1.02;
       text-align: center;
+      letter-spacing: -.03em;
     }
-    .front .corner.tl { top: 3px; left: 4px; }
-    .front .corner.br { bottom: 3px; right: 4px; transform: rotate(180deg); }
-    .front .pip {
-      position: absolute; top: 50%; left: 50%;
+    .front .corner span { display: block; font-size: 1.05em; font-weight: 400; }
+    .front .corner.tl { top: 2px; left: 3px; }
+    .front .corner.br { bottom: 2px; right: 3px; transform: rotate(180deg); }
+    .front .pips { position: absolute; inset: 0; }
+    .front .mini-pip {
+      position: absolute;
       transform: translate(-50%, -50%);
-      font-size: 22px;
+      font-size: .82em;
+      line-height: 1;
     }
+    .front .mini-pip.invert { transform: translate(-50%, -50%) rotate(180deg); }
+    .front .ace-pip { font-size: 1.7em; }
+    .front .court {
+      position: absolute;
+      inset: 20% 17% 20% 17%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6%;
+      border: 1px solid currentColor;
+      border-radius: 3px;
+      background: linear-gradient(180deg, rgba(255,255,255,.28), transparent 42%);
+      box-shadow: inset 0 0 0 1px rgba(201,168,76,.22);
+    }
+    .front .court-rank {
+      font-size: 1.15em;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .front .court-pip { font-size: .95em; line-height: 1; }
     footer {
       position: relative; z-index: 3;
       width: min(960px, 100%);
