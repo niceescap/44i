@@ -316,14 +316,14 @@
     }
     #revealed em { color: #9a8150; font-style: normal; }
     #chat-panel {
-      display: none;
+      display: flex;
       position: relative;
       z-index: 3;
       width: min(960px, 100%);
       flex: 0 0 auto;
-      min-height: 280px;
+      min-height: 0;
       flex-direction: column;
-      margin: 0 12px 24px;
+      margin: 4px 12px 10px;
       background: linear-gradient(180deg, rgba(26,14,40,.55), rgba(10,6,18,.82));
       border: 1px solid #4a2a6e;
       border-radius: 16px;
@@ -331,7 +331,7 @@
       box-shadow: 0 16px 40px rgba(0,0,0,.35);
     }
     body.oracle #chat-panel {
-      display: flex;
+      margin: 0 12px 24px;
       animation: chatIn .55s .15s ease both;
     }
     @keyframes chatIn {
