@@ -666,7 +666,255 @@
     { id: "C", pip: "♣", red: false, name: "trèfle" }
   ];
   const RANK_FACE = { A:"A", T:"10", J:"V", Q:"D", K:"R" };
+  const RANK_FR = { A:"as", "2":"deux", "3":"trois", "4":"quatre", "5":"cinq", "6":"six", "7":"sept", "8":"huit", "9":"neuf", T:"dix", J:"valet", Q:"dame", K:"roi" };
+  const SUIT_FR = { S:"pique", H:"cœur", D:"carreau", C:"trèfle" };
+  const CARD_MOTIF = {
+    AC:"triomphe", KC:"homme protecteur", QC:"femme alliée", JC:"jeune homme", TC:"argent",
+    "9C":"travail", "8C":"association", "7C":"l’esprit", "6C":"obstacles", "5C":"implication",
+    "4C":"imprudence", "3C":"soutien", "2C":"hésitation",
+    AH:"le foyer", KH:"homme bienveillant", QH:"femme bienveillante", JH:"rencontre légère", TH:"vie sociale",
+    "9H":"accomplissement", "8H":"sentiments", "7H":"vie affective", "6H":"souvenirs", "5H":"échanges du cœur",
+    "4H":"déception", "3H":"union", "2H":"malentendu",
+    AD:"une nouvelle", KD:"autorité lointaine", QD:"jalousie", JD:"le message", TD:"le voyage",
+    "9D":"le retard", "8D":"une démarche", "7D":"discussion vive", "6D":"petit flux d’argent", "5D":"vie cachée",
+    "4D":"concrétisation", "3D":"construction", "2D":"indécision",
+    AS:"les papiers", KS:"figure officielle", QS:"solitude", JS:"avertissement", TS:"nuages",
+    "9S":"coup du sort", "8S":"ragots", "7S":"lutte", "6S":"petits accrocs", "5S":"rupture",
+    "4S":"retrait", "3S":"rivalité", "2S":"tromperie"
+  };
+  const SAY_ASK = [
+    "Choisis trois cartes.",
+    "Clique trois fois là où ça t’inspire.",
+    "Sélectionne avec soin trois cartes.",
+    "Quelles sont les trois cartes qui t’attirent ?",
+    "Relève trois cartes cachées.",
+    "Laisse ta main choisir trois voiles.",
+    "Trois cartes suffisent. Pose le premier geste.",
+    "Approche-toi du tapis et désigne trois destins."
+  ];
+  const SAY_MORE = [
+    "Une autre…",
+    "Encore une.",
+    "Poursuis, une deuxième carte.",
+    "Le tapis attend le deuxième geste.",
+    "Laisse venir la suivante.",
+    "Une de plus, sans te presser."
+  ];
+  const SAY_LAST = [
+    "Plus qu’une…",
+    "Et la dernière…",
+    "Et la troisième pour finir.",
+    "Il reste le dernier voile.",
+    "Une dernière fois, là où ça t’appelle.",
+    "Ferme le triangle."
+  ];
+  const SAY_WAIT = [
+    "Le tirage est bien enregistré. L’oracle en prend connaissance.",
+    "Les trois cartes sont posées. Le cabinet s’ouvre.",
+    "C’est noté. L’interprétation se prépare.",
+    "Le tapis se tait. L’oracle lit.",
+    "La main est complète. Un instant de silence…",
+    "Tout est reçu. L’oracle assemble le sens."
+  ];
+  const SAY_DISCLAIMER = [
+    "Garde en tête que La Rosace est une application de divertissement : ces mots stimulent la pensée, ils ne dictent pas ta vie.",
+    "Rappel doux : ici tout est symbolique et ludique, jamais un avis médical, juridique ou financier.",
+    "Reçois ce qui vient comme une conversation philosophique, non comme une vérité absolue.",
+    "La Rosace divertit. Les cartes ouvrent des pistes, elles ne remplacent aucun professionnel.",
+    "Ceci n’est pas une prédiction certaine, seulement un jeu d’images pour réfléchir.",
+    "L’intelligence artificielle assemble ici des savoirs de tradition : prends-les à titre de stimulation, pas d’autorité.",
+    "Amuse-toi du miroir. Ce n’est ni diagnostic, ni contrat, ni oracle infaillible.",
+    "Le cabinet est un théâtre symbolique. Ce qui compte, c’est ce que tu y reconnais.",
+    "Les interprétations viennent d’ouvrages ésotériques et d’un modèle : lis-les comme on lit un poème utile.",
+    "Pas de fatalité. Juste trois cartes, un récit, et ta liberté d’en faire ce que tu veux.",
+    "Si un sujet grave se présente, tourne-toi vers une personne compétente. Ici, on joue avec les symboles.",
+    "La Rosace t’accompagne le temps d’une lecture légère. Le sérieux de ta vie reste le tien."
+  ];
   const API = (location.protocol === "file:") ? "http://127.0.0.1:8001" : "";
+  const lastPicks = {};
+
+  function pickPhrase(key, list) {
+    var last = lastPicks[key];
+    var pool = list.filter(function (item) { return item !== last; });
+    if (!pool.length) pool = list.slice();
+    var choice = pool[Math.floor(Math.random() * pool.length)];
+    lastPicks[key] = choice;
+    return choice;
+  }
+
+  function frenchCardName(code) {
+    var rank = code.slice(0, -1);
+    var suit = code.slice(-1);
+    return (RANK_FR[rank] || rank) + " de " + (SUIT_FR[suit] || suit);
+  }
+
+  function cardGuideLine(code) {
+    var name = frenchCardName(code);
+    var motif = CARD_MOTIF[code] || "un souffle";
+    var frames = [
+      name.charAt(0).toUpperCase() + name.slice(1) + ", " + motif + ".",
+      "Voici " + name + " : " + motif + ".",
+      name.charAt(0).toUpperCase() + name.slice(1) + " se montre, " + motif + ".",
+      "Tu lèves " + name + " — " + motif + ".",
+      name.charAt(0).toUpperCase() + name.slice(1) + ". Motif : " + motif + "."
+    ];
+    return frames[Math.floor(Math.random() * frames.length)];
+  }
+
+  function stopGuidePulse() {
+    document.querySelectorAll("#chat-log .guide.pulse").forEach(function (el) {
+      el.classList.remove("pulse");
+    });
+  }
+
+  function addGuide(text, pulsing) {
+    stopGuidePulse();
+    var log = document.getElementById("chat-log");
+    var el = document.createElement("div");
+    el.className = "guide" + (pulsing ? " pulse" : "");
+    el.textContent = text;
+    log.appendChild(el);
+    return el;
+  }
+
+  function showWaitMark() {
+    hideWaitMark();
+    var log = document.getElementById("chat-log");
+    var el = document.createElement("div");
+    el.className = "wait-mark";
+    el.id = "wait-mark";
+    el.setAttribute("aria-hidden", "true");
+    log.appendChild(el);
+  }
+
+  function hideWaitMark() {
+    var el = document.getElementById("wait-mark");
+    if (el) el.remove();
+  }
+
+  function enableChatInput() {
+    var form = document.getElementById("chat-form");
+    form.classList.add("ready");
+    var input = document.getElementById("chat-input");
+    input.removeAttribute("readonly");
+  }
+
+  function disableChatInput() {
+    var form = document.getElementById("chat-form");
+    form.classList.remove("ready");
+    document.getElementById("chat-input").value = "";
+  }
+
+  function visitId() {
+    var key = "la-rosace-visit";
+    var id = "";
+    try { id = sessionStorage.getItem(key) || ""; } catch (e) {}
+    if (!id) {
+      id = (crypto.randomUUID && crypto.randomUUID()) || ("t-" + Date.now() + "-" + Math.random().toString(16).slice(2));
+      try { sessionStorage.setItem(key, id); } catch (e) {}
+    }
+    return id;
+  }
+
+  function trackEvent(type, extra) {
+    var body = Object.assign({
+      visit_id: visitId(),
+      visitor_id: visitorId(),
+      type: type,
+      session_id: sessionId || null
+    }, extra || {});
+    return api("/api/v2/prospects/event", {
+      method: "POST",
+      body: JSON.stringify(body)
+    }).catch(function (err) { console.error(err); });
+  }
+
+  function trackVisit() {
+    api("/api/v2/prospects/visit", {
+      method: "POST",
+      body: JSON.stringify({
+        visit_id: visitId(),
+        visitor_id: visitorId(),
+        session_id: sessionId || null
+      })
+    }).catch(function (err) { console.error(err); });
+  }
+
+  function attachAudioButton(bubble) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "audio-btn";
+    btn.setAttribute("aria-label", "Écouter");
+    btn.textContent = "🔊";
+    btn.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      var old = bubble.querySelector(".audio-puff");
+      if (old) old.remove();
+      var puff = document.createElement("span");
+      puff.className = "audio-puff";
+      puff.textContent = "fonction premium";
+      bubble.appendChild(puff);
+      setTimeout(function () { if (puff.parentNode) puff.remove(); }, 1400);
+      trackEvent("audio_click");
+    });
+    bubble.appendChild(btn);
+  }
+
+  function appendOracleFrame() {
+    var log = document.getElementById("chat-log");
+    var el = document.createElement("div");
+    el.className = "bubble oracle";
+    var text = document.createElement("div");
+    text.className = "bubble-text";
+    el.appendChild(text);
+    log.appendChild(el);
+    return el;
+  }
+
+  async function readSse(url, body, onText) {
+    var res = await fetch(API + url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    });
+    if (!res.ok || !res.body) {
+      var t = await res.text();
+      throw new Error(t || res.statusText);
+    }
+    var reader = res.body.getReader();
+    var dec = new TextDecoder();
+    var buf = "";
+    var acc = "";
+    while (true) {
+      var chunk = await reader.read();
+      if (chunk.done) break;
+      buf += dec.decode(chunk.value, { stream: true });
+      var parts = buf.split("\n\n");
+      buf = parts.pop() || "";
+      parts.forEach(function (block) {
+        var line = block.split("\n").filter(function (l) { return l.indexOf("data:") === 0; }).pop();
+        if (!line) return;
+        var raw = line.slice(5).trim();
+        if (!raw || raw === "[DONE]") return;
+        try {
+          var msg = JSON.parse(raw);
+          if (msg.error) throw new Error(msg.error);
+          if (msg.text) {
+            acc += msg.text;
+            onText(acc);
+          }
+          if (msg.done && msg.content && !acc) {
+            acc = msg.content;
+            onText(acc);
+          }
+        } catch (err) {
+          if (err instanceof SyntaxError) return;
+          throw err;
+        }
+      });
+    }
+    return acc;
+  }
 
   function cardFromCode(code) {
     const rank = code.slice(0, -1);
