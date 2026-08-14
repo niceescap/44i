@@ -337,7 +337,7 @@ async def message(session_id: str, payload: MessageRequest) -> MessageResponse:
 @app.get("/api/sessions/{session_id}/export", response_class=PlainTextResponse)
 def export_session(session_id: str) -> PlainTextResponse:
     session = get_session(session_id)
-    lines = ["# 44 interprètes", "", "Consultation symbolique anonyme", "", f"Date : {datetime.now().astimezone().isoformat(timespec='minutes')}", "", "## Avertissement", "", DISCLAIMER, "", "## Question initiale", "", session.question or "_(Aucune question renseignée.)_", "", "## Cartes révélées", ""]
+    lines = ["# La Rosace", "", "Consultation Symbolique anonyme", "", f"Code de session : {session.id}", f"Date : {datetime.now().astimezone().strftime('%d/%m/%Y %H:%M')}", "", "## Avertissement", "", DISCLAIMER, "", "## Question initiale", "", session.question or "_(Aucune question renseignée.)_", "", "## Cartes révélées", ""]
     if session.revealed:
         lines.extend(f"- {slot} → {card_info(code)['name']} ({code})" for slot, code in session.revealed.items())
     else:
