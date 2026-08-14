@@ -528,15 +528,41 @@ EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 _PROSPECT_LOCK = threading.Lock()
 
 
+ALLOWED_PROSPECT_EVENTS = {
+    "visit_start",
+    "deal",
+    "premium_click",
+    "premium_email",
+    "don_click",
+    "audio_click",
+}
+
+
 class ProspectClickRequest(BaseModel):
     visitor_id: str = Field(min_length=8, max_length=80)
+    visit_id: str | None = None
     session_id: str | None = None
 
 
 class ProspectEmailRequest(BaseModel):
     visitor_id: str = Field(min_length=8, max_length=80)
+    visit_id: str | None = None
     email: str = Field(min_length=5, max_length=254)
     session_id: str | None = None
+
+
+class ProspectVisitRequest(BaseModel):
+    visit_id: str = Field(min_length=8, max_length=80)
+    visitor_id: str = Field(min_length=8, max_length=80)
+    session_id: str | None = None
+
+
+class ProspectEventRequest(BaseModel):
+    visit_id: str = Field(min_length=8, max_length=80)
+    visitor_id: str = Field(min_length=8, max_length=80)
+    type: str = Field(min_length=2, max_length=40)
+    session_id: str | None = None
+    email: str | None = None
 
 
 def _prospect_dir() -> Path:
