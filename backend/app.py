@@ -455,7 +455,74 @@ async def v2_interpret(session_id: str) -> dict[str, Any]:
     return {"content": reply, "messages": session.messages}
 
 
-# ---------- Prospects Premium : clics uniques + e-mails ----------
+def _sse(payload: dict[str, Any]) -> str:
+    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+async def _stream_session_reply(session, prepare_user: bool) -> Any:
+    if prepare_user and not session.llm_messages:
+        session.llm_messages.append({"role": "user", "content": cold_start_message(session.pipeline.logs())})
+
+    async def generate():
+        acc: list[str] = []
+        try:
+            async for piece in complete_stream(session.llm_messages):
+                acc.append(piece)
+                yield _sse({"text": piece})
+        except Exception as exc:
+            print(f"[llm_v2] stream échoué: {exc}", flush=True)
+            if not acc:
+                yield _sse({"error": "L'oracle est silencieux un instant."})
+                return
+        reply = "".join(acc).strip()
+        if reply:
+            session.llm_messages.append({"role": "assistant", "content": reply})
+            session.messages.append({"role": "oracle", "content": reply})
+            session.interpreted = True
+        yield _sse({"done": True, "content": reply})
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.post("/api/v2/sessions/{session_id}/interpret/stream")
+async def v2_interpret_stream(session_id: str):
+    session = _rosace_session(session_id)
+    if session.phase != "oracle":
+        raise HTTPException(status_code=400, detail="L'interprétation suit la troisième carte")
+    if session.interpreted and session.messages:
+        last = next((m for m in reversed(session.messages) if m.get("role") == "oracle"), None)
+        content = last["content"] if last else ""
+
+        async def replay():
+            yield _sse({"text": content})
+            yield _sse({"done": True, "content": content})
+
+        return StreamingResponse(replay(), media_type="text/event-stream")
+    return await _stream_session_reply(session, prepare_user=True)
+
+
+@app.post("/api/v2/sessions/{session_id}/messages/stream")
+async def v2_message_stream(session_id: str, payload: MessageRequest):
+    session = _rosace_session(session_id)
+    if session.phase != "oracle":
+        raise HTTPException(status_code=400, detail="La conversation s'ouvre après la troisième carte")
+    text = payload.message.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Message vide")
+    if not session.question:
+        session.question = text
+    session.messages.append({"role": "user", "content": text})
+    if not session.llm_messages:
+        session.llm_messages.append({"role": "user", "content": cold_start_message(session.pipeline.logs())})
+    session.llm_messages.append({"role": "user", "content": text})
+    return await _stream_session_reply(session, prepare_user=False)
+
+
+# ---------- Prospects : historique de visites ----------
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 _PROSPECT_LOCK = threading.Lock()
