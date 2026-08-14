@@ -419,14 +419,19 @@
       position: relative;
       z-index: 3;
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 10px;
       width: min(960px, 100%);
-      padding: 8px 12px 20px;
+      padding: 10px 12px 28px;
+    }
+    .chat-actions-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
     }
     .chat-actions .btn-solid {
       flex: 1;
-      min-width: 140px;
+      min-width: 0;
       border-radius: 10px;
       padding: 10px 12px;
       font-size: 12px;
@@ -434,6 +439,21 @@
       background: linear-gradient(135deg, #3a2a50, #2a1840);
       border: 1px solid var(--gold);
       color: #fff;
+    }
+    .chat-actions .btn-premium {
+      width: 100%;
+      padding: 15px 16px;
+      font-size: 15px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #1a1008;
+      background: linear-gradient(135deg, #7a5818, #e0c36a 48%, #b8923a);
+      border: 1px solid #f3df9a;
+      box-shadow: 0 0 18px rgba(201, 168, 76, .22);
+    }
+    .chat-actions .btn-don {
+      width: 100%;
     }
     .disclaimer {
       position: relative;
