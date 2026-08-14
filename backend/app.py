@@ -473,7 +473,7 @@ class ProspectEmailRequest(BaseModel):
 
 
 def _prospect_dir() -> Path:
-    preferred = Path(os.getenv("ROSACE_LOG_DIR", "/home/44i/logs"))
+    preferred = Path(os.getenv("ROSACE_LOG_DIR", "/home/nicee/44i/logs"))
     try:
         preferred.mkdir(parents=True, exist_ok=True)
         probe = preferred / ".writable"
