@@ -75,46 +75,71 @@
       position: relative;
       isolation: isolate;
       overflow: hidden;
-      max-width: 22rem;
-      padding: 10px 22px 14px 10px;
+      max-width: min(100%, 28rem);
+      padding: 12px 26px 16px 12px;
       border-radius: 16px;
     }
-    header .brand::before {
-      content: "";
+    .brand-arc-clip {
       position: absolute;
       inset: 0;
       z-index: 0;
+      overflow: hidden;
       pointer-events: none;
-      background: url("/static/brand/rosace.png") 17% 78% / 440% no-repeat;
-      opacity: .52;
-      mix-blend-mode: lighten;
       -webkit-mask-image:
         radial-gradient(ellipse 95% 85% at 28% 60%, #000 18%, rgba(0,0,0,.55) 48%, transparent 78%);
       mask-image:
         radial-gradient(ellipse 95% 85% at 28% 60%, #000 18%, rgba(0,0,0,.55) 48%, transparent 78%);
     }
-    header .brand > * {
+    .brand-arc {
+      position: absolute;
+      width: 760%;
+      aspect-ratio: 1;
+      left: 12%;
+      top: 220%;
+      background: url("/static/brand/rosace.png") center / contain no-repeat;
+      opacity: .5;
+      mix-blend-mode: lighten;
+      transform: translate(-50%, -50%);
+      animation: rosaceCycle 240s linear infinite;
+      will-change: transform;
+    }
+    @keyframes rosaceCycle {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .brand-arc { animation: none; }
+    }
+    header .brand > *:not(.brand-arc-clip) {
       position: relative;
       z-index: 1;
     }
     h1 {
-      font-family: "Segoe Print", "Bradley Hand", Georgia, serif;
-      font-size: clamp(26px, 5vw, 40px);
-      font-weight: 600;
-      letter-spacing: .02em;
+      font-family: "Great Vibes", "Segoe Script", cursive;
+      font-size: clamp(52px, 12vw, 80px);
+      font-weight: 400;
+      letter-spacing: .01em;
+      line-height: .92;
       color: #f6db9b;
+      text-shadow: 0 2px 18px rgba(0,0,0,.4);
     }
     .tagline {
-      font-size: 13px;
-      color: #9a8150;
-      margin-top: 2px;
+      font-family: "Source Sans 3", "Segoe UI", sans-serif;
+      font-size: clamp(15px, 2.5vw, 17px);
+      font-weight: 500;
+      letter-spacing: .035em;
+      line-height: 1.4;
+      color: #ead7a6;
+      margin-top: 8px;
     }
     .tagline-sub {
+      font-family: "Source Sans 3", "Segoe UI", sans-serif;
       margin-top: 3px;
-      font-size: 11px;
-      color: #5d4a2e;
-      letter-spacing: .08em;
+      font-size: clamp(13px, 2.2vw, 15px);
+      font-weight: 400;
       font-style: italic;
+      letter-spacing: .05em;
+      line-height: 1.4;
+      color: #d2be86;
     }
     #status, #symbol-log { display: none; }
     .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
