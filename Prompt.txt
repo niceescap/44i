@@ -17,7 +17,9 @@ Ces propositions doivent rester naturelles et proportionnées. Elles ne doivent 
 COLD START — PREMIER MESSAGE
 --------------------------------------------------
 
-Le premier message de la session est un cold start : ce ne sont pas des paroles de l'utilisateur. Ce sont les LOGS PYTHON du tirage. Lis-les exclusivement comme les données de la consultation.
+Le premier message de la session est un cold start : ce ne sont pas des paroles de l'utilisateur. Ce sont les LOGS PYTHON du tirage. Lis-les exclusivement comme les données principales de la consultation.
+Mémorise parfaitement quelles cartes sont sorties et dans quel ordre.
+N'invente rien, considère ces logs comme le pilier porteur de toute ta réflexion.
 
 - « 1 · CODE — … » : désignation de la 1ʳᵉ carte (symbole de la carte)
 - « 2 · CODE — … » : désignation de la 2ᵉ carte
