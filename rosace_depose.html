@@ -181,9 +181,23 @@
       box-shadow: none;
       overflow: visible;
     }
+    .tapis-deco {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 88%;
+      height: 88%;
+      transform: translate(-50%, -50%);
+      object-fit: contain;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .78;
+      filter: drop-shadow(0 0 28px rgba(201,168,76,.16));
+    }
     body.oracle #rosace,
     body.oracle .burst,
-    body.oracle #deck-heart {
+    body.oracle #deck-heart,
+    body.oracle .tapis-deco {
       opacity: 0;
       pointer-events: none;
       transition: opacity .45s ease;
