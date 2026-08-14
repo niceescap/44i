@@ -275,10 +275,11 @@
       transform: translate(-50%, -50%) scale(1);
     }
     #deck-heart::after {
-      content: "✦";
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      color: rgba(201,168,76,.55);
+      content: "";
+      position: absolute; inset: 8%;
+      background: url("/static/brand/rosace.png") center / contain no-repeat;
+      mix-blend-mode: lighten;
+      opacity: .88;
     }
     .burst {
       position: absolute;
