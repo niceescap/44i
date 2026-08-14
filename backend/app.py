@@ -556,10 +556,7 @@ def prospect_click(payload: ProspectClickRequest, request: Request) -> dict[str,
     ip = _client_ip(request)
     with _PROSPECT_LOCK:
         data = _load_prospects()
-        already = any(
-            item.get("visitor_id") == visitor or item.get("ip") == ip
-            for item in data["clicks"]
-        )
+        already = any(item.get("visitor_id") == visitor for item in data["clicks"])
         data["clicks"].append({
             "ts": _now_iso(),
             "visitor_id": visitor,
