@@ -21,7 +21,7 @@ from .rosace_dealer import RosaceStore
 from .session_store import Session, SessionStore
 from .symbolic import CARDS, QUALITIES, card_info, interpretation, pair_symbol
 
-app = FastAPI(title="44 interprètes API", version="1.0.0")
+app = FastAPI(title="La Rosace API", version="2.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
