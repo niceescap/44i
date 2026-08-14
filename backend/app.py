@@ -482,7 +482,9 @@ def _sse(payload: dict[str, Any]) -> str:
 
 async def _stream_session_reply(session, prepare_user: bool) -> Any:
     if prepare_user and not session.llm_messages:
-        session.llm_messages.append({"role": "user", "content": cold_start_message(session.pipeline.logs())})
+        session.llm_messages.append(
+            {"role": "user", "content": cold_start_message(session.pipeline.cold_start_lines())}
+        )
 
     async def generate():
         acc: list[str] = []
@@ -538,7 +540,9 @@ async def v2_message_stream(session_id: str, payload: MessageRequest):
         session.question = text
     session.messages.append({"role": "user", "content": text})
     if not session.llm_messages:
-        session.llm_messages.append({"role": "user", "content": cold_start_message(session.pipeline.logs())})
+        session.llm_messages.append(
+            {"role": "user", "content": cold_start_message(session.pipeline.cold_start_lines())}
+        )
     session.llm_messages.append({"role": "user", "content": text})
     return await _stream_session_reply(session, prepare_user=False)
 
@@ -871,7 +875,9 @@ async def v2_message(session_id: str, payload: MessageRequest) -> dict[str, Any]
         session.question = text
     session.messages.append({"role": "user", "content": text})
     if not session.llm_messages:
-        session.llm_messages.append({"role": "user", "content": cold_start_message(session.pipeline.logs())})
+        session.llm_messages.append(
+            {"role": "user", "content": cold_start_message(session.pipeline.cold_start_lines())}
+        )
     session.llm_messages.append({"role": "user", "content": text})
     try:
         reply = await complete(session.llm_messages)
