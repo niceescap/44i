@@ -4,7 +4,7 @@
 Clé : API_KEY_44iV2
 Modèle : @preset/dame-de-trefle
 Aucun system prompt ici : le preset porte les instructions.
-Premier message = logs de tirage (cold start).
+Premier message = cold_start_lines() (contrat Prompt.txt), jamais logs() UI.
 """
 
 from __future__ import annotations
