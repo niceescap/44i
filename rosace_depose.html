@@ -1611,9 +1611,16 @@
     const log = document.getElementById("chat-log");
     const el = document.createElement("div");
     el.className = "bubble " + who;
-    el.textContent = text;
+    if (who === "oracle") {
+      const inner = document.createElement("div");
+      inner.className = "bubble-text";
+      inner.textContent = text;
+      el.appendChild(inner);
+      attachAudioButton(el);
+    } else {
+      el.textContent = text;
+    }
     log.appendChild(el);
-    log.scrollTop = log.scrollHeight;
   }
 
   function resetWorkflow() {
