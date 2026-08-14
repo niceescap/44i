@@ -571,11 +571,12 @@ def prospect_click(payload: ProspectClickRequest, request: Request) -> dict[str,
 
 
 @app.post("/api/v2/prospects/email")
-def prospect_email(payload: ProspectEmailRequest) -> dict[str, Any]:
+def prospect_email(payload: ProspectEmailRequest, request: Request) -> dict[str, Any]:
     email = payload.email.strip().lower()
     if not EMAIL_RE.match(email):
         raise HTTPException(status_code=400, detail="Adresse e-mail invalide")
     visitor = payload.visitor_id.strip()
+    ip = _client_ip(request)
     with _PROSPECT_LOCK:
         data = _load_prospects()
         already = any(item.get("email") == email for item in data["emails"])
@@ -584,11 +585,32 @@ def prospect_email(payload: ProspectEmailRequest) -> dict[str, Any]:
                 "ts": _now_iso(),
                 "email": email,
                 "visitor_id": visitor,
+                "ip": ip,
                 "session_id": payload.session_id,
             })
             data["emails_count"] = len(data["emails"])
             _save_prospects(data)
     return {"ok": True, "stored": not already, "emails_count": data["emails_count"]}
+
+
+@app.post("/api/v2/prospects/don")
+def prospect_don(payload: ProspectClickRequest, request: Request) -> dict[str, Any]:
+    visitor = payload.visitor_id.strip()
+    ip = _client_ip(request)
+    with _PROSPECT_LOCK:
+        data = _load_prospects()
+        already = any(item.get("ip") == ip for item in data["dons"])
+        data["dons"].append({
+            "ts": _now_iso(),
+            "visitor_id": visitor,
+            "ip": ip,
+            "session_id": payload.session_id,
+            "unique": not already,
+        })
+        data["total_dons"] = len(data["dons"])
+        data["unique_dons"] = sum(1 for item in data["dons"] if item.get("unique"))
+        _save_prospects(data)
+    return {"ok": True, "unique": not already, "unique_dons": data["unique_dons"]}
 
 
 @app.post("/api/v2/sessions/{session_id}/messages")
