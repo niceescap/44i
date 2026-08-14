@@ -461,9 +461,10 @@ async def v2_interpret(session_id: str) -> dict[str, Any]:
     if session.interpreted and session.messages:
         last = next((m for m in reversed(session.messages) if m.get("role") == "oracle"), None)
         return {"content": last["content"] if last else "", "messages": session.messages}
-    logs = session.pipeline.logs()
     if not session.llm_messages:
-        session.llm_messages.append({"role": "user", "content": cold_start_message(logs)})
+        session.llm_messages.append(
+            {"role": "user", "content": cold_start_message(session.pipeline.cold_start_lines())}
+        )
     try:
         reply = await complete(session.llm_messages)
     except Exception as exc:
