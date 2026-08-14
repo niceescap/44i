@@ -1595,9 +1595,8 @@
           designation: ev.designation
         });
       }
-      setStatus(chosen.length < 3
-        ? "Encore " + (3 - chosen.length) + " carte" + (chosen.length === 2 ? "" : "s") + "."
-        : "Les trois cartes sont choisies.");
+      if (chosen.length === 1) addGuide(pickPhrase("more", SAY_MORE), true);
+      else if (chosen.length === 2) addGuide(pickPhrase("last", SAY_LAST), true);
       updateList();
       dealing = false;
       if (chosen.length >= 3) gatherToHand();
