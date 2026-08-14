@@ -1800,7 +1800,8 @@
     } else {
       bubbles.forEach(function (el) {
         var who = el.classList.contains("user") ? "utilisateur" : "oracle";
-        lines.push(who + ": " + el.textContent);
+        var textEl = el.querySelector(".bubble-text");
+        lines.push(who + ": " + ((textEl && textEl.textContent) || el.textContent));
         lines.push("");
       });
     }
