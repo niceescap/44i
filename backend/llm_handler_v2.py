@@ -84,7 +84,7 @@ async def complete(messages: list[dict[str, str]]) -> str:
         "Authorization": f"Bearer {cfg['key']}",
         "Content-Type": "application/json; charset=utf-8",
         "HTTP-Referer": "https://44i.webredirect.org",
-        "X-Title": "44-interpretes-v2",
+        "X-Title": "La Rosace",
     }
     body: dict[str, Any] = {
         "model": cfg["model"],
@@ -106,6 +106,62 @@ async def complete(messages: list[dict[str, str]]) -> str:
     if not text:
         raise RuntimeError("réponse LLM vide")
     return text
+
+
+def _delta_text(payload: dict[str, Any]) -> str:
+    choice = (payload.get("choices") or [{}])[0]
+    delta = choice.get("delta") or {}
+    piece = delta.get("content")
+    if piece is None:
+        message = choice.get("message") or {}
+        piece = message.get("content")
+    if isinstance(piece, list):
+        piece = "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in piece
+        )
+    return piece if isinstance(piece, str) else ""
+
+
+async def complete_stream(messages: list[dict[str, str]]):
+    cfg = llm_settings()
+    if not cfg["key"]:
+        raise RuntimeError(f"LLM non configuré ({describe_settings()})")
+
+    headers = {
+        "Authorization": f"Bearer {cfg['key']}",
+        "Content-Type": "application/json; charset=utf-8",
+        "HTTP-Referer": "https://44i.webredirect.org",
+        "X-Title": "La Rosace",
+    }
+    body: dict[str, Any] = {
+        "model": cfg["model"],
+        "messages": messages,
+        "temperature": 0.7,
+        "max_tokens": 1200,
+        "stream": True,
+    }
+    async with httpx.AsyncClient(timeout=120) as client:
+        async with client.stream("POST", cfg["url"], headers=headers, json=body) as response:
+            if response.status_code >= 400:
+                err = (await response.aread()).decode("utf-8", "replace")[:800]
+                print(f"[llm_v2] HTTP {response.status_code}: {err}", flush=True)
+                response.raise_for_status()
+            async for line in response.aiter_lines():
+                if not line or line.startswith(":"):
+                    continue
+                if not line.startswith("data:"):
+                    continue
+                data = line[5:].strip()
+                if data == "[DONE]":
+                    break
+                try:
+                    parsed = json.loads(data)
+                except json.JSONDecodeError:
+                    continue
+                piece = _delta_text(parsed)
+                if piece:
+                    yield piece
 
 
 print(f"[llm_v2] {describe_settings()}", flush=True)
