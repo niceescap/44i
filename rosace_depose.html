@@ -1646,11 +1646,12 @@
     logLines = [];
     contextLogsAdded = false;
     phase = "table";
-    setStatus("Choisis trois cartes face cachée.");
-    renderSymbolLog();
+    disableChatInput();
+    hideWaitMark();
     document.body.classList.remove("oracle");
     document.getElementById("hand-rail").innerHTML = "";
     document.getElementById("chat-log").innerHTML = "";
+    addGuide(pickPhrase("ask", SAY_ASK), true);
     const rect = stage.getBoundingClientRect();
     try {
       const data = await api("/api/v2/sessions", {
