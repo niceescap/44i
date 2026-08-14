@@ -1726,13 +1726,7 @@
       el.classList.add("revealed");
       el.title = p.card.label;
       const front = el.querySelector(".front");
-      if (front) {
-        front.className = "face front" + (p.card.red ? " red" : "");
-        front.innerHTML =
-          '<div class="corner tl">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>" +
-          '<div class="pip">' + p.card.pip + "</div>" +
-          '<div class="corner br">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>";
-      }
+      if (front) paintFront(front, p.card);
       chosen.push(idx);
       lastSymbolique = data.symbolique || [];
       lastLogs = data.logs || [];
