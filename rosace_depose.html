@@ -1820,15 +1820,23 @@
     if (!text) return;
     input.value = "";
     appendBubble("user", text);
+    showWaitMark();
     try {
-      const data = await api("/api/v2/sessions/" + sessionId + "/messages", {
-        method: "POST",
-        body: JSON.stringify({ message: text })
+      var frame = appendOracleFrame();
+      var textEl = frame.querySelector(".bubble-text");
+      var started = false;
+      var content = await readSse("/api/v2/sessions/" + sessionId + "/messages/stream", { message: text }, function (acc) {
+        if (!started) {
+          started = true;
+          hideWaitMark();
+        }
+        textEl.textContent = acc;
       });
-      if (data.content) {
-        appendBubble("oracle", data.content);
-      }
+      hideWaitMark();
+      if (!content) textEl.textContent = "L’oracle est silencieux un instant.";
+      attachAudioButton(frame);
     } catch (err) {
+      hideWaitMark();
       appendBubble("oracle", "L’oracle est silencieux un instant.");
     }
   });
