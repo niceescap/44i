@@ -1355,15 +1355,8 @@
     el.dataset.tx = (p.site.x / 10).toFixed(4) + "%";
     el.dataset.ty = (p.site.y / 10).toFixed(4) + "%";
     el.title = p.revealed ? p.card.label : "Face cachée";
-    el.innerHTML =
-      '<div class="card-inner">' +
-        '<div class="face back"></div>' +
-        '<div class="face front' + (p.card.red ? " red" : "") + '">' +
-          '<div class="corner tl">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>" +
-          '<div class="pip">' + p.card.pip + "</div>" +
-          '<div class="corner br">' + (RANK_FACE[p.card.rank] || p.card.rank) + "<br>" + p.card.pip + "</div>" +
-        "</div>" +
-      "</div>";
+    el.innerHTML = '<div class="card-inner"><div class="face back"></div><div class="face front"></div></div>';
+    paintFront(el.querySelector(".front"), p.card);
     el.addEventListener("click", function () {
       if (dealing || phase !== "table") return;
       if (p.revealed) return;
