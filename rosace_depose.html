@@ -498,9 +498,26 @@
     </form>
   </section>
   <div class="chat-actions">
-    <button type="button" class="btn-solid" id="btn-shuffle">Nouveau tirage</button>
-    <button type="button" class="btn-solid" id="btn-export">📥 Exporter l’interprétation de votre tirage</button>
-    <button type="button" class="btn-solid" id="btn-don">🪙 Soutenir l’hébergement et l'inférence IA</button>
+    <button type="button" class="btn-solid btn-premium" id="btn-premium">Tester la version Premium</button>
+    <div class="chat-actions-row">
+      <button type="button" class="btn-solid" id="btn-export">Conserver ce tirage</button>
+      <button type="button" class="btn-solid" id="btn-shuffle">Recommencer</button>
+    </div>
+    <button type="button" class="btn-solid btn-don" id="btn-don">Faire un don à La Rosace</button>
+  </div>
+  <div id="premium-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-premium></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="premium-title">
+      <button type="button" class="modal-close" id="premium-close" aria-label="Fermer">×</button>
+      <h2 id="premium-title">La Grande Rosace</h2>
+      <p>Merci de l’attention que vous portez à La Rosace ! Une version complète de l’application est en cours de développement. Vous pourrez alors exploiter toute la puissance d’interprétation de notre intelligence artificielle, instruite sur plusieurs milliards de paramètres. Il s’agit du plus gros modèle francophone spécialisé en cartomancie, dont le tirage de trois cartes est un simple extrait offert. Crédits maîtrisés et données confidentielles préservées, l’accès à La Grande Rosace vous sera réservé dès sa sortie si vous souhaitez être prévenu(e) en laissant votre e-mail ci-dessous.</p>
+      <form id="premium-form">
+        <label for="premium-email">Être prévenu(e) de la sortie</label>
+        <input id="premium-email" type="email" name="email" autocomplete="email" placeholder="votre.email@exemple.fr" maxlength="254" required>
+        <button type="submit" class="btn-solid btn-premium">Prévenez-moi</button>
+      </form>
+      <p id="premium-thanks" hidden>Merci. Votre adresse est notée, nous vous préviendrons.</p>
+    </div>
   </div>
   <footer>
     <div id="revealed"></div>
