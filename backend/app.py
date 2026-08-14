@@ -347,7 +347,7 @@ def export_session(session_id: str) -> PlainTextResponse:
         lines.extend([f"**{'Utilisateur' if item['role'] == 'user' else 'Oracle'} :**", "", item["content"], ""])
     lines.extend(["## Résumé symbolique", "", session.summary or "_(Aucun résumé disponible.)_", ""])
     # BOM UTF-8 : certains éditeurs anciens sinon interprètent le Markdown en Windows-1252.
-    return PlainTextResponse("\ufeff" + "\n".join(lines), media_type="text/markdown; charset=utf-8", headers={"Content-Disposition": 'attachment; filename="44-interpretes-consultation.md"'})
+    return PlainTextResponse("\ufeff" + "\n".join(lines), media_type="text/markdown; charset=utf-8", headers={"Content-Disposition": 'attachment; filename="la-rosace-consultation.md"'})
 
 
 @app.post("/api/sessions/{session_id}/reset", response_model=CreateSessionResponse)
