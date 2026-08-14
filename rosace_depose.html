@@ -1536,9 +1536,9 @@
 
   async function requestInterpretation() {
     if (!sessionId) return;
+    var frame = appendOracleFrame();
+    var textEl = frame.querySelector(".bubble-text");
     try {
-      var frame = appendOracleFrame();
-      var textEl = frame.querySelector(".bubble-text");
       var started = false;
       var content = await readSse("/api/v2/sessions/" + sessionId + "/interpret/stream", {}, function (acc) {
         if (!started) {
@@ -1547,17 +1547,26 @@
         }
         textEl.textContent = acc;
       });
+      if (!content) {
+        var data = await api("/api/v2/sessions/" + sessionId + "/interpret", { method: "POST", body: "{}" });
+        content = data.content || "";
+        stopGuidePulse();
+        textEl.textContent = content;
+      }
       if (!content) textEl.textContent = "L’oracle est silencieux un instant.";
-      attachAudioButton(frame);
-      enableChatInput();
     } catch (err) {
-      stopGuidePulse();
-      var fallback = appendOracleFrame();
-      fallback.querySelector(".bubble-text").textContent = "L’oracle est silencieux un instant.";
-      attachAudioButton(fallback);
-      enableChatInput();
       console.error(err);
+      try {
+        var data = await api("/api/v2/sessions/" + sessionId + "/interpret", { method: "POST", body: "{}" });
+        stopGuidePulse();
+        textEl.textContent = data.content || "L’oracle est silencieux un instant.";
+      } catch (err2) {
+        stopGuidePulse();
+        textEl.textContent = "L’oracle est silencieux un instant.";
+      }
     }
+    attachAudioButton(frame);
+    enableChatInput();
   }
 
   async function revealOnServer(idx, el) {
