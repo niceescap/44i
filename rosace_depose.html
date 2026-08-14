@@ -340,22 +340,49 @@
     }
     #chat-log {
       flex: 0 0 auto;
-      min-height: 120px;
-      max-height: 40vh;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding: 18px 18px 10px;
+      min-height: 0;
+      max-height: none;
+      overflow: visible;
+      padding: 14px 18px 10px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+    }
+    .guide {
+      align-self: stretch;
+      max-width: 100%;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #8d7348;
+      font-style: italic;
+      letter-spacing: .01em;
+    }
+    .guide.pulse {
+      animation: guidePulse 1.7s ease-in-out infinite;
+    }
+    @keyframes guidePulse {
+      0%, 100% { opacity: .38; }
+      50% { opacity: 1; }
+    }
+    .wait-mark {
+      align-self: flex-start;
+      width: 18px;
+      height: 18px;
+      margin: 4px 0 2px;
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,76,.55);
+      box-shadow: 0 0 10px rgba(201,168,76,.18);
+      animation: guidePulse 1.15s ease-in-out infinite;
     }
     .bubble {
+      position: relative;
       max-width: 82%;
-      padding: 10px 13px;
+      padding: 10px 13px 22px;
       border-radius: 12px;
       font-size: 15px;
       line-height: 1.45;
     }
+    .bubble.user { padding-bottom: 10px; }
     .bubble.oracle {
       align-self: flex-start;
       background: rgba(107, 76, 138, .28);
@@ -368,12 +395,47 @@
       border: 1px solid rgba(201,168,76,.35);
       color: #f3e6b8;
     }
+    .audio-btn {
+      position: absolute;
+      right: 8px;
+      bottom: 4px;
+      border: none;
+      background: transparent;
+      color: #c9a84c;
+      font-size: 14px;
+      line-height: 1;
+      padding: 2px;
+      cursor: pointer;
+      opacity: .75;
+    }
+    .audio-btn:hover { opacity: 1; }
+    .audio-puff {
+      position: absolute;
+      right: 4px;
+      bottom: 22px;
+      padding: 4px 7px;
+      border-radius: 10px;
+      background: #2a1a3e;
+      border: 1px solid rgba(201,168,76,.45);
+      color: #f6db9b;
+      font-size: 10px;
+      letter-spacing: .02em;
+      white-space: nowrap;
+      pointer-events: none;
+      animation: puffOut 1.35s ease forwards;
+    }
+    @keyframes puffOut {
+      0% { opacity: 0; transform: translateY(4px) scale(.9); }
+      18% { opacity: 1; transform: none; }
+      100% { opacity: 0; transform: translateY(-6px) scale(.96); }
+    }
     #chat-form {
-      display: flex;
+      display: none;
       gap: 8px;
       padding: 10px 12px 12px;
       border-top: 1px solid #2a1a3e;
     }
+    #chat-form.ready { display: flex; }
     #chat-input {
       flex: 1;
       padding: 12px 14px;
