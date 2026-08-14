@@ -496,8 +496,11 @@ def _empty_prospects() -> dict[str, Any]:
         "updated_at": None,
         "unique_clicks": 0,
         "total_clicks": 0,
+        "unique_dons": 0,
+        "total_dons": 0,
         "emails_count": 0,
         "clicks": [],
+        "dons": [],
         "emails": [],
     }
 
