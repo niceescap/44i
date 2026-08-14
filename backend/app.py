@@ -724,67 +724,120 @@ def _client_ip(request: Request) -> str:
     return "unknown"
 
 
-@app.post("/api/v2/prospects/click")
-def prospect_click(payload: ProspectClickRequest, request: Request) -> dict[str, Any]:
-    visitor = payload.visitor_id.strip()
+def _find_visit(data: dict[str, Any], visit_id: str) -> dict[str, Any] | None:
+    for visit in data.get("visits") or []:
+        if visit.get("visit_id") == visit_id:
+            return visit
+    return None
+
+
+def _ensure_visit(data: dict[str, Any], visit_id: str, visitor_id: str, ip: str, session_id: str | None) -> dict[str, Any]:
+    visit = _find_visit(data, visit_id)
+    if visit is None:
+        visit = {
+            "visit_id": visit_id,
+            "visitor_id": visitor_id,
+            "ip": ip,
+            "started_at": _now_iso(),
+            "session_id": session_id,
+            "events": [],
+        }
+        data.setdefault("visits", []).append(visit)
+        return visit
+    if visitor_id:
+        visit["visitor_id"] = visitor_id
+    if ip and (not visit.get("ip") or visit.get("ip") == "unknown"):
+        visit["ip"] = ip
+    if session_id:
+        visit["session_id"] = session_id
+    return visit
+
+
+def _append_event(data: dict[str, Any], visit: dict[str, Any], kind: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    event = {"ts": _now_iso(), "type": kind}
+    if extra:
+        event.update(extra)
+    visit.setdefault("events", []).append(event)
+    _recompute_stats(data)
+    _save_prospects(data)
+    return event
+
+
+@app.post("/api/v2/prospects/visit")
+def prospect_visit(payload: ProspectVisitRequest, request: Request) -> dict[str, Any]:
     ip = _client_ip(request)
     with _PROSPECT_LOCK:
         data = _load_prospects()
-        already = any(item.get("visitor_id") == visitor for item in data["clicks"])
-        data["clicks"].append({
-            "ts": _now_iso(),
-            "visitor_id": visitor,
-            "ip": ip,
-            "session_id": payload.session_id,
-            "unique": not already,
-        })
-        data["total_clicks"] = len(data["clicks"])
-        data["unique_clicks"] = sum(1 for item in data["clicks"] if item.get("unique"))
-        _save_prospects(data)
-    return {"ok": True, "unique": not already, "unique_clicks": data["unique_clicks"]}
+        visit = _ensure_visit(data, payload.visit_id.strip(), payload.visitor_id.strip(), ip, payload.session_id)
+        if not any(ev.get("type") == "visit_start" for ev in visit.get("events") or []):
+            _append_event(data, visit, "visit_start")
+        else:
+            if payload.session_id:
+                visit["session_id"] = payload.session_id
+            _recompute_stats(data)
+            _save_prospects(data)
+    return {"ok": True, "visit_id": visit["visit_id"], "stats": data["stats"]}
+
+
+@app.post("/api/v2/prospects/event")
+def prospect_event(payload: ProspectEventRequest, request: Request) -> dict[str, Any]:
+    kind = payload.type.strip()
+    if kind not in ALLOWED_PROSPECT_EVENTS:
+        raise HTTPException(status_code=400, detail="Type d'événement inconnu")
+    extra: dict[str, Any] = {}
+    if kind == "premium_email":
+        email = (payload.email or "").strip().lower()
+        if not EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="Adresse e-mail invalide")
+        extra["email"] = email
+    ip = _client_ip(request)
+    with _PROSPECT_LOCK:
+        data = _load_prospects()
+        visit = _ensure_visit(data, payload.visit_id.strip(), payload.visitor_id.strip(), ip, payload.session_id)
+        if kind == "premium_email":
+            already = any(
+                ev.get("type") == "premium_email" and ev.get("email") == extra["email"]
+                for item in data.get("visits") or []
+                for ev in item.get("events") or []
+            )
+            if already:
+                return {"ok": True, "stored": False, "stats": data["stats"]}
+        _append_event(data, visit, kind, extra or None)
+    return {"ok": True, "stored": True, "stats": data["stats"]}
+
+
+@app.post("/api/v2/prospects/click")
+def prospect_click(payload: ProspectClickRequest, request: Request) -> dict[str, Any]:
+    visit_id = (payload.visit_id or payload.visitor_id).strip()
+    return prospect_event(ProspectEventRequest(
+        visit_id=visit_id,
+        visitor_id=payload.visitor_id.strip(),
+        type="premium_click",
+        session_id=payload.session_id,
+    ), request)
 
 
 @app.post("/api/v2/prospects/email")
 def prospect_email(payload: ProspectEmailRequest, request: Request) -> dict[str, Any]:
-    email = payload.email.strip().lower()
-    if not EMAIL_RE.match(email):
-        raise HTTPException(status_code=400, detail="Adresse e-mail invalide")
-    visitor = payload.visitor_id.strip()
-    ip = _client_ip(request)
-    with _PROSPECT_LOCK:
-        data = _load_prospects()
-        already = any(item.get("email") == email for item in data["emails"])
-        if not already:
-            data["emails"].append({
-                "ts": _now_iso(),
-                "email": email,
-                "visitor_id": visitor,
-                "ip": ip,
-                "session_id": payload.session_id,
-            })
-            data["emails_count"] = len(data["emails"])
-            _save_prospects(data)
-    return {"ok": True, "stored": not already, "emails_count": data["emails_count"]}
+    visit_id = (payload.visit_id or payload.visitor_id).strip()
+    return prospect_event(ProspectEventRequest(
+        visit_id=visit_id,
+        visitor_id=payload.visitor_id.strip(),
+        type="premium_email",
+        session_id=payload.session_id,
+        email=payload.email,
+    ), request)
 
 
 @app.post("/api/v2/prospects/don")
 def prospect_don(payload: ProspectClickRequest, request: Request) -> dict[str, Any]:
-    visitor = payload.visitor_id.strip()
-    ip = _client_ip(request)
-    with _PROSPECT_LOCK:
-        data = _load_prospects()
-        already = any(item.get("ip") == ip for item in data["dons"])
-        data["dons"].append({
-            "ts": _now_iso(),
-            "visitor_id": visitor,
-            "ip": ip,
-            "session_id": payload.session_id,
-            "unique": not already,
-        })
-        data["total_dons"] = len(data["dons"])
-        data["unique_dons"] = sum(1 for item in data["dons"] if item.get("unique"))
-        _save_prospects(data)
-    return {"ok": True, "unique": not already, "unique_dons": data["unique_dons"]}
+    visit_id = (payload.visit_id or payload.visitor_id).strip()
+    return prospect_event(ProspectEventRequest(
+        visit_id=visit_id,
+        visitor_id=payload.visitor_id.strip(),
+        type="don_click",
+        session_id=payload.session_id,
+    ), request)
 
 
 @app.post("/api/v2/sessions/{session_id}/messages")
