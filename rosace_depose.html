@@ -1498,9 +1498,9 @@
   }
 
   function appendDesignationFromEvent(ev) {
-    if (!ev) return;
-    var n = logLines.filter(function (l) { return /^\d+\s·/.test(l); }).length + 1;
-    addLog(n + " · " + (ev.carte || "") + " — " + (ev.designation || ev.contenu || ""));
+    var code = ev && (ev.carte || (ev.cartes && ev.cartes[ev.cartes.length - 1]));
+    if (!code) return;
+    addGuide(cardGuideLine(code), false);
   }
 
   function appendContextLogs() {
