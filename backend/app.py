@@ -551,14 +551,19 @@ def _client_ip(request: Request) -> str:
 
 
 @app.post("/api/v2/prospects/click")
-def prospect_click(payload: ProspectClickRequest) -> dict[str, Any]:
+def prospect_click(payload: ProspectClickRequest, request: Request) -> dict[str, Any]:
     visitor = payload.visitor_id.strip()
+    ip = _client_ip(request)
     with _PROSPECT_LOCK:
         data = _load_prospects()
-        already = any(item.get("visitor_id") == visitor for item in data["clicks"])
+        already = any(
+            item.get("visitor_id") == visitor or item.get("ip") == ip
+            for item in data["clicks"]
+        )
         data["clicks"].append({
             "ts": _now_iso(),
             "visitor_id": visitor,
+            "ip": ip,
             "session_id": payload.session_id,
             "unique": not already,
         })
