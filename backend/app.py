@@ -516,9 +516,12 @@ def _load_prospects() -> dict[str, Any]:
     if not isinstance(data, dict):
         return _empty_prospects()
     data.setdefault("clicks", [])
+    data.setdefault("dons", [])
     data.setdefault("emails", [])
     data.setdefault("unique_clicks", 0)
     data.setdefault("total_clicks", 0)
+    data.setdefault("unique_dons", 0)
+    data.setdefault("total_dons", 0)
     data.setdefault("emails_count", 0)
     return data
 
