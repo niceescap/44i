@@ -45,6 +45,16 @@ WEB_DIR = Path(__file__).resolve().parent / "static"
 
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> FileResponse:
+    return FileResponse(WEB_DIR / "brand" / "favicon.ico")
+
+
+@app.get("/apple-touch-icon.png", include_in_schema=False)
+def apple_touch_icon() -> FileResponse:
+    return FileResponse(WEB_DIR / "brand" / "apple-touch-icon.png")
+
 # ... la suite de ton code continue ici
 
 DISCLAIMER = "La Rosace est une application symbolique et divertissante. Les interprétations ne remplacent pas un avis médical, juridique, financier ou professionnel."
