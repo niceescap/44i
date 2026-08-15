@@ -39,6 +39,7 @@ class RosaceSession:
     llm_messages: list[dict[str, str]] = field(default_factory=list)
     interpreted: bool = False
     question: str | None = None
+    locale: str = "fr"
 
     def touch(self) -> None:
         self.expires_at = _now() + timedelta(minutes=TTL_MINUTES)
