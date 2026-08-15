@@ -469,9 +469,13 @@ def _prepare_llm_cold_start(session) -> None:
             session.pipeline.traiter(code)
     text = cold_start_message(session.pipeline.cold_start_lines())
     if "Aucun log symbolique" in text and chosen_codes:
+        pipe = session.pipeline
         text = cold_start_message(
-            f"{n} · {code} — {session.pipeline.designation(code)}"
-            for n, code in enumerate(chosen_codes, 1)
+            [COLD_START_LEXIQUE, ""]
+            + [
+                f"{n} · {pipe.etiquette(code)} — {pipe.designation(code)}"
+                for n, code in enumerate(chosen_codes, 1)
+            ]
         )
     preview = text if len(text) <= 1200 else text[:1200] + "…"
     print(f"[llm_v2] cold start ({len(text)} chars)\n{preview}", flush=True)
