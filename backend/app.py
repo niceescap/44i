@@ -507,6 +507,8 @@ async def _stream_session_reply(session, prepare_user: bool) -> Any:
         _prepare_llm_cold_start(session)
 
     async def generate():
+        if not session.llm_messages:
+            _prepare_llm_cold_start(session)
         acc: list[str] = []
         try:
             async for piece in complete_stream(session.llm_messages):
