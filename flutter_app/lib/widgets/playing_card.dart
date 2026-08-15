@@ -55,7 +55,7 @@ class _Back extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text('✦', style: TextStyle(color: RosaceColors.gold.withValues(alpha: 0.85), fontSize: 10)),
+      child: Text('✦', style: TextStyle(color: RosaceColors.gold.withOpacity(0.85), fontSize: 10)),
     );
   }
 }
