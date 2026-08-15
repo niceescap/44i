@@ -447,7 +447,7 @@ def rosace_page() -> FileResponse:
 @app.post("/api/v2/sessions")
 def v2_create_session(payload: V2CreateRequest | None = None) -> dict[str, Any]:
     body = payload or V2CreateRequest()
-    session = rosace_store.create(body.stage_width, body.stage_height)
+    session = rosace_store.create(body.stage_width, body.stage_height, locale=body.locale)
     return session.public_state()
 
 
