@@ -503,10 +503,8 @@ def _sse(payload: dict[str, Any]) -> str:
 
 
 async def _stream_session_reply(session, prepare_user: bool) -> Any:
-    if prepare_user and not session.llm_messages:
-        session.llm_messages.append(
-            {"role": "user", "content": cold_start_message(session.pipeline.cold_start_lines())}
-        )
+    if prepare_user:
+        _prepare_llm_cold_start(session)
 
     async def generate():
         acc: list[str] = []
