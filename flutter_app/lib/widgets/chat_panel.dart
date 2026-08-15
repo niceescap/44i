@@ -80,7 +80,7 @@ class _ChatPanelState extends State<ChatPanel> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(message.content, style: TextStyle(color: RosaceColors.cream.withValues(alpha: 0.95), height: 1.35)),
+                      Text(message.content, style: TextStyle(color: RosaceColors.cream.withOpacity(0.95), height: 1.35)),
                       if (!mine && !message.guide && message.content.isNotEmpty)
                         Align(
                           alignment: Alignment.centerRight,
