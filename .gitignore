@@ -7,6 +7,8 @@ chroma_db/
 # Fichiers générés au runtime
 *.log
 *.db
+logs/
+prospects.json
 chatin.json
 chatout.json
 state.json

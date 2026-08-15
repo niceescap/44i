@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Rosace</title>
+  <link rel="icon" href="/static/brand/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="/static/brand/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/static/brand/apple-touch-icon.png">
+  <meta name="theme-color" content="#0a0510">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Source+Sans+3:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --felt: #1a0e24;
+      --ink: #0a0510;
+      --gold: #c9a84c;
+      --gold-dim: rgba(201, 168, 76, 0.28);
+      --cream: #f6edd4;
+      --red: #b41c32;
+      --black: #1a1a2e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100%;
+      background: var(--ink);
+      color: #e8d5a3;
+      font-family: Georgia, "Palatino Linotype", serif;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header { order: 1; }
+    #chat-panel { order: 2; }
+    #hand-rail { order: 3; }
+    .stage-wrap { order: 4; }
+    .chat-actions { order: 5; }
+    footer { order: 6; }
+    body.oracle #hand-rail { order: 2; }
+    body.oracle #chat-panel { order: 3; }
+    body.oracle .stage-wrap { order: 4; }
+    body.oracle .chat-actions { order: 5; }
+    html, body {
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    body.oracle {
+      min-height: 100vh;
+      height: auto;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    .ambient {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse at 30% 18%, rgba(76, 29, 96, .28), transparent 52%),
+        radial-gradient(ellipse at 72% 82%, rgba(120, 40, 60, .18), transparent 50%),
+        radial-gradient(ellipse at 50% 50%, #140a22, #060309);
+    }
+    header {
+      position: relative; z-index: 3;
+      width: min(960px, 100%);
+      padding: 16px 20px 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    header .brand {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      max-width: min(100%, 28rem);
+      padding: 12px 26px 16px 12px;
+      border-radius: 16px;
+    }
+    .brand-arc-clip {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+      -webkit-mask-image:
+        radial-gradient(ellipse 95% 85% at 28% 60%, #000 18%, rgba(0,0,0,.55) 48%, transparent 78%);
+      mask-image:
+        radial-gradient(ellipse 95% 85% at 28% 60%, #000 18%, rgba(0,0,0,.55) 48%, transparent 78%);
+    }
+    .brand-arc {
+      position: absolute;
+      width: 760%;
+      aspect-ratio: 1;
+      left: 12%;
+      top: 220%;
+      background: url("/static/brand/rosace.png") center / contain no-repeat;
+      opacity: .5;
+      mix-blend-mode: lighten;
+      transform: translate(-50%, -50%);
+      animation: rosaceCycle 240s linear infinite;
+      will-change: transform;
+    }
+    @keyframes rosaceCycle {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .brand-arc { animation: none; }
+    }
+    header .brand > *:not(.brand-arc-clip) {
+      position: relative;
+      z-index: 1;
+    }
+    h1 {
+      font-family: "Great Vibes", "Segoe Script", cursive;
+      font-size: clamp(52px, 12vw, 80px);
+      font-weight: 400;
+      letter-spacing: .01em;
+      line-height: .92;
+      color: #f6db9b;
+      text-shadow: 0 2px 18px rgba(0,0,0,.4);
+    }
+    .tagline {
+      font-family: "Source Sans 3", "Segoe UI", sans-serif;
+      font-size: clamp(15px, 2.5vw, 17px);
+      font-weight: 500;
+      letter-spacing: .035em;
+      line-height: 1.4;
+      color: #ead7a6;
+      margin-top: 8px;
+    }
+    .tagline-sub {
+      font-family: "Source Sans 3", "Segoe UI", sans-serif;
+      margin-top: 3px;
+      font-size: clamp(13px, 2.2vw, 15px);
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: .05em;
+      line-height: 1.4;
+      color: #d2be86;
+    }
+    #status, #symbol-log { display: none; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button {
+      background: transparent;
+      border: 1px solid #6b4c8a;
+      color: var(--gold);
+      font-family: inherit;
+      font-size: 13px;
+      letter-spacing: .06em;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { border-color: var(--gold); background: rgba(201,168,76,.08); }
+    button:disabled { opacity: .4; cursor: default; }
+    .meta { font-size: 12px; color: #9a8150; letter-spacing: .04em; }
+    .stage-wrap {
+      position: relative; z-index: 2;
+      width: min(960px, 100vw);
+      height: min(960px, 100vw);
+      flex: 0 0 auto;
+      transition: height .95s cubic-bezier(.22, .8, .2, 1);
+    }
+    body.oracle .stage-wrap {
+      height: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    body.oracle header { padding: 8px 16px 0; }
+
+    #hand-rail {
+      position: relative;
+      z-index: 4;
+      width: min(960px, 100%);
+      height: 0;
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: visible;
+      pointer-events: none;
+    }
+    body.oracle #hand-rail {
+      height: 168px;
+      pointer-events: auto;
+    }
+    #hand-rail .card {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: 39px;
+      height: 56px;
+      flex: 0 0 39px;
+      margin: 0 -10px;
+    }
+    #stage {
+      position: absolute; inset: 18px;
+      border-radius: 24px;
+      background:
+        radial-gradient(ellipse at center, #2a1840 0%, #1a0e28 42%, #100818 100%);
+      border: 3px solid #6b4c8a;
+      box-shadow:
+        0 0 0 6px #1a0e2e,
+        0 0 0 7px #8b6ab0,
+        0 24px 70px rgba(0,0,0,.65),
+        inset 0 0 90px rgba(0,0,0,.45);
+      overflow: hidden;
+      transition:
+        background .7s ease,
+        border-color .7s ease,
+        box-shadow .7s ease,
+        inset .7s ease;
+    }
+    body.oracle #stage {
+      inset: 0;
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      overflow: visible;
+    }
+    .tapis-deco {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 88%;
+      height: 88%;
+      transform: translate(-50%, -50%);
+      object-fit: contain;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .85;
+      mix-blend-mode: lighten;
+      filter: drop-shadow(0 0 28px rgba(201,168,76,.16));
+    }
+    body.oracle #rosace,
+    body.oracle .burst,
+    body.oracle #deck-heart,
+    body.oracle .tapis-deco {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .45s ease;
+    }
+    #stage.dealing,
+    #stage.recalling { cursor: default; }
+    #stage.dealing .card,
+    #stage.recalling .card { pointer-events: none; }
+    #rosace {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    #deck-heart {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 48px; height: 68px;
+      transform: translate(-50%, -50%) scale(0.72);
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      background: linear-gradient(135deg, #5a1830 0%, #7a2040 32%, #3d1020 100%);
+      border: 2px solid var(--gold);
+      box-shadow:
+        3px 3px 0 #4a1224,
+        6px 6px 0 #3a0e1c,
+        0 0 24px rgba(201,168,76,.25);
+      z-index: 2;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+    #deck-heart.visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    #deck-heart::after {
+      content: "";
+      position: absolute; inset: 8%;
+      background: url("/static/brand/rosace.png") center / contain no-repeat;
+      mix-blend-mode: lighten;
+      opacity: .88;
+    }
+    .burst {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 12px; height: 12px;
+      margin: -6px 0 0 -6px;
+      border: 1px solid rgba(201,168,76,.0);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    #stage.dealing .burst {
+      animation: burst 4.4s cubic-bezier(.15,.8,.2,1) both;
+    }
+    #stage.recalling .burst {
+      animation: unburst 3.2s cubic-bezier(.2,.15,.2,1) both;
+    }
+    @keyframes burst {
+      0%   { width: 12px; height: 12px; margin: -6px 0 0 -6px; border-color: rgba(201,168,76,.55); opacity: .8; }
+      35%  { opacity: .25; }
+      100% { width: 780px; height: 780px; margin: -390px 0 0 -390px; border-color: rgba(201,168,76,0); opacity: 0; }
+    }
+    @keyframes unburst {
+      0%   { width: 780px; height: 780px; margin: -390px 0 0 -390px; border-color: rgba(201,168,76,.35); opacity: .35; }
+      100% { width: 12px; height: 12px; margin: -6px 0 0 -6px; border-color: rgba(201,168,76,0); opacity: 0; }
+    }
+    .card {
+      position: absolute;
+      width: 34.5px; height: 49.5px;
+      font-size: 9px;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+      transform-style: preserve-3d;
+      cursor: pointer;
+      transition: filter .2s ease;
+      will-change: left, top, transform, opacity;
+    }
+    #stage:not(.dealing):not(.recalling) .card:not(.in-hand):hover {
+      filter: brightness(1.18) drop-shadow(0 0 10px rgba(201,168,76,.55));
+      z-index: 400 !important;
+    }
+    .card.in-hand {
+      cursor: default;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,.45));
+    }
+    .card-inner {
+      position: absolute; inset: 0;
+      transform-style: preserve-3d;
+      transition: transform .55s cubic-bezier(.2,.7,.2,1);
+    }
+    .card.revealed .card-inner { transform: rotateY(180deg); }
+    .face {
+      position: absolute; inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .back {
+      background:
+        radial-gradient(ellipse at 50% 38%, #7a2848 0%, #4a1428 58%, #2a0c18 100%);
+      border: 1.5px solid var(--gold);
+      box-shadow: inset 0 0 0 1px rgba(201,168,76,.34), inset 0 0 10px rgba(0,0,0,.5);
+    }
+    .back::before {
+      content: "";
+      position: absolute; inset: 2.5px;
+      border: 1px solid rgba(201,168,76,.3);
+      border-radius: 3px;
+      background-image:
+        repeating-linear-gradient(45deg, transparent 0 3.5px, rgba(201,168,76,.08) 3.5px 4.5px),
+        repeating-linear-gradient(-45deg, transparent 0 3.5px, rgba(201,168,76,.08) 3.5px 4.5px);
+    }
+    .back::after {
+      content: "";
+      position: absolute;
+      inset: 16% 12%;
+      background: url("/static/brand/rosace.png") center / contain no-repeat;
+      mix-blend-mode: lighten;
+      opacity: .86;
+      filter: saturate(1.08);
+    }
+    .front {
+      background:
+        radial-gradient(ellipse at 50% 36%, #fffaf0 0%, #f6e7c4 62%, #e8d09a 100%);
+      border: 1px solid #c9a84c;
+      box-shadow: inset 0 0 0 1px rgba(154, 92, 28, .18);
+      transform: rotateY(180deg);
+      color: var(--black);
+    }
+    .front::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border: 1px solid rgba(120, 48, 48, .16);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .front.red { color: var(--red); }
+    .front .corner {
+      position: absolute;
+      font-size: .72em;
+      font-weight: 700;
+      line-height: 1.02;
+      text-align: center;
+      letter-spacing: -.03em;
+    }
+    .front .corner span { display: block; font-size: 1.05em; font-weight: 400; }
+    .front .corner.tl { top: 2px; left: 3px; }
+    .front .corner.br { bottom: 2px; right: 3px; transform: rotate(180deg); }
+    .front .pips { position: absolute; inset: 0; }
+    .front .mini-pip {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-size: .82em;
+      line-height: 1;
+    }
+    .front .mini-pip.invert { transform: translate(-50%, -50%) rotate(180deg); }
+    .front .ace-pip { font-size: 1.7em; }
+    .front .court {
+      position: absolute;
+      inset: 20% 17% 20% 17%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6%;
+      border: 1px solid currentColor;
+      border-radius: 3px;
+      background: linear-gradient(180deg, rgba(255,255,255,.28), transparent 42%);
+      box-shadow: inset 0 0 0 1px rgba(201,168,76,.22);
+    }
+    .front .court-rank {
+      font-size: 1.15em;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .front .court-pip { font-size: .95em; line-height: 1; }
+    footer {
+      position: relative; z-index: 3;
+      width: min(960px, 100%);
+      padding: 8px 20px 20px;
+    }
+    body.oracle footer { display: none; }
+    #revealed {
+      min-height: 1.4em;
+      font-size: 14px;
+      color: var(--cream);
+      letter-spacing: .03em;
+    }
+    #revealed em { color: #9a8150; font-style: normal; }
+    #chat-panel {
+      display: flex;
+      position: relative;
+      z-index: 3;
+      width: min(960px, 100%);
+      flex: 0 0 auto;
+      min-height: 0;
+      flex-direction: column;
+      margin: 4px 12px 10px;
+      background: linear-gradient(180deg, rgba(26,14,40,.55), rgba(10,6,18,.82));
+      border: 1px solid #4a2a6e;
+      border-radius: 16px;
+      overflow: visible;
+      box-shadow: 0 16px 40px rgba(0,0,0,.35);
+    }
+    body.oracle #chat-panel {
+      margin: 0 12px 24px;
+      animation: chatIn .55s .15s ease both;
+    }
+    @keyframes chatIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: none; }
+    }
+    #chat-log {
+      flex: 0 0 auto;
+      min-height: 0;
+      max-height: none;
+      overflow: visible;
+      padding: 14px 18px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .guide {
+      align-self: stretch;
+      max-width: 100%;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #8d7348;
+      font-style: italic;
+      letter-spacing: .01em;
+    }
+    .guide.pulse {
+      animation: guidePulse 1.7s ease-in-out infinite;
+    }
+    @keyframes guidePulse {
+      0%, 100% { opacity: .38; }
+      50% { opacity: 1; }
+    }
+    .wait-mark {
+      align-self: flex-start;
+      width: 18px;
+      height: 18px;
+      margin: 4px 0 2px;
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,76,.55);
+      box-shadow: 0 0 10px rgba(201,168,76,.18);
+      animation: guidePulse 1.15s ease-in-out infinite;
+    }
+    .bubble {
+      position: relative;
+      max-width: 82%;
+      padding: 10px 13px 22px;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .bubble.user { padding-bottom: 10px; }
+    .bubble.oracle {
+      align-self: flex-start;
+      background: rgba(107, 76, 138, .28);
+      border: 1px solid rgba(201,168,76,.22);
+      color: var(--cream);
+    }
+    .bubble.user {
+      align-self: flex-end;
+      background: rgba(201,168,76,.12);
+      border: 1px solid rgba(201,168,76,.35);
+      color: #f3e6b8;
+    }
+    .audio-btn {
+      position: absolute;
+      right: 8px;
+      bottom: 4px;
+      border: none;
+      background: transparent;
+      color: #c9a84c;
+      font-size: 14px;
+      line-height: 1;
+      padding: 2px;
+      cursor: pointer;
+      opacity: .75;
+    }
+    .audio-btn:hover { opacity: 1; }
+    .audio-puff {
+      position: absolute;
+      right: 4px;
+      bottom: 22px;
+      padding: 4px 7px;
+      border-radius: 10px;
+      background: #2a1a3e;
+      border: 1px solid rgba(201,168,76,.45);
+      color: #f6db9b;
+      font-size: 10px;
+      letter-spacing: .02em;
+      white-space: nowrap;
+      pointer-events: none;
+      animation: puffOut 1.35s ease forwards;
+    }
+    @keyframes puffOut {
+      0% { opacity: 0; transform: translateY(4px) scale(.9); }
+      18% { opacity: 1; transform: none; }
+      100% { opacity: 0; transform: translateY(-6px) scale(.96); }
+    }
+    #chat-form {
+      display: none;
+      gap: 8px;
+      padding: 10px 12px 12px;
+      border-top: 1px solid #2a1a3e;
+    }
+    #chat-form.ready { display: flex; }
+    #chat-input {
+      flex: 1;
+      padding: 12px 14px;
+      background: #1a0e2e;
+      border: 1px solid #4a2a6e;
+      border-radius: 8px;
+      color: #e8d5a3;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+    }
+    #chat-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 10px rgba(201,168,76,.18);
+    }
+    #chat-send {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      padding: 0;
+    }
+    .chat-actions {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: min(960px, 100%);
+      padding: 10px 12px 28px;
+    }
+    .chat-actions-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+    .chat-actions .btn-solid {
+      flex: 1;
+      min-width: 0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      letter-spacing: .02em;
+      background: linear-gradient(135deg, #3a2a50, #2a1840);
+      border: 1px solid var(--gold);
+      color: #fff;
+    }
+    .chat-actions .btn-premium {
+      width: 100%;
+      padding: 15px 16px;
+      font-size: 15px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #1a1008;
+      background: linear-gradient(135deg, #7a5818, #e0c36a 48%, #b8923a);
+      border: 1px solid #f3df9a;
+      box-shadow: 0 0 18px rgba(201, 168, 76, .22);
+    }
+    .chat-actions .btn-don {
+      width: 100%;
+    }
+    .legal {
+      margin: 2px 0 0;
+      padding: 0 8px;
+      color: rgba(201, 168, 76, .34);
+      font-size: 10px;
+      letter-spacing: .06em;
+      text-align: center;
+      font-style: italic;
+    }
+    .disclaimer {
+      position: relative;
+      z-index: 3;
+      width: min(960px, 100%);
+      margin: 0 0 6px;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: #b7c2ba;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .modal[hidden] { display: none; }
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 3, 10, .72);
+    }
+    .modal-card {
+      position: relative;
+      z-index: 1;
+      width: min(560px, 100%);
+      max-height: min(88vh, 720px);
+      overflow-y: auto;
+      padding: 28px 22px 22px;
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #24162f, #140a1c);
+      color: var(--cream);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
+    }
+    .modal-card h2 {
+      font-size: 22px;
+      color: #f6db9b;
+      margin-bottom: 12px;
+    }
+    .modal-card p {
+      font-size: 14px;
+      line-height: 1.55;
+      color: #e8d5a3;
+      margin-bottom: 16px;
+    }
+    .modal-card label {
+      display: block;
+      font-size: 12px;
+      color: #9a8150;
+      margin-bottom: 6px;
+    }
+    .modal-card input[type="email"] {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      background: #1a0e2e;
+      border: 1px solid #4a2a6e;
+      border-radius: 8px;
+      color: #e8d5a3;
+      font-size: 15px;
+      font-family: inherit;
+    }
+    .modal-card .btn-premium {
+      width: 100%;
+      border-radius: 10px;
+    }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: none;
+      font-size: 24px;
+      line-height: 1;
+      color: var(--gold);
+    }
+    #premium-thanks {
+      margin-top: 8px;
+      color: #d4c07a;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient"></div>
+  <header>
+    <div class="brand">
+      <div class="brand-arc-clip" aria-hidden="true"><div class="brand-arc"></div></div>
+      <h1>La Rosace</h1>
+      <p class="tagline">Consultation Symbolique anonyme</p>
+      <p class="tagline-sub">l’Oracle vous guide</p>
+    </div>
+  </header>
+  <div id="hand-rail" aria-label="Main de trois cartes"></div>
+  <div class="stage-wrap">
+    <div id="stage">
+      <img class="tapis-deco" src="/static/brand/rosace.png" alt="" aria-hidden="true">
+      <svg id="rosace" viewBox="0 0 1000 1000" aria-hidden="true"></svg>
+      <div class="burst"></div>
+      <div id="deck-heart"></div>
+    </div>
+  </div>
+  <section id="chat-panel" aria-label="Fenêtre de l'oracle">
+    <div id="chat-log"></div>
+    <form id="chat-form" autocomplete="off">
+      <input id="chat-input" type="text" placeholder="Écris à l’oracle…" maxlength="500" readonly inputmode="text" autocomplete="off">
+      <button type="submit" id="chat-send" title="Envoyer">✦</button>
+    </form>
+  </section>
+  <div class="chat-actions">
+    <button type="button" class="btn-solid btn-premium" id="btn-premium">Tester la version Premium</button>
+    <div class="chat-actions-row">
+      <button type="button" class="btn-solid" id="btn-export">Conserver ce tirage</button>
+      <button type="button" class="btn-solid" id="btn-shuffle">Recommencer</button>
+    </div>
+    <button type="button" class="btn-solid btn-don" id="btn-don">Faire un don à La Rosace</button>
+    <p class="legal">La Rosace, par « 44 interprètes » ★ V3 · 15 août 2026 · tous droits réservés</p>
+  </div>
+  <div id="premium-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-premium></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="premium-title">
+      <button type="button" class="modal-close" id="premium-close" aria-label="Fermer">×</button>
+      <h2 id="premium-title">La Grande Rosace</h2>
+      <p>Merci de l’attention que vous portez à La Rosace ! Une version complète de l’application est en cours de développement. Vous pourrez alors exploiter toute la puissance d’interprétation de notre intelligence artificielle, instruite sur plusieurs milliards de paramètres. Il s’agit du plus gros modèle francophone spécialisé en cartomancie, dont le tirage de trois cartes est un simple extrait offert. Crédits maîtrisés et données confidentielles préservées, l’accès à La Grande Rosace vous sera réservé dès sa sortie si vous souhaitez être prévenu(e) en laissant votre e-mail ci-dessous.</p>
+      <form id="premium-form">
+        <label for="premium-email">Être prévenu(e) de la sortie</label>
+        <input id="premium-email" type="email" name="email" autocomplete="email" placeholder="votre.email@exemple.fr" maxlength="254" required>
+        <button type="submit" class="btn-solid btn-premium">Prévenez-moi</button>
+      </form>
+      <p id="premium-thanks" hidden>Merci. Votre adresse est notée, nous vous préviendrons.</p>
+    </div>
+  </div>
+  <footer>
+    <div id="revealed"></div>
+  </footer>
+
+<script>
+(function () {
+  const N = 13, K = 4, CX = 500, CY = 500, R = 392;
+  const DEAL_MS = 4400;
+  const STAGGER_MS = 1680;
+  const FLIGHT_MS = DEAL_MS - STAGGER_MS;
+  const RECALL_STAGGER = 1200;
+  const RECALL_FLIGHT = 2000;
+  const HAND_MS = 1600;
+  const HAND_SLOTS = [
+    { left: "45.2%", top: "74%", rot: -11, z: 260 },
+    { left: "50.0%", top: "73%", rot: 2, z: 261 },
+    { left: "54.8%", top: "74%", rot: 12, z: 262 }
+  ];
+  const ORACLE_SLOTS = [
+    { left: "41.5%", top: "54%", rot: -10, z: 260 },
+    { left: "50.0%", top: "48%", rot: 2, z: 261 },
+    { left: "58.5%", top: "54%", rot: 12, z: 262 }
+  ];
+  const UNVEIL_MS = 900;
+  const RANKS = ["A","2","3","4","5","6","7","8","9","T","J","Q","K"];
+  const SUITS = [
+    { id: "S", pip: "♠", red: false, name: "pique" },
+    { id: "H", pip: "♥", red: true,  name: "cœur" },
+    { id: "D", pip: "♦", red: true,  name: "carreau" },
+    { id: "C", pip: "♣", red: false, name: "trèfle" }
+  ];
+  const RANK_FACE = { A:"A", T:"10", J:"V", Q:"D", K:"R" };
+  const PIP_LAYOUT = {
+    A: [[50, 52]],
+    "2": [[50, 22], [50, 78, 1]],
+    "3": [[50, 20], [50, 50], [50, 80, 1]],
+    "4": [[30, 22], [70, 22], [30, 78, 1], [70, 78, 1]],
+    "5": [[30, 22], [70, 22], [50, 50], [30, 78, 1], [70, 78, 1]],
+    "6": [[30, 22], [70, 22], [30, 50], [70, 50], [30, 78, 1], [70, 78, 1]],
+    "7": [[30, 20], [70, 20], [50, 36], [30, 50], [70, 50], [30, 80, 1], [70, 80, 1]],
+    "8": [[30, 20], [70, 20], [50, 34], [30, 50], [70, 50], [50, 66, 1], [30, 80, 1], [70, 80, 1]],
+    "9": [[30, 18], [70, 18], [30, 38], [70, 38], [50, 50], [30, 62, 1], [70, 62, 1], [30, 82, 1], [70, 82, 1]],
+    T: [[30, 16], [70, 16], [50, 25], [30, 34], [70, 34], [30, 66, 1], [70, 66, 1], [50, 75, 1], [30, 84, 1], [70, 84, 1]]
+  };
+
+  function paintFront(front, card) {
+    var rank = RANK_FACE[card.rank] || card.rank || "✦";
+    var pip = card.pip || "✦";
+    var html = '<div class="corner tl">' + rank + "<span>" + pip + "</span></div>" +
+      '<div class="corner br">' + rank + "<span>" + pip + "</span></div>";
+    var layout = PIP_LAYOUT[card.rank];
+    if (layout) {
+      html += '<div class="pips">' + layout.map(function (pt) {
+        var cls = "mini-pip" + (pt[2] ? " invert" : "") + (card.rank === "A" ? " ace-pip" : "");
+        return '<span class="' + cls + '" style="left:' + pt[0] + "%;top:" + pt[1] + '%">' + pip + "</span>";
+      }).join("") + "</div>";
+    } else {
+      html += '<div class="court"><span class="court-rank">' + rank + '</span><span class="court-pip">' + pip + "</span></div>";
+    }
+    front.className = "face front" + (card.red ? " red" : "");
+    front.innerHTML = html;
+  }
+  const RANK_FR = { A:"as", "2":"deux", "3":"trois", "4":"quatre", "5":"cinq", "6":"six", "7":"sept", "8":"huit", "9":"neuf", T:"dix", J:"valet", Q:"dame", K:"roi" };
+  const SUIT_FR = { S:"pique", H:"cœur", D:"carreau", C:"trèfle" };
+  const CARD_MOTIF = {
+    AC:"triomphe", KC:"homme protecteur", QC:"femme alliée", JC:"jeune homme", TC:"argent",
+    "9C":"travail", "8C":"association", "7C":"l’esprit", "6C":"obstacles", "5C":"implication",
+    "4C":"imprudence", "3C":"soutien", "2C":"hésitation",
+    AH:"le foyer", KH:"homme bienveillant", QH:"femme bienveillante", JH:"rencontre légère", TH:"vie sociale",
+    "9H":"accomplissement", "8H":"sentiments", "7H":"vie affective", "6H":"souvenirs", "5H":"échanges du cœur",
+    "4H":"déception", "3H":"union", "2H":"malentendu",
+    AD:"une nouvelle", KD:"autorité lointaine", QD:"jalousie", JD:"le message", TD:"le voyage",
+    "9D":"le retard", "8D":"une démarche", "7D":"discussion vive", "6D":"petit flux d’argent", "5D":"vie cachée",
+    "4D":"concrétisation", "3D":"construction", "2D":"indécision",
+    AS:"les papiers", KS:"figure officielle", QS:"solitude", JS:"avertissement", TS:"nuages",
+    "9S":"coup du sort", "8S":"ragots", "7S":"lutte", "6S":"petits accrocs", "5S":"rupture",
+    "4S":"retrait", "3S":"rivalité", "2S":"tromperie"
+  };
+  const SAY_ASK = [
+    "Choisis trois cartes.",
+    "Clique trois fois là où ça t’inspire.",
+    "Sélectionne avec soin trois cartes.",
+    "Quelles sont les trois cartes qui t’attirent ?",
+    "Relève trois cartes cachées.",
+    "Laisse ta main choisir trois voiles.",
+    "Trois cartes suffisent. Pose le premier geste.",
+    "Approche-toi du tapis et désigne trois destins."
+  ];
+  const SAY_MORE = [
+    "Une autre…",
+    "Encore une.",
+    "Poursuis, une deuxième carte.",
+    "Le tapis attend le deuxième geste.",
+    "Laisse venir la suivante.",
+    "Une de plus, sans te presser."
+  ];
+  const SAY_LAST = [
+    "Plus qu’une…",
+    "Et la dernière…",
+    "Et la troisième pour finir.",
+    "Il reste le dernier voile.",
+    "Une dernière fois, là où ça t’appelle.",
+    "Ferme le triangle."
+  ];
+  const SAY_WAIT = [
+    "Le tirage est bien enregistré. L’oracle en prend connaissance.",
+    "Les trois cartes sont posées. Le cabinet s’ouvre.",
+    "C’est noté. L’interprétation se prépare.",
+    "Le tapis se tait. L’oracle lit.",
+    "La main est complète. Un instant de silence…",
+    "Tout est reçu. L’oracle assemble le sens."
+  ];
+  const SAY_DISCLAIMER = [
+    "Garde en tête que La Rosace est une application de divertissement : ces mots stimulent la pensée, ils ne dictent pas ta vie.",
+    "Rappel doux : ici tout est symbolique et ludique, jamais un avis médical, juridique ou financier.",
+    "Reçois ce qui vient comme une conversation philosophique, non comme une vérité absolue.",
+    "La Rosace divertit. Les cartes ouvrent des pistes, elles ne remplacent aucun professionnel.",
+    "Ceci n’est pas une prédiction certaine, seulement un jeu d’images pour réfléchir.",
+    "L’intelligence artificielle assemble ici des savoirs de tradition : prends-les à titre de stimulation, pas d’autorité.",
+    "Amuse-toi du miroir. Ce n’est ni diagnostic, ni contrat, ni oracle infaillible.",
+    "Le cabinet est un théâtre symbolique. Ce qui compte, c’est ce que tu y reconnais.",
+    "Les interprétations viennent d’ouvrages ésotériques et d’un modèle : lis-les comme on lit un poème utile.",
+    "Pas de fatalité. Juste trois cartes, un récit, et ta liberté d’en faire ce que tu veux.",
+    "Si un sujet grave se présente, tourne-toi vers une personne compétente. Ici, on joue avec les symboles.",
+    "La Rosace t’accompagne le temps d’une lecture légère. Le sérieux de ta vie reste le tien."
+  ];
+  const API = (location.protocol === "file:") ? "http://127.0.0.1:8001" : "";
+  const lastPicks = {};
+
+  function pickPhrase(key, list) {
+    var last = lastPicks[key];
+    var pool = list.filter(function (item) { return item !== last; });
+    if (!pool.length) pool = list.slice();
+    var choice = pool[Math.floor(Math.random() * pool.length)];
+    lastPicks[key] = choice;
+    return choice;
+  }
+
+  function frenchCardName(code) {
+    var rank = code.slice(0, -1);
+    var suit = code.slice(-1);
+    return (RANK_FR[rank] || rank) + " de " + (SUIT_FR[suit] || suit);
+  }
+
+  function cardGuideLine(code) {
+    var name = frenchCardName(code);
+    var motif = CARD_MOTIF[code] || "un souffle";
+    var frames = [
+      name.charAt(0).toUpperCase() + name.slice(1) + ", " + motif + ".",
+      "Voici " + name + " : " + motif + ".",
+      name.charAt(0).toUpperCase() + name.slice(1) + " se montre, " + motif + ".",
+      "Tu lèves " + name + " — " + motif + ".",
+      name.charAt(0).toUpperCase() + name.slice(1) + ". Motif : " + motif + "."
+    ];
+    return frames[Math.floor(Math.random() * frames.length)];
+  }
+
+  function stopGuidePulse() {
+    document.querySelectorAll("#chat-log .guide.pulse").forEach(function (el) {
+      el.classList.remove("pulse");
+    });
+  }
+
+  function addGuide(text, pulsing) {
+    stopGuidePulse();
+    var log = document.getElementById("chat-log");
+    var el = document.createElement("div");
+    el.className = "guide" + (pulsing ? " pulse" : "");
+    el.textContent = text;
+    log.appendChild(el);
+    return el;
+  }
+
+  function showWaitMark() {
+    hideWaitMark();
+    var log = document.getElementById("chat-log");
+    var el = document.createElement("div");
+    el.className = "wait-mark";
+    el.id = "wait-mark";
+    el.setAttribute("aria-hidden", "true");
+    log.appendChild(el);
+  }
+
+  function hideWaitMark() {
+    var el = document.getElementById("wait-mark");
+    if (el) el.remove();
+  }
+
+  function enableChatInput() {
+    var form = document.getElementById("chat-form");
+    form.classList.add("ready");
+    var input = document.getElementById("chat-input");
+    input.removeAttribute("readonly");
+  }
+
+  function disableChatInput() {
+    var form = document.getElementById("chat-form");
+    form.classList.remove("ready");
+    document.getElementById("chat-input").value = "";
+  }
+
+  function visitId() {
+    var key = "la-rosace-visit";
+    var id = "";
+    try { id = sessionStorage.getItem(key) || ""; } catch (e) {}
+    if (!id) {
+      id = (crypto.randomUUID && crypto.randomUUID()) || ("t-" + Date.now() + "-" + Math.random().toString(16).slice(2));
+      try { sessionStorage.setItem(key, id); } catch (e) {}
+    }
+    return id;
+  }
+
+  function trackEvent(type, extra) {
+    var body = Object.assign({
+      visit_id: visitId(),
+      visitor_id: visitorId(),
+      type: type,
+      session_id: sessionId || null
+    }, extra || {});
+    return api("/api/v2/prospects/event", {
+      method: "POST",
+      body: JSON.stringify(body)
+    }).catch(function (err) { console.error(err); });
+  }
+
+  function trackVisit() {
+    api("/api/v2/prospects/visit", {
+      method: "POST",
+      body: JSON.stringify({
+        visit_id: visitId(),
+        visitor_id: visitorId(),
+        session_id: sessionId || null
+      })
+    }).catch(function (err) { console.error(err); });
+  }
+
+  function attachAudioButton(bubble) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "audio-btn";
+    btn.setAttribute("aria-label", "Écouter");
+    btn.textContent = "🔊";
+    btn.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      var old = bubble.querySelector(".audio-puff");
+      if (old) old.remove();
+      var puff = document.createElement("span");
+      puff.className = "audio-puff";
+      puff.textContent = "fonction premium";
+      bubble.appendChild(puff);
+      setTimeout(function () { if (puff.parentNode) puff.remove(); }, 1400);
+      trackEvent("audio_click");
+    });
+    bubble.appendChild(btn);
+  }
+
+  function appendOracleFrame() {
+    var log = document.getElementById("chat-log");
+    var el = document.createElement("div");
+    el.className = "bubble oracle";
+    var text = document.createElement("div");
+    text.className = "bubble-text";
+    el.appendChild(text);
+    log.appendChild(el);
+    return el;
+  }
+
+  async function readSse(url, body, onText) {
+    var res = await fetch(API + url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    });
+    if (!res.ok || !res.body) {
+      var t = await res.text();
+      throw new Error(t || res.statusText);
+    }
+    var reader = res.body.getReader();
+    var dec = new TextDecoder();
+    var buf = "";
+    var acc = "";
+    while (true) {
+      var chunk = await reader.read();
+      if (chunk.done) break;
+      buf += dec.decode(chunk.value, { stream: true });
+      var parts = buf.split("\n\n");
+      buf = parts.pop() || "";
+      parts.forEach(function (block) {
+        var line = block.split("\n").filter(function (l) { return l.indexOf("data:") === 0; }).pop();
+        if (!line) return;
+        var raw = line.slice(5).trim();
+        if (!raw || raw === "[DONE]") return;
+        try {
+          var msg = JSON.parse(raw);
+          if (msg.error) throw new Error(msg.error);
+          if (msg.text) {
+            acc += msg.text;
+            onText(acc);
+          }
+          if (msg.done && msg.content && !acc) {
+            acc = msg.content;
+            onText(acc);
+          }
+        } catch (err) {
+          if (err instanceof SyntaxError) return;
+          throw err;
+        }
+      });
+    }
+    return acc;
+  }
+
+  function cardFromCode(code) {
+    const rank = code.slice(0, -1);
+    const suitId = code.slice(-1);
+    const suit = SUITS.find(function (s) { return s.id === suitId; }) || SUITS[0];
+    return {
+      code: code,
+      rank: rank,
+      suit: suit.id,
+      pip: suit.pip,
+      red: suit.red,
+      label: (RANK_FACE[rank] || rank) + suit.pip
+    };
+  }
+
+  async function api(path, opts) {
+    const res = await fetch(API + path, Object.assign({
+      headers: { "Content-Type": "application/json" }
+    }, opts || {}));
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(t || res.statusText);
+    }
+    return res.json();
+  }
+
+  function vertex(i) {
+    const a = -Math.PI / 2 + (2 * Math.PI * i) / N;
+    return { x: Math.cos(a), y: Math.sin(a) };
+  }
+
+  function intersect(a, b, c, d) {
+    const den = (a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x);
+    if (Math.abs(den) < 1e-12) return null;
+    const t = ((a.x - c.x) * (c.y - d.y) - (a.y - c.y) * (c.x - d.x)) / den;
+    const u = ((a.x - c.x) * (a.y - b.y) - (a.y - c.y) * (a.x - b.x)) / den;
+    if (t > 1e-8 && t < 1 - 1e-8 && u > 1e-8 && u < 1 - 1e-8) {
+      return { x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y) };
+    }
+    return null;
+  }
+
+  function sitesUnit() {
+    const V = [];
+    for (let i = 0; i < N; i++) V.push(vertex(i));
+    const tips = V.map((p, i) => ({
+      id: i, kind: "tip", ux: p.x, uy: p.y
+    }));
+    const crosses = [];
+    for (let i = 0; i < N; i++) {
+      for (let j = i + 1; j < N; j++) {
+        const ei = new Set([i, (i + K) % N]);
+        const ej = new Set([j, (j + K) % N]);
+        let share = false;
+        ei.forEach((v) => { if (ej.has(v)) share = true; });
+        if (share) continue;
+        const p = intersect(V[i], V[(i + K) % N], V[j], V[(j + K) % N]);
+        if (p) {
+          crosses.push({
+            id: tips.length + crosses.length,
+            kind: "cross",
+            ux: p.x, uy: p.y,
+            edges: [i, j]
+          });
+        }
+      }
+    }
+    return tips.concat(crosses);
+  }
+
+  function toCanvas(sites) {
+    return sites.map(function (s) {
+      const r = Math.hypot(s.ux, s.uy);
+      return Object.assign({}, s, {
+        x: CX + R * s.ux,
+        y: CY + R * s.uy,
+        radius: r,
+        angle: Math.atan2(s.uy, s.ux)
+      });
+    });
+  }
+
+  const CARD_PX_W = 34.5;
+  const CARD_PX_H = 49.5;
+  const MAX_COVER = 0.65;
+
+  function cardBoxInSiteUnits() {
+    const rect = stage.getBoundingClientRect();
+    const sx = Math.max(rect.width, 1);
+    const sy = Math.max(rect.height, 1);
+    return { w: CARD_PX_W / sx * 1000, h: CARD_PX_H / sy * 1000 };
+  }
+
+  function overlapArea(a, b, w, h) {
+    const ox = Math.max(0, w - Math.abs(a.x - b.x));
+    const oy = Math.max(0, h - Math.abs(a.y - b.y));
+    return ox * oy;
+  }
+
+  function separationScale(dx, dy, w, h, maxArea) {
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+    function ov(k) {
+      return Math.max(0, w - k * ax) * Math.max(0, h - k * ay);
+    }
+    if (ov(1) <= maxArea) return 1;
+    let lo = 1;
+    let hi = 1;
+    if (ax > 1e-9) hi = Math.max(hi, w / ax);
+    if (ay > 1e-9) hi = Math.max(hi, h / ay);
+    hi += 0.08;
+    for (let n = 0; n < 22; n++) {
+      const mid = (lo + hi) / 2;
+      if (ov(mid) > maxArea) lo = mid;
+      else hi = mid;
+    }
+    return hi;
+  }
+
+  function separateSites(geom, w, h) {
+    const pts = geom.map(function (s) { return Object.assign({}, s); });
+    const n = pts.length;
+    const limit = MAX_COVER * w * h;
+    for (let iter = 0; iter < 80; iter++) {
+      let worst = 0;
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const ov = overlapArea(pts[i], pts[j], w, h);
+          if (ov > worst) worst = ov;
+          if (ov <= limit + 1e-4) continue;
+          let dx = pts[j].x - pts[i].x;
+          let dy = pts[j].y - pts[i].y;
+          let dist = Math.hypot(dx, dy);
+          if (dist < 1e-6) {
+            const ang = (pts[i].angle || 0) + (i + 1) * 0.31;
+            dx = Math.cos(ang);
+            dy = Math.sin(ang);
+            dist = 1;
+          }
+          const k = separationScale(dx, dy, w, h, limit);
+          if (k <= 1) continue;
+          const ux = dx / dist;
+          const uy = dy / dist;
+          const push = (k - 1) * dist;
+          const mi = 1.2 - 0.75 * Math.min(pts[i].radius, 1);
+          const mj = 1.2 - 0.75 * Math.min(pts[j].radius, 1);
+          const sum = mi + mj;
+          pts[i].x -= ux * push * (mi / sum);
+          pts[i].y -= uy * push * (mi / sum);
+          pts[j].x += ux * push * (mj / sum);
+          pts[j].y += uy * push * (mj / sum);
+        }
+      }
+      if (worst <= limit + 1e-4) break;
+    }
+    const margin = Math.max(w, h) * 0.55;
+    pts.forEach(function (p) {
+      p.x = Math.min(1000 - margin, Math.max(margin, p.x));
+      p.y = Math.min(1000 - margin, Math.max(margin, p.y));
+    });
+    return pts;
+  }
+
+  function fullDeck() {
+    const deck = [];
+    SUITS.forEach((suit) => {
+      RANKS.forEach((rank) => deck.push({
+        code: rank + suit.id,
+        rank, suit: suit.id, pip: suit.pip, red: suit.red,
+        label: (RANK_FACE[rank] || rank) + suit.pip
+      }));
+    });
+    return deck;
+  }
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function shuffle(arr, rnd) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function drawMat(sites) {
+    const svg = document.getElementById("rosace");
+    const tips = sites.filter((s) => s.kind === "tip");
+    let dPoly = "";
+    tips.forEach((s, i) => { dPoly += (i ? " L " : "M ") + s.x.toFixed(2) + " " + s.y.toFixed(2); });
+    dPoly += " Z";
+    let dStar = "";
+    for (let k = 0; k < N; k++) {
+      const a = tips[k], b = tips[(k + K) % N];
+      dStar += "M " + a.x.toFixed(2) + " " + a.y.toFixed(2) + " L " + b.x.toFixed(2) + " " + b.y.toFixed(2) + " ";
+    }
+    svg.innerHTML = [
+      '<circle cx="500" cy="500" r="392" fill="none" stroke="rgba(201,168,76,0.14)" stroke-width="1"/>',
+      '<circle cx="500" cy="500" r="228" fill="none" stroke="rgba(201,168,76,0.07)" stroke-width="1"/>',
+      '<path d="' + dPoly + '" fill="none" stroke="rgba(201,168,76,0.08)" stroke-width="1"/>',
+      '<path d="' + dStar + '" fill="none" stroke="rgba(201,168,76,0.05)" stroke-width="1"/>'
+    ].join("");
+  }
+
+  const GEOM = toCanvas(sitesUnit());
+  let SITES = GEOM.slice();
+  const stage = document.getElementById("stage");
+
+  function relayoutSites() {
+    const rect = stage.getBoundingClientRect();
+    if (rect.width < 40 || rect.height < 40) return false;
+    const box = cardBoxInSiteUnits();
+    SITES = separateSites(GEOM, box.w, box.h);
+    return true;
+  }
+  const heart = document.getElementById("deck-heart");
+  const btnShuffle = document.getElementById("btn-shuffle");
+  const btnHide = document.getElementById("btn-hide") || { disabled: false };
+  let seed = 0;
+  let sessionId = "";
+  let lastSymbolique = [];
+  let lastLogs = [];
+  let logLines = [];
+  let contextLogsAdded = false;
+  let placements = [];
+  let chosen = [];
+  let phase = "table";
+  let dealing = false;
+  let dealTimer = 0;
+  let dealId = 0;
+  const running = [];
+
+  function stopAnims() {
+    running.splice(0).forEach(function (a) { try { a.cancel(); } catch (e) {} });
+    if (dealTimer) {
+      clearTimeout(dealTimer);
+      dealTimer = 0;
+    }
+  }
+
+  function replayBurst() {
+    const burst = stage.querySelector(".burst");
+    if (!burst) return;
+    const clone = burst.cloneNode(true);
+    burst.parentNode.replaceChild(clone, burst);
+  }
+
+  function dealOrder() {
+    return placements
+      .map(function (p, idx) { return { idx: idx, r: p.site.radius, a: p.site.angle }; })
+      .sort(function (u, v) { return u.r - v.r || u.a - v.a; })
+      .map(function (o) { return o.idx; });
+  }
+
+  function recallOrder() {
+    return placements
+      .map(function (p, idx) { return { idx: idx, r: p.site.radius, a: p.site.angle }; })
+      .sort(function (u, v) { return v.r - u.r || u.a - v.a; })
+      .map(function (o) { return o.idx; })
+      .filter(function (idx) { return chosen.indexOf(idx) === -1; });
+  }
+
+  function stackByDeal() {
+    dealOrder().forEach(function (idx, rank) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      if (!el) return;
+      const z = 30 + rank;
+      el.style.zIndex = String(z);
+      el.dataset.z = String(z);
+    });
+  }
+
+  function makeCard(p, idx) {
+    const rot = ((p.site.id * 17) % 13) - 6;
+    const el = document.createElement("div");
+    el.className = "card" + (p.revealed ? " revealed" : "");
+    el.style.left = "50%";
+    el.style.top = "50%";
+    el.style.setProperty("--rot", rot + "deg");
+    el.dataset.idx = String(idx);
+    el.dataset.rot = String(rot);
+    el.dataset.tx = (p.site.x / 10).toFixed(4) + "%";
+    el.dataset.ty = (p.site.y / 10).toFixed(4) + "%";
+    el.title = p.revealed ? p.card.label : "Face cachée";
+    el.innerHTML = '<div class="card-inner"><div class="face back"></div><div class="face front"></div></div>';
+    paintFront(el.querySelector(".front"), p.card);
+    el.addEventListener("click", function () {
+      if (dealing || phase !== "table") return;
+      if (p.revealed) return;
+      revealOnServer(idx, el);
+    });
+    return el;
+  }
+
+  function throwDeal() {
+    stopAnims();
+    dealing = true;
+    phase = "table";
+    const thisDeal = ++dealId;
+    stage.classList.add("dealing");
+    stage.classList.remove("recalling", "hand");
+    btnShuffle.disabled = true;
+    btnHide.disabled = true;
+    heart.classList.add("visible");
+    replayBurst();
+
+    const order = dealOrder();
+    const n = Math.max(order.length - 1, 1);
+
+    order.forEach(function (idx, rank) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      if (!el) return;
+      const tx = el.dataset.tx;
+      const ty = el.dataset.ty;
+      const rot = Number(el.dataset.rot);
+      const spin = (rank % 2 ? -1 : 1) * (110 + (rank * 11) % 70);
+      const delay = (rank / n) * STAGGER_MS;
+
+      const anim = el.animate([
+        {
+          offset: 0,
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%) rotate(" + spin + "deg) scale(0.86)"
+        },
+        {
+          offset: 0.88,
+          left: tx,
+          top: ty,
+          transform: "translate(-50%, -54%) rotate(" + (rot * 0.55) + "deg) scale(1.05)"
+        },
+        {
+          offset: 1,
+          left: tx,
+          top: ty,
+          transform: "translate(-50%, -50%) rotate(" + rot + "deg) scale(1)"
+        }
+      ], {
+        duration: FLIGHT_MS,
+        delay: delay,
+        easing: "cubic-bezier(0.14, 0.82, 0.18, 1)",
+        fill: "forwards"
+      });
+      running.push(anim);
+    });
+
+    setStatus("Choisis trois cartes face cachée.");
+
+    dealTimer = setTimeout(function () {
+      heart.classList.remove("visible");
+    }, STAGGER_MS);
+
+    Promise.all(running.map(function (a) { return a.finished.catch(function () {}); })).then(function () {
+      if (thisDeal !== dealId) return;
+      dealing = false;
+      stage.classList.remove("dealing");
+      heart.classList.remove("visible");
+      btnShuffle.disabled = false;
+      btnHide.disabled = false;
+      stage.querySelectorAll(".card").forEach(function (el) {
+        el.style.left = el.dataset.tx;
+        el.style.top = el.dataset.ty;
+        el.style.transform = "translate(-50%, -50%) rotate(" + el.dataset.rot + "deg)";
+      });
+      running.length = 0;
+      updateList();
+    });
+  }
+
+  function gatherToHand() {
+    if (phase !== "table") return;
+    phase = "recalling";
+    dealing = true;
+    const thisDeal = ++dealId;
+    stopAnims();
+    stage.classList.add("recalling");
+    btnShuffle.disabled = true;
+    btnHide.disabled = true;
+    replayBurst();
+
+    const keep = chosen.slice(0, 3);
+    const returning = recallOrder();
+    const n = Math.max(returning.length - 1, 1);
+
+    keep.forEach(function (idx, i) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      const slot = HAND_SLOTS[i];
+      if (!el || !slot) return;
+      el.classList.add("in-hand", "revealed");
+      const fromRot = Number(el.dataset.rot);
+      const anim = el.animate([
+        {
+          offset: 0,
+          left: el.dataset.tx,
+          top: el.dataset.ty,
+          transform: "translate(-50%, -50%) rotate(" + fromRot + "deg) scale(1)"
+        },
+        {
+          offset: 0.55,
+          left: slot.left,
+          top: slot.top,
+          transform: "translate(-50%, -58%) rotate(" + (slot.rot * 0.4) + "deg) scale(1.42)"
+        },
+        {
+          offset: 1,
+          left: slot.left,
+          top: slot.top,
+          transform: "translate(-50%, -50%) rotate(" + slot.rot + "deg) scale(1.52)"
+        }
+      ], {
+        duration: HAND_MS,
+        delay: i * 70,
+        easing: "cubic-bezier(0.16, 0.84, 0.18, 1)",
+        fill: "forwards"
+      });
+      el.style.zIndex = String(slot.z);
+      running.push(anim);
+    });
+
+    returning.forEach(function (idx, rank) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      if (!el) return;
+      const rot = Number(el.dataset.rot);
+      const spin = (rank % 2 ? 1 : -1) * (100 + (rank * 9) % 70);
+      const delay = (rank / n) * RECALL_STAGGER;
+      const anim = el.animate([
+        {
+          offset: 0,
+          left: el.dataset.tx,
+          top: el.dataset.ty,
+          opacity: 1,
+          transform: "translate(-50%, -50%) rotate(" + rot + "deg) scale(1)"
+        },
+        {
+          offset: 0.84,
+          left: "50%",
+          top: "50%",
+          opacity: 1,
+          transform: "translate(-50%, -50%) rotate(" + spin + "deg) scale(0.88)"
+        },
+        {
+          offset: 1,
+          left: "50%",
+          top: "50%",
+          opacity: 0,
+          transform: "translate(-50%, -50%) rotate(" + spin + "deg) scale(0.55)"
+        }
+      ], {
+        duration: RECALL_FLIGHT,
+        delay: delay,
+        easing: "cubic-bezier(0.18, 0.12, 0.2, 1)",
+        fill: "forwards"
+      });
+      running.push(anim);
+    });
+
+    setStatus("Les trois cartes rejoignent la main…");
+
+    dealTimer = setTimeout(function () {
+      heart.classList.add("visible");
+    }, Math.round(RECALL_FLIGHT * 0.72));
+
+    Promise.all(running.map(function (a) { return a.finished.catch(function () {}); })).then(function () {
+      if (thisDeal !== dealId) return;
+      heart.classList.remove("visible");
+      returning.forEach(function (idx) {
+        const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+        if (el) el.remove();
+      });
+      keep.forEach(function (idx, i) {
+        const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+        const slot = HAND_SLOTS[i];
+        if (!el || !slot) return;
+        el.style.left = slot.left;
+        el.style.top = slot.top;
+        el.style.transform = "translate(-50%, -50%) rotate(" + slot.rot + "deg) scale(1.52)";
+        el.style.zIndex = String(slot.z);
+      });
+      running.length = 0;
+      stage.classList.remove("recalling");
+      stage.classList.add("hand");
+      unveilOracle(keep, thisDeal);
+    });
+  }
+
+  function unveilOracle(keep, thisDeal) {
+    phase = "oracle";
+    heart.classList.remove("visible");
+    const rail = document.getElementById("hand-rail");
+
+    const first = keep.map(function (idx, i) {
+      const el = stage.querySelector('.card[data-idx="' + idx + '"]');
+      if (!el) return null;
+      el.getAnimations().forEach(function (a) { try { a.cancel(); } catch (e) {} });
+      return { el: el, rect: el.getBoundingClientRect(), rot: HAND_SLOTS[i].rot };
+    }).filter(Boolean);
+
+    first.forEach(function (item, i) {
+      const slot = ORACLE_SLOTS[i];
+      item.el.style.left = "auto";
+      item.el.style.top = "auto";
+      item.el.style.transform = "rotate(" + slot.rot + "deg) scale(2.15)";
+      item.el.style.zIndex = String(slot.z);
+      rail.appendChild(item.el);
+    });
+
+    document.body.classList.add("oracle");
+    void rail.offsetWidth;
+
+    first.forEach(function (item, i) {
+      const slot = ORACLE_SLOTS[i];
+      const last = item.el.getBoundingClientRect();
+      const dx = item.rect.left - last.left;
+      const dy = item.rect.top - last.top;
+      const anim = item.el.animate([
+        { transform: "translate(" + dx + "px," + dy + "px) rotate(" + item.rot + "deg) scale(1.52)" },
+        { transform: "rotate(" + slot.rot + "deg) scale(2.15)" }
+      ], {
+        duration: UNVEIL_MS,
+        delay: i * 40,
+        easing: "cubic-bezier(0.2, 0.8, 0.18, 1)",
+        fill: "forwards"
+      });
+      running.push(anim);
+    });
+
+    Promise.all(running.map(function (a) { return a.finished.catch(function () {}); })).then(function () {
+      if (thisDeal !== dealId) return;
+      first.forEach(function (item, i) {
+        const slot = ORACLE_SLOTS[i];
+        item.el.style.transform = "rotate(" + slot.rot + "deg) scale(2.15)";
+      });
+      running.length = 0;
+      dealing = false;
+      btnShuffle.disabled = false;
+      btnHide.disabled = true;
+      updateList();
+      openChat();
+    });
+  }
+
+  function setStatus(text) {
+    if (text) addGuide(text, true);
+  }
+
+  function renderSymbolLog() {
+    const box = document.getElementById("symbol-log");
+    if (!box) return;
+    if (!logLines.length) {
+      box.innerHTML = '<div class="line hint">Choisis trois cartes face cachée.</div>';
+      return;
+    }
+    box.innerHTML = logLines.map(function (t) {
+      return '<div class="line"></div>';
+    }).join("");
+    Array.prototype.forEach.call(box.querySelectorAll(".line"), function (el, i) {
+      el.textContent = logLines[i];
+    });
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function addLog(text) {
+    if (!text) return;
+    logLines.push(text);
+    renderSymbolLog();
+  }
+
+  function appendDesignationFromEvent(ev) {
+    var code = ev && (ev.carte || (ev.cartes && ev.cartes[ev.cartes.length - 1]));
+    if (!code) return;
+    addGuide(cardGuideLine(code), false);
+  }
+
+  function appendContextLogs() {
+    if (contextLogsAdded) return;
+    contextLogsAdded = true;
+    if (lastLogs && lastLogs.length) {
+      lastLogs.forEach(function (line) {
+        if (/^\d+\s·/.test(line)) return;
+        addLog(line);
+      });
+      return;
+    }
+    lastSymbolique.forEach(function (ev) {
+      if (ev.type === "paire") {
+        addLog("Paire " + (ev.cartes || []).join("+") + " — " + (ev.contenu_enrichi || ev.contenu || ""));
+      } else if (ev.type === "apport") {
+        addLog("Apport " + ev.carte + " sur " + ev.sur + " — " + (ev.contenu_enrichi || ev.conclusion || ""));
+      }
+      (ev.remarquables || []).forEach(function (b) {
+        var extra = b.signification || b.qualite || "";
+        addLog(("Remarquable " + (b.sous_type || "") + " " + (b.cartes || []).join("+") + (extra ? " — " + extra : "")).trim());
+      });
+    });
+  }
+
+  function openChat() {
+    if (document.activeElement && document.activeElement.blur) {
+      document.activeElement.blur();
+    }
+    addGuide(pickPhrase("wait", SAY_WAIT) + " " + pickPhrase("disc", SAY_DISCLAIMER), true);
+    requestInterpretation();
+  }
+
+  async function requestInterpretation() {
+    if (!sessionId) return;
+    var frame = appendOracleFrame();
+    var textEl = frame.querySelector(".bubble-text");
+    try {
+      var started = false;
+      var content = await readSse("/api/v2/sessions/" + sessionId + "/interpret/stream", {}, function (acc) {
+        if (!started) {
+          started = true;
+          stopGuidePulse();
+        }
+        textEl.textContent = acc;
+      });
+      if (!content) {
+        var data = await api("/api/v2/sessions/" + sessionId + "/interpret", { method: "POST", body: "{}" });
+        content = data.content || "";
+        stopGuidePulse();
+        textEl.textContent = content;
+      }
+      if (!content) textEl.textContent = "L’oracle est silencieux un instant.";
+    } catch (err) {
+      console.error(err);
+      try {
+        var data = await api("/api/v2/sessions/" + sessionId + "/interpret", { method: "POST", body: "{}" });
+        stopGuidePulse();
+        textEl.textContent = data.content || "L’oracle est silencieux un instant.";
+      } catch (err2) {
+        stopGuidePulse();
+        textEl.textContent = "L’oracle est silencieux un instant.";
+      }
+    }
+    attachAudioButton(frame);
+    enableChatInput();
+  }
+
+  async function revealOnServer(idx, el) {
+    const p = placements[idx];
+    if (!sessionId || !p || p.revealed) return;
+    dealing = true;
+    try {
+      const data = await api("/api/v2/sessions/" + sessionId + "/reveal", {
+        method: "POST",
+        body: JSON.stringify({ site_id: p.site.id })
+      });
+      const hit = (data.chosen || []).find(function (c) { return c.site_id === p.site.id; });
+      if (!hit) throw new Error("réponse sans carte");
+      p.card = cardFromCode(hit.card);
+      p.revealed = true;
+      el.classList.add("revealed");
+      el.title = p.card.label;
+      const front = el.querySelector(".front");
+      if (front) paintFront(front, p.card);
+      chosen.push(idx);
+      lastSymbolique = data.symbolique || [];
+      lastLogs = data.logs || [];
+      var ev = lastSymbolique[lastSymbolique.length - 1];
+      if (ev && ev.type === "designation") {
+        appendDesignationFromEvent(ev);
+      } else if (ev && ev.designation) {
+        appendDesignationFromEvent({
+          carte: ev.carte || (ev.cartes && ev.cartes[ev.cartes.length - 1]),
+          designation: ev.designation
+        });
+      }
+      if (chosen.length === 1) addGuide(pickPhrase("more", SAY_MORE), true);
+      else if (chosen.length === 2) addGuide(pickPhrase("last", SAY_LAST), true);
+      updateList();
+      dealing = false;
+      if (chosen.length >= 3) gatherToHand();
+    } catch (err) {
+      dealing = false;
+      console.error(err);
+      document.getElementById("revealed").textContent = "Erreur serveur : " + err.message;
+    }
+  }
+
+  function appendBubble(who, text) {
+    const log = document.getElementById("chat-log");
+    const el = document.createElement("div");
+    el.className = "bubble " + who;
+    if (who === "oracle") {
+      const inner = document.createElement("div");
+      inner.className = "bubble-text";
+      inner.textContent = text;
+      el.appendChild(inner);
+      attachAudioButton(el);
+    } else {
+      el.textContent = text;
+    }
+    log.appendChild(el);
+  }
+
+  function resetWorkflow() {
+    dealId += 1;
+    stopAnims();
+    dealing = false;
+    phase = "table";
+    document.body.classList.remove("oracle");
+    stage.classList.remove("dealing", "recalling", "hand");
+    heart.classList.remove("visible");
+    document.getElementById("hand-rail").innerHTML = "";
+    document.getElementById("chat-log").innerHTML = "";
+    deal();
+  }
+
+  async function deal() {
+    dealId += 1;
+    stopAnims();
+    dealing = false;
+    chosen = [];
+    lastSymbolique = [];
+    lastLogs = [];
+    logLines = [];
+    contextLogsAdded = false;
+    phase = "table";
+    disableChatInput();
+    hideWaitMark();
+    document.body.classList.remove("oracle");
+    document.getElementById("hand-rail").innerHTML = "";
+    document.getElementById("chat-log").innerHTML = "";
+    addGuide(pickPhrase("ask", SAY_ASK), true);
+    const rect = stage.getBoundingClientRect();
+    try {
+      const data = await api("/api/v2/sessions", {
+        method: "POST",
+        body: JSON.stringify({
+          stage_width: rect.width || 360,
+          stage_height: rect.height || 360
+        })
+      });
+      sessionId = data.session_id;
+      trackVisit();
+      trackEvent("deal");
+      SITES = (data.sites || []).map(function (s) {
+        return {
+          id: s.id,
+          kind: s.kind,
+          x: s.x,
+          y: s.y,
+          radius: Math.hypot((s.x - 500) / 392, (s.y - 500) / 392),
+          angle: Math.atan2(s.y - 500, s.x - 500)
+        };
+      });
+      if (SITES.length !== 52) {
+        console.error("Sites:", SITES.length, "attendu 52");
+      }
+      placements = SITES.map(function (site) {
+        return {
+          site: site,
+          card: { code: "?", rank: "?", suit: "?", pip: "✦", red: false, label: "✦" },
+          revealed: false
+        };
+      });
+      render(true);
+    } catch (err) {
+      console.error(err);
+      setStatus("Le tapis n’a pas pu se préparer. Réessaie.");
+    }
+  }
+
+  function render(withThrow) {
+    stopAnims();
+    document.getElementById("hand-rail").innerHTML = "";
+    stage.querySelectorAll(".card").forEach(function (el) { el.remove(); });
+    stage.classList.remove("hand", "recalling");
+    drawMat(GEOM);
+    placements.forEach(function (p, idx) {
+      stage.appendChild(makeCard(p, idx));
+    });
+    stackByDeal();
+    if (withThrow) {
+      throwDeal();
+    } else {
+      stage.querySelectorAll(".card").forEach(function (el) {
+        el.style.left = el.dataset.tx;
+        el.style.top = el.dataset.ty;
+        el.style.transform = "translate(-50%, -50%) rotate(" + el.dataset.rot + "deg)";
+      });
+      dealing = false;
+      phase = "table";
+      stage.classList.remove("dealing", "recalling", "hand");
+      heart.classList.remove("visible");
+      btnShuffle.disabled = false;
+      btnHide.disabled = false;
+      updateList();
+    }
+  }
+
+  function updateList() {
+    const box = document.getElementById("revealed");
+    if (box) box.textContent = "";
+  }
+
+  document.getElementById("chat-input").addEventListener("pointerdown", function () {
+    this.removeAttribute("readonly");
+  });
+  function visitorId() {
+    var key = "la-rosace-visitor";
+    var id = "";
+    try { id = localStorage.getItem(key) || ""; } catch (e) {}
+    if (!id) {
+      id = (crypto.randomUUID && crypto.randomUUID()) || ("v-" + Date.now() + "-" + Math.random().toString(16).slice(2));
+      try { localStorage.setItem(key, id); } catch (e) {}
+    }
+    return id;
+  }
+
+  function closePremium() {
+    document.getElementById("premium-modal").hidden = true;
+  }
+
+  function openPremium() {
+    document.getElementById("premium-modal").hidden = false;
+    trackEvent("premium_click");
+  }
+
+  btnShuffle.addEventListener("click", function () {
+    resetWorkflow();
+  });
+  document.getElementById("btn-don").addEventListener("click", function () {
+    trackEvent("don_click");
+    window.open("https://paypal.me/NiceeCap/2", "_blank", "noopener");
+  });
+  document.getElementById("btn-premium").addEventListener("click", openPremium);
+  document.getElementById("premium-close").addEventListener("click", closePremium);
+  document.querySelector("[data-close-premium]").addEventListener("click", closePremium);
+  document.getElementById("premium-form").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    var input = document.getElementById("premium-email");
+    var email = (input.value || "").trim();
+    if (!email) return;
+    try {
+      await trackEvent("premium_email", { email: email });
+      input.value = "";
+      document.getElementById("premium-form").hidden = true;
+      document.getElementById("premium-thanks").hidden = false;
+    } catch (err) {
+      console.error(err);
+      document.getElementById("premium-thanks").hidden = false;
+      document.getElementById("premium-thanks").textContent = "L’enregistrement n’a pas abouti. Réessaie dans un instant.";
+    }
+  });
+  document.getElementById("btn-export").addEventListener("click", function () {
+    var now = new Date();
+    var pad = function (n) { return String(n).padStart(2, "0"); };
+    var stamp = pad(now.getDate()) + "/" + pad(now.getMonth() + 1) + "/" + now.getFullYear()
+      + " " + pad(now.getHours()) + ":" + pad(now.getMinutes());
+    var lines = [
+      "# La Rosace",
+      "",
+      "Consultation Symbolique anonyme",
+      "l’Oracle vous guide",
+      "",
+      "Code de session : " + (sessionId || "inconnu"),
+      "Date : " + stamp,
+      "",
+      "## Avertissement",
+      "",
+      "La Rosace est une application de divertissement. Les interprétations sont issues d'ouvrages ésotériques et générées par intelligence artificielle.",
+      "",
+      "## Chat",
+      ""
+    ];
+    var bubbles = document.querySelectorAll("#chat-log .bubble");
+    if (!bubbles.length) {
+      lines.push("(aucun échange)");
+    } else {
+      bubbles.forEach(function (el) {
+        var who = el.classList.contains("user") ? "utilisateur" : "oracle";
+        var textEl = el.querySelector(".bubble-text");
+        lines.push(who + ": " + ((textEl && textEl.textContent) || el.textContent));
+        lines.push("");
+      });
+    }
+    var blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "la-rosace-consultation.md";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  document.getElementById("chat-form").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    if (phase !== "oracle" || !sessionId) return;
+    const input = document.getElementById("chat-input");
+    const text = (input.value || "").trim();
+    if (!text) return;
+    input.value = "";
+    appendBubble("user", text);
+    showWaitMark();
+    try {
+      var frame = appendOracleFrame();
+      var textEl = frame.querySelector(".bubble-text");
+      var started = false;
+      var content = await readSse("/api/v2/sessions/" + sessionId + "/messages/stream", { message: text }, function (acc) {
+        if (!started) {
+          started = true;
+          hideWaitMark();
+        }
+        textEl.textContent = acc;
+      });
+      hideWaitMark();
+      if (!content) textEl.textContent = "L’oracle est silencieux un instant.";
+      attachAudioButton(frame);
+    } catch (err) {
+      hideWaitMark();
+      appendBubble("oracle", "L’oracle est silencieux un instant.");
+    }
+  });
+
+  trackVisit();
+  deal();
+})();
+</script>
+</body>
+</html>
