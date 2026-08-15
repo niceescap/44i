@@ -1,5 +1,5 @@
 name: interpretes44
-description: 44 interprètes — consultation symbolique anonyme.
+description: La Rosace — consultation symbolique anonyme.
 publish_to: "none"
 version: 1.0.0+1
 
@@ -10,8 +10,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   http: ^1.2.2
   share_plus: ^10.0.2
+  url_launcher: ^6.3.1
+  shared_preferences: ^2.3.2
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
