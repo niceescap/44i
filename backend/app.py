@@ -88,7 +88,10 @@ def state_of(session: Session) -> SessionState:
 
 @app.get("/", include_in_schema=False)
 def browser_app() -> FileResponse:
-    return FileResponse(WEB_DIR / "index.html")
+    html = REPO_ROOT / "rosace_depose.html"
+    if not html.exists():
+        raise HTTPException(status_code=404, detail="rosace_depose.html introuvable")
+    return FileResponse(html)
 
 def get_session(session_id: str) -> Session:
     session = store.get(session_id)
