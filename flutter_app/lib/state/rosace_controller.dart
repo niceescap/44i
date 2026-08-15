@@ -59,7 +59,7 @@ class RosaceController extends ChangeNotifier {
     try {
       final state = await api.createSession(width: width, height: height, locale: locale);
       sessionId = state.sessionId;
-      placements = state.sites.map(CardPlacement.new).toList();
+      placements = state.sites.map((site) => CardPlacement(site: site)).toList();
       await api.trackVisit(visitId: visitId, visitorId: visitorId, sessionId: sessionId);
       await api.trackEvent(visitId: visitId, visitorId: visitorId, type: 'deal', sessionId: sessionId);
     } catch (exception) {
