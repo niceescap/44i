@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 
 from .models import Card, CreateSessionResponse, MessageRequest, MessageResponse, RevealRequest, SessionState
 from .llm_handler_v2 import cold_start_message, complete, complete_stream
+from .query_pipeline import COLD_START_LEXIQUE
 from .rosace_dealer import RosaceStore
 from .session_store import Session, SessionStore
 from .symbolic import CARDS, QUALITIES, card_info, interpretation, pair_symbol
