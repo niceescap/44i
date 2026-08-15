@@ -97,7 +97,7 @@ class RosaceStore:
         self._sessions: dict[str, RosaceSession] = {}
         self._lock = threading.RLock()
 
-    def create(self, stage_w: float = 360.0, stage_h: float = 360.0) -> RosaceSession:
+    def create(self, stage_w: float = 360.0, stage_h: float = 360.0, locale: str | None = None) -> RosaceSession:
         sites = layout(stage_w, stage_h)
         if len(sites) != 52:
             raise RuntimeError(f"rosace: {len(sites)} sites, 52 attendus")
