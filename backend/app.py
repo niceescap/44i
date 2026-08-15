@@ -561,10 +561,7 @@ async def v2_message_stream(session_id: str, payload: MessageRequest):
     if not session.question:
         session.question = text
     session.messages.append({"role": "user", "content": text})
-    if not session.llm_messages:
-        session.llm_messages.append(
-            {"role": "user", "content": cold_start_message(session.pipeline.cold_start_lines())}
-        )
+    _prepare_llm_cold_start(session)
     session.llm_messages.append({"role": "user", "content": text})
     return await _stream_session_reply(session, prepare_user=False)
 
