@@ -270,55 +270,55 @@ class QueryPipeline:
             "remarquables": remarquables,
         }
 
-    @staticmethod
-    def _remarquable_line(balise: dict[str, Any]) -> str:
+    def _remarquable_line(self, balise: dict[str, Any]) -> str:
         extra = balise.get("signification") or balise.get("qualite") or ""
-        cards = "+".join(balise.get("cartes") or [])
+        raw = balise.get("cartes") or []
+        cards = " + ".join(self.nom_fr(c) for c in raw) if raw else ""
         line = f"Remarquable {balise.get('sous_type', '')} {cards}".strip()
         if extra:
             line += f" — {extra}"
         return line
 
+    def _codes_du_tirage(self) -> list[str]:
+        codes = [str(c).upper() for c in self.cartes_posees]
+        if codes:
+            return codes
+        for item in self.symbolique:
+            kind = item.get("type")
+            if kind == "designation" and item.get("carte"):
+                codes.append(str(item["carte"]).upper())
+            elif kind == "paire":
+                cartes = item.get("cartes") or []
+                if cartes:
+                    codes.append(str(cartes[-1]).upper())
+            elif kind == "apport" and item.get("carte"):
+                codes.append(str(item["carte"]).upper())
+        return codes
+
     def cold_start_lines(self) -> list[str]:
-        """Contrat Prompt.txt pour le LLM. Indépendant de logs() (commentaire UI).
-
-        1 · CODE — désignation
-        2 · CODE — désignation
-        3 · CODE — désignation
-        Paire A+B — désignation 2e + signification
-        Apport C sur B — désignation 3e + qualité / conclusion
-        Remarquable …
-        """
-        codes = list(self.cartes_posees)
-        if not codes:
-            for item in self.symbolique:
-                kind = item.get("type")
-                if kind == "designation" and item.get("carte"):
-                    codes.append(str(item["carte"]))
-                elif kind == "paire":
-                    cartes = item.get("cartes") or []
-                    if cartes:
-                        codes.append(str(cartes[-1]))
-                elif kind == "apport" and item.get("carte"):
-                    codes.append(str(item["carte"]))
-
-        lines: list[str] = []
+        """Contrat Prompt.txt : lexique + nom français (CODE) + paire + apport."""
+        codes = self._codes_du_tirage()
+        lines: list[str] = [COLD_START_LEXIQUE, ""]
         for n, code in enumerate(codes, 1):
-            lines.append(f"{n} · {code} — {self.designation(code)}")
+            lines.append(f"{n} · {self.etiquette(code)} — {self.designation(code)}")
 
         for item in self.symbolique:
             kind = item.get("type")
             if kind == "paire":
-                cartes = "+".join(item.get("cartes") or [])
+                pair = [str(c).upper() for c in (item.get("cartes") or [])]
+                names = " + ".join(self.nom_fr(c) for c in pair)
+                codes_s = "+".join(pair)
                 desig = item.get("designation") or ""
                 sig = item.get("contenu") or ""
-                if desig and sig:
-                    lines.append(f"Paire {cartes} — {desig} — {sig}")
+                if names and desig and sig:
+                    lines.append(f"Paire {names} ({codes_s}) — {desig} — {sig}")
                 else:
                     lines.append(
-                        f"Paire {cartes} — {item.get('contenu_enrichi') or sig or desig}"
+                        f"Paire {names or codes_s} — {item.get('contenu_enrichi') or sig or desig}"
                     )
             elif kind == "apport":
+                carte = str(item.get("carte") or "").upper()
+                sur = str(item.get("sur") or "").upper()
                 desig = item.get("designation") or ""
                 expression = " | ".join(
                     part
@@ -331,7 +331,8 @@ class QueryPipeline:
                     else (item.get("contenu_enrichi") or item.get("conclusion") or desig)
                 )
                 lines.append(
-                    f"Apport {item.get('carte')} sur {item.get('sur')} — {payload}"
+                    f"Apport {self.nom_fr(carte)} sur {self.nom_fr(sur)} "
+                    f"({carte} sur {sur}) — {payload}"
                 )
 
         seen: set[str] = set()
