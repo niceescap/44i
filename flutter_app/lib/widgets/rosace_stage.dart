@@ -82,7 +82,7 @@ class _StarPainter extends CustomPainter {
     final gold = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
-      ..color = RosaceColors.gold.withValues(alpha: 0.14);
+      ..color = RosaceColors.gold.withOpacity(0.14);
     canvas.drawCircle(Offset(size.width / 2, size.height / 2), size.width * 0.392, gold);
     final path = Path();
     for (var i = 0; i < 13; i++) {
