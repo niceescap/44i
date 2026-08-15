@@ -255,8 +255,21 @@ class QueryPipeline:
         Apport C sur B — désignation 3e + qualité / conclusion
         Remarquable …
         """
+        codes = list(self.cartes_posees)
+        if not codes:
+            for item in self.symbolique:
+                kind = item.get("type")
+                if kind == "designation" and item.get("carte"):
+                    codes.append(str(item["carte"]))
+                elif kind == "paire":
+                    cartes = item.get("cartes") or []
+                    if cartes:
+                        codes.append(str(cartes[-1]))
+                elif kind == "apport" and item.get("carte"):
+                    codes.append(str(item["carte"]))
+
         lines: list[str] = []
-        for n, code in enumerate(self.cartes_posees, 1):
+        for n, code in enumerate(codes, 1):
             lines.append(f"{n} · {code} — {self.designation(code)}")
 
         for item in self.symbolique:
