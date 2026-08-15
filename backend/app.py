@@ -482,14 +482,6 @@ def _prepare_llm_cold_start(session) -> None:
         for code in chosen_codes:
             session.pipeline.traiter(code)
     text = cold_start_message(session.pipeline.cold_start_lines())
-    locale = getattr(session, "locale", "fr") or "fr"
-    if locale != "fr":
-        text = (
-            f"{text}\n\n"
-            f"Language of this consultation: {locale}. "
-            "Reply entirely in that language. Keep card names exactly as given "
-            "in the French labels of this message."
-        )
     if "Aucun log symbolique" in text and chosen_codes:
         pipe = session.pipeline
         text = cold_start_message(
@@ -498,6 +490,14 @@ def _prepare_llm_cold_start(session) -> None:
                 f"{n} · {pipe.etiquette(code)} — {pipe.designation(code)}"
                 for n, code in enumerate(chosen_codes, 1)
             ]
+        )
+    locale = getattr(session, "locale", "fr") or "fr"
+    if locale != "fr":
+        text = (
+            f"{text}\n\n"
+            f"Language of this consultation: {locale}. "
+            "Reply entirely in that language. Keep card names exactly as given "
+            "in the French labels of this message."
         )
     preview = text if len(text) <= 1200 else text[:1200] + "…"
     print(f"[llm_v2] cold start ({len(text)} chars)\n{preview}", flush=True)
