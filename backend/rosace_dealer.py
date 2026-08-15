@@ -78,6 +78,7 @@ class RosaceSession:
             "logs": snap.get("logs", []),
             "contexte_llm": snap.get("contexte_llm", {}),
             "messages": list(self.messages),
+            "locale": self.locale,
         }
 
 
