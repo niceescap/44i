@@ -114,6 +114,7 @@ class RosaceStore:
             seed=secrets.token_hex(8),
             sites=sites,
             occupancy=occupancy,
+            locale=normalize_locale(locale),
         )
         with self._lock:
             self._sessions[session.id] = session
