@@ -102,7 +102,7 @@ class _StarPainter extends CustomPainter {
       star.moveTo(a.dx, a.dy);
       star.lineTo(b.dx, b.dy);
     }
-    canvas.drawPath(star, gold..color = RosaceColors.gold.withValues(alpha: 0.05));
+    canvas.drawPath(star, gold..color = RosaceColors.gold.withOpacity(0.05));
   }
 
   @override
