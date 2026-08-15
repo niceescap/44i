@@ -155,9 +155,22 @@ class QueryPipeline:
     def designation(self, code: str) -> str:
         return str(self.cartes.get(code, {}).get("symbole", ""))
 
+    def nom_fr(self, code: str) -> str:
+        code = (code or "").upper().strip()
+        if len(code) < 2:
+            return code
+        rank, suit = code[:-1], code[-1]
+        return f"{RANK_FR.get(rank, rank)} de {SUIT_FR.get(suit, suit)}"
+
+    def etiquette(self, code: str) -> str:
+        code = (code or "").upper().strip()
+        if not code:
+            return ""
+        return f"{self.nom_fr(code)} ({code})"
+
     def nom(self, code: str) -> str:
         item = self.cartes.get(code, {})
-        return str(item.get("nom") or item.get("intitule") or code)
+        return str(item.get("nom") or item.get("intitule") or self.nom_fr(code))
 
     def fetch_qualite(self, carte_base: str, carte_apport: str) -> dict[str, str]:
         cle = f"{carte_base}|{carte_apport[-1]}"
