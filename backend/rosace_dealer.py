@@ -19,6 +19,16 @@ from .rosace_geom import layout, public_sites
 
 TTL_MINUTES = 45
 MAX_CHOSEN = 3
+ALLOWED_LOCALES = {
+    "fr", "en", "es", "it", "de", "nl", "pt", "pl", "hu", "sr",
+    "ru", "ar", "he", "zh", "th", "ja", "ko", "hi", "id", "tr", "vi",
+}
+
+
+def normalize_locale(value: str | None) -> str:
+    raw = (value or "fr").strip().replace("_", "-").lower()
+    primary = raw.split("-", 1)[0]
+    return primary if primary in ALLOWED_LOCALES else "fr"
 
 
 def _now() -> datetime:
@@ -39,6 +49,7 @@ class RosaceSession:
     llm_messages: list[dict[str, str]] = field(default_factory=list)
     interpreted: bool = False
     question: str | None = None
+    locale: str = "fr"
 
     def touch(self) -> None:
         self.expires_at = _now() + timedelta(minutes=TTL_MINUTES)
@@ -77,6 +88,7 @@ class RosaceSession:
             "logs": snap.get("logs", []),
             "contexte_llm": snap.get("contexte_llm", {}),
             "messages": list(self.messages),
+            "locale": self.locale,
         }
 
 
@@ -85,7 +97,7 @@ class RosaceStore:
         self._sessions: dict[str, RosaceSession] = {}
         self._lock = threading.RLock()
 
-    def create(self, stage_w: float = 360.0, stage_h: float = 360.0) -> RosaceSession:
+    def create(self, stage_w: float = 360.0, stage_h: float = 360.0, locale: str | None = None) -> RosaceSession:
         sites = layout(stage_w, stage_h)
         if len(sites) != 52:
             raise RuntimeError(f"rosace: {len(sites)} sites, 52 attendus")
@@ -102,6 +114,7 @@ class RosaceStore:
             seed=secrets.token_hex(8),
             sites=sites,
             occupancy=occupancy,
+            locale=normalize_locale(locale),
         )
         with self._lock:
             self._sessions[session.id] = session

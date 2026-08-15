@@ -93,6 +93,15 @@ def browser_app() -> FileResponse:
         raise HTTPException(status_code=404, detail="rosace_depose.html introuvable")
     return FileResponse(html)
 
+
+@app.get("/privacy", include_in_schema=False)
+@app.get("/confidentialite", include_in_schema=False)
+def privacy_page() -> FileResponse:
+    html = REPO_ROOT / "privacy.html"
+    if not html.exists():
+        raise HTTPException(status_code=404, detail="privacy.html introuvable")
+    return FileResponse(html)
+
 def get_session(session_id: str) -> Session:
     session = store.get(session_id)
     if not session:
@@ -413,6 +422,7 @@ def symbolic_summary(session_id: str) -> dict[str, str]:
 class V2CreateRequest(BaseModel):
     stage_width: float = 360
     stage_height: float = 360
+    locale: str | None = None
 
 
 class V2RevealRequest(BaseModel):
@@ -437,7 +447,7 @@ def rosace_page() -> FileResponse:
 @app.post("/api/v2/sessions")
 def v2_create_session(payload: V2CreateRequest | None = None) -> dict[str, Any]:
     body = payload or V2CreateRequest()
-    session = rosace_store.create(body.stage_width, body.stage_height)
+    session = rosace_store.create(body.stage_width, body.stage_height, locale=body.locale)
     return session.public_state()
 
 
@@ -480,6 +490,14 @@ def _prepare_llm_cold_start(session) -> None:
                 f"{n} · {pipe.etiquette(code)} — {pipe.designation(code)}"
                 for n, code in enumerate(chosen_codes, 1)
             ]
+        )
+    locale = getattr(session, "locale", "fr") or "fr"
+    if locale != "fr":
+        text = (
+            f"{text}\n\n"
+            f"Language of this consultation: {locale}. "
+            "Reply entirely in that language. Keep card names exactly as given "
+            "in the French labels of this message."
         )
     preview = text if len(text) <= 1200 else text[:1200] + "…"
     print(f"[llm_v2] cold start ({len(text)} chars)\n{preview}", flush=True)
