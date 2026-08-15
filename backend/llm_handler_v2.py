@@ -134,15 +134,25 @@ async def complete_stream(messages: list[dict[str, str]]):
         "HTTP-Referer": "https://44i.webredirect.org",
         "X-Title": "La Rosace",
     }
+    payload_messages = [
+        {"role": str(item.get("role", "user")), "content": str(item.get("content", ""))}
+        for item in messages
+    ]
+    first = payload_messages[0]["content"] if payload_messages else ""
+    print(
+        f"[llm_v2] stream {len(payload_messages)} msg, first {len(first)} chars: {first[:180]!r}",
+        flush=True,
+    )
     body: dict[str, Any] = {
         "model": cfg["model"],
-        "messages": messages,
+        "messages": payload_messages,
         "temperature": 0.7,
         "max_tokens": 1200,
         "stream": True,
     }
+    payload = json.dumps(body, ensure_ascii=False).encode("utf-8")
     async with httpx.AsyncClient(timeout=120) as client:
-        async with client.stream("POST", cfg["url"], headers=headers, json=body) as response:
+        async with client.stream("POST", cfg["url"], headers=headers, content=payload) as response:
             if response.status_code >= 400:
                 err = (await response.aread()).decode("utf-8", "replace")[:800]
                 print(f"[llm_v2] HTTP {response.status_code}: {err}", flush=True)
