@@ -453,6 +453,31 @@ def v2_reveal(session_id: str, payload: V2RevealRequest) -> dict[str, Any]:
     return session.public_state()
 
 
+def _prepare_llm_cold_start(session) -> None:
+    """Premier message LLM = contrat Prompt.txt, jamais le commentaire UI."""
+    if session.llm_messages:
+        return
+    chosen_codes = [str(item.get("card", "")).upper() for item in session.chosen if item.get("card")]
+    posees = [str(code).upper() for code in session.pipeline.cartes_posees]
+    if chosen_codes and posees != chosen_codes:
+        print(
+            f"[llm_v2] pipeline desync posees={posees} chosen={chosen_codes}",
+            flush=True,
+        )
+        session.pipeline.reset()
+        for code in chosen_codes:
+            session.pipeline.traiter(code)
+    text = cold_start_message(session.pipeline.cold_start_lines())
+    if "Aucun log symbolique" in text and chosen_codes:
+        text = cold_start_message(
+            f"{n} · {code} — {session.pipeline.designation(code)}"
+            for n, code in enumerate(chosen_codes, 1)
+        )
+    preview = text if len(text) <= 1200 else text[:1200] + "…"
+    print(f"[llm_v2] cold start ({len(text)} chars)\n{preview}", flush=True)
+    session.llm_messages.append({"role": "user", "content": text})
+
+
 @app.post("/api/v2/sessions/{session_id}/interpret")
 async def v2_interpret(session_id: str) -> dict[str, Any]:
     session = _rosace_session(session_id)
@@ -461,10 +486,7 @@ async def v2_interpret(session_id: str) -> dict[str, Any]:
     if session.interpreted and session.messages:
         last = next((m for m in reversed(session.messages) if m.get("role") == "oracle"), None)
         return {"content": last["content"] if last else "", "messages": session.messages}
-    if not session.llm_messages:
-        session.llm_messages.append(
-            {"role": "user", "content": cold_start_message(session.pipeline.cold_start_lines())}
-        )
+    _prepare_llm_cold_start(session)
     try:
         reply = await complete(session.llm_messages)
     except Exception as exc:
