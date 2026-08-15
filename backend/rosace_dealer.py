@@ -19,6 +19,16 @@ from .rosace_geom import layout, public_sites
 
 TTL_MINUTES = 45
 MAX_CHOSEN = 3
+ALLOWED_LOCALES = {
+    "fr", "en", "es", "it", "de", "nl", "pt", "pl", "hu", "sr",
+    "ru", "ar", "he", "zh", "th", "ja", "ko", "hi", "id", "tr", "vi",
+}
+
+
+def normalize_locale(value: str | None) -> str:
+    raw = (value or "fr").strip().replace("_", "-").lower()
+    primary = raw.split("-", 1)[0]
+    return primary if primary in ALLOWED_LOCALES else "fr"
 
 
 def _now() -> datetime:
