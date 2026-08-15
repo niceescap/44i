@@ -20,6 +20,27 @@ EXTRACTOR = ROOT / "extractor"
 if str(EXTRACTOR) not in sys.path:
     sys.path.insert(0, str(EXTRACTOR))
 
+RANK_FR = {
+    "A": "As",
+    "2": "Deux",
+    "3": "Trois",
+    "4": "Quatre",
+    "5": "Cinq",
+    "6": "Six",
+    "7": "Sept",
+    "8": "Huit",
+    "9": "Neuf",
+    "T": "Dix",
+    "J": "Valet",
+    "Q": "Dame",
+    "K": "Roi",
+}
+SUIT_FR = {"C": "Trèfle", "H": "Cœur", "D": "Carreau", "S": "Pique"}
+COLD_START_LEXIQUE = (
+    "C = Trèfle    H = Cœur    D = Carreau    S = Pique\n"
+    "A = As    T = 10    J = Valet    Q = Dame    K = Roi"
+)
+
 
 def _load_json(name: str, default):
     path = EXTRACTOR / name
