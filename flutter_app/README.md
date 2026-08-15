@@ -1,28 +1,45 @@
-# 44 interprètes — Flutter V1
+# La Rosace — Flutter (Android)
 
-Front mobile Android connecté uniquement au backend 44i.
+Client mobile de **La Rosace V3**. Même contrat que `rosace_depose.html` :
+API `/api/v2` uniquement. Aucune clé LLM dans l’application.
 
-## Initialisation native
+## Première génération native
 
-Depuis ce dossier avec Flutter installé :
+Depuis ce dossier, avec Flutter installé :
 
 ```bash
 flutter create --org com.nicee --project-name interpretes44 --platforms android .
 flutter pub get
 ```
 
-La génération native ne doit pas remplacer `lib/` ni `pubspec.yaml`.
+Ne pas laisser l’outil écraser `lib/` ni `pubspec.yaml`.
 
-## Lancement de test
+Vérifier `applicationId` = `com.nicee.interpretes44`.
+
+## Lancement
+
+Production (défaut du code) :
 
 ```bash
-flutter run --dart-define=API_BASE_URL=https://api.example.com
+flutter run --dart-define=API_BASE_URL=https://44i.webredirect.org
 ```
 
-En local :
+Émulateur vers l’API locale :
 
 ```bash
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3252
 ```
 
-Aucune clé OpenWebUI ne doit être ajoutée à Flutter.
+AAB Play Store :
+
+```bash
+flutter build appbundle --dart-define=API_BASE_URL=https://44i.webredirect.org
+```
+
+## Parité web
+
+Distribution 52 cartes → 3 révélations → interprétation SSE → chat SSE →
+export Markdown → don PayPal → liste d’attente Premium → bouton audio
+(teaser « fonction premium »).
+
+La V1 (tapis colonnes, `/api/sessions`) n’existe plus dans ce client.
