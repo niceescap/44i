@@ -422,6 +422,7 @@ def symbolic_summary(session_id: str) -> dict[str, str]:
 class V2CreateRequest(BaseModel):
     stage_width: float = 360
     stage_height: float = 360
+    locale: str | None = None
 
 
 class V2RevealRequest(BaseModel):
