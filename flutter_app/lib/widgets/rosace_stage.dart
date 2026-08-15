@@ -94,7 +94,7 @@ class _StarPainter extends CustomPainter {
       }
     }
     path.close();
-    canvas.drawPath(path, gold..color = RosaceColors.gold.withValues(alpha: 0.08));
+    canvas.drawPath(path, gold..color = RosaceColors.gold.withOpacity(0.08));
     final star = Path();
     for (var k = 0; k < 13; k++) {
       final a = pt(tips[k]);
