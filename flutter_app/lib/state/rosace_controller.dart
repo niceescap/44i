@@ -116,22 +116,30 @@ class RosaceController extends ChangeNotifier {
       } else if (chosen.length == 2) {
         messages.add(ChatMessage(role: 'oracle', content: pick(strings.lastLines), guide: true));
       } else if (chosen.length >= 3) {
-        phase = 'oracle';
-        messages.add(ChatMessage(
-          role: 'oracle',
-          content: '${pick(strings.waitLines)} ${pick(strings.discLines)}',
-          guide: true,
-        ));
-        notifyListeners();
-        await _interpret();
+        phase = 'recalling';
+        messages.add(ChatMessage(role: 'oracle', content: strings.handLine, guide: true));
+        Future<void>.delayed(const Duration(milliseconds: 5000), beginOracle);
       }
     } catch (exception) {
       error = exception.toString();
       await track('error', code: 'session');
     } finally {
-      dealing = false;
+      if (phase != 'recalling') dealing = false;
       notifyListeners();
     }
+  }
+
+  Future<void> beginOracle() async {
+    if (sessionId == null || phase != 'recalling') return;
+    phase = 'oracle';
+    dealing = false;
+    messages.add(ChatMessage(
+      role: 'oracle',
+      content: '${pick(strings.waitLines)} ${pick(strings.discLines)}',
+      guide: true,
+    ));
+    notifyListeners();
+    await _interpret();
   }
 
   Future<void> _interpret() async {
