@@ -6,17 +6,32 @@ import 'package:http/http.dart' as http;
 import '../models/rosace_models.dart';
 
 class RosaceApi {
-  RosaceApi({http.Client? client})
+  RosaceApi({http.Client? client, this.locale = 'fr', this.appVersion = '1.0.0+1'})
       : baseUrl = const String.fromEnvironment(
           'API_BASE_URL',
           defaultValue: 'https://44i.webredirect.org',
         ),
         _client = client ?? http.Client();
 
+  static const source = 'android';
+
   final String baseUrl;
+  final String locale;
+  final String appVersion;
   final http.Client _client;
 
   Uri _uri(String path) => Uri.parse('$baseUrl$path');
+
+  Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        'User-Agent': 'LaRosace/$appVersion (Android)',
+      };
+
+  Map<String, dynamic> _meta() => {
+        'source': source,
+        'app_version': appVersion,
+        'locale': locale,
+      };
 
   Future<Map<String, dynamic>> _decode(http.Response response) {
     final value = jsonDecode(response.body);
@@ -33,7 +48,7 @@ class RosaceApi {
   }) async {
     final response = await _client.post(
       _uri('/api/v2/sessions'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers,
       body: jsonEncode({
         'stage_width': width,
         'stage_height': height,
@@ -46,7 +61,7 @@ class RosaceApi {
   Future<Map<String, dynamic>> reveal(String sessionId, int siteId) async {
     final response = await _client.post(
       _uri('/api/v2/sessions/$sessionId/reveal'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers,
       body: jsonEncode({'site_id': siteId}),
     );
     return _decode(response);
@@ -59,11 +74,12 @@ class RosaceApi {
   }) async {
     await _client.post(
       _uri('/api/v2/prospects/visit'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers,
       body: jsonEncode({
         'visit_id': visitId,
         'visitor_id': visitorId,
         'session_id': sessionId,
+        ..._meta(),
       }),
     );
   }
@@ -74,17 +90,22 @@ class RosaceApi {
     required String type,
     String? sessionId,
     String? email,
+    int? n,
+    String? code,
   }) async {
     final body = <String, dynamic>{
       'visit_id': visitId,
       'visitor_id': visitorId,
       'type': type,
       'session_id': sessionId,
+      ..._meta(),
     };
     if (email != null) body['email'] = email;
+    if (n != null) body['n'] = n;
+    if (code != null) body['code'] = code;
     final response = await _client.post(
       _uri('/api/v2/prospects/event'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers,
       body: jsonEncode(body),
     );
     if (response.statusCode >= 400) {
@@ -100,7 +121,7 @@ class RosaceApi {
 
   Stream<String> _sse(String path, Map<String, dynamic> body) async* {
     final request = http.Request('POST', _uri(path))
-      ..headers['Content-Type'] = 'application/json'
+      ..headers.addAll(_headers)
       ..body = jsonEncode(body);
     final response = await _client.send(request);
     if (response.statusCode >= 400) {

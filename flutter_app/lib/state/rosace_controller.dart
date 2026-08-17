@@ -10,9 +10,9 @@ import '../models/rosace_models.dart';
 
 class RosaceController extends ChangeNotifier {
   RosaceController({RosaceApi? api, String? locale})
-      : api = api ?? RosaceApi(),
-        locale = locale ?? deviceLocale(),
-        strings = AppStrings(locale ?? deviceLocale());
+      : locale = locale ?? deviceLocale(),
+        strings = AppStrings(locale ?? deviceLocale()),
+        api = api ?? RosaceApi(locale: locale ?? deviceLocale());
 
   final RosaceApi api;
   final String locale;
@@ -65,6 +65,7 @@ class RosaceController extends ChangeNotifier {
     } catch (exception) {
       error = strings.tableFail;
       debugPrint('$exception');
+      await track('error', code: 'table');
     } finally {
       busy = false;
       dealing = false;
@@ -92,6 +93,7 @@ class RosaceController extends ChangeNotifier {
         ..card = PlayingCard.fromCode(code)
         ..revealed = true;
       chosen.add(index);
+      await track('reveal', n: chosen.length);
       if (chosen.length == 1) {
         messages.add(ChatMessage(role: 'oracle', content: pick(strings.moreLines), guide: true));
       } else if (chosen.length == 2) {
@@ -108,6 +110,7 @@ class RosaceController extends ChangeNotifier {
       }
     } catch (exception) {
       error = exception.toString();
+      await track('error', code: 'session');
     } finally {
       dealing = false;
       notifyListeners();
@@ -128,10 +131,14 @@ class RosaceController extends ChangeNotifier {
       }
       if (acc.isEmpty) {
         messages[messages.length - 1] = ChatMessage(role: 'oracle', content: strings.silent);
+        await track('interpret_fail', code: 'oracle');
+      } else {
+        await track('interpret');
       }
     } catch (exception) {
       debugPrint('$exception');
       messages[messages.length - 1] = ChatMessage(role: 'oracle', content: strings.silent);
+      await track('interpret_fail', code: 'oracle');
     }
     chatReady = true;
     notifyListeners();
@@ -141,6 +148,7 @@ class RosaceController extends ChangeNotifier {
     final value = text.trim();
     if (sessionId == null || !chatReady || value.isEmpty || dealing) return;
     dealing = true;
+    await track('chat');
     messages.add(ChatMessage(role: 'user', content: value));
     messages.add(const ChatMessage(role: 'oracle', content: ''));
     notifyListeners();
@@ -162,14 +170,16 @@ class RosaceController extends ChangeNotifier {
     }
   }
 
-  Future<void> track(String type, {String? email}) {
+  Future<void> track(String type, {String? email, int? n, String? code}) {
     return api.trackEvent(
       visitId: visitId,
       visitorId: visitorId,
       type: type,
       sessionId: sessionId,
       email: email,
-    );
+      n: n,
+      code: code,
+    ).catchError((_) {});
   }
 
   String exportMarkdown() {
