@@ -917,9 +917,19 @@ def _append_event(data: dict[str, Any], visit: dict[str, Any], kind: str, extra:
 @app.post("/api/v2/prospects/visit")
 def prospect_visit(payload: ProspectVisitRequest, request: Request) -> dict[str, Any]:
     ip = _client_ip(request)
+    source = _resolve_source(payload.source, request)
     with _PROSPECT_LOCK:
         data = _load_prospects()
-        visit = _ensure_visit(data, payload.visit_id.strip(), payload.visitor_id.strip(), ip, payload.session_id)
+        visit = _ensure_visit(
+            data,
+            payload.visit_id.strip(),
+            payload.visitor_id.strip(),
+            ip,
+            payload.session_id,
+            source=source,
+            app_version=payload.app_version,
+            locale=payload.locale,
+        )
         if not any(ev.get("type") == "visit_start" for ev in visit.get("events") or []):
             _append_event(data, visit, "visit_start")
         else:
@@ -941,10 +951,25 @@ def prospect_event(payload: ProspectEventRequest, request: Request) -> dict[str,
         if not EMAIL_RE.match(email):
             raise HTTPException(status_code=400, detail="Adresse e-mail invalide")
         extra["email"] = email
+    elif kind == "reveal" and payload.n is not None:
+        extra["n"] = payload.n
+    elif kind == "error":
+        code = (payload.code or "unknown").strip().lower()
+        extra["code"] = code if code in ALLOWED_ERROR_CODES else "unknown"
+    source = _resolve_source(payload.source, request)
     ip = _client_ip(request)
     with _PROSPECT_LOCK:
         data = _load_prospects()
-        visit = _ensure_visit(data, payload.visit_id.strip(), payload.visitor_id.strip(), ip, payload.session_id)
+        visit = _ensure_visit(
+            data,
+            payload.visit_id.strip(),
+            payload.visitor_id.strip(),
+            ip,
+            payload.session_id,
+            source=source,
+            app_version=payload.app_version,
+            locale=payload.locale,
+        )
         if kind == "premium_email":
             already = any(
                 ev.get("type") == "premium_email" and ev.get("email") == extra["email"]
@@ -965,6 +990,9 @@ def prospect_click(payload: ProspectClickRequest, request: Request) -> dict[str,
         visitor_id=payload.visitor_id.strip(),
         type="premium_click",
         session_id=payload.session_id,
+        source=payload.source,
+        app_version=payload.app_version,
+        locale=payload.locale,
     ), request)
 
 
@@ -977,6 +1005,9 @@ def prospect_email(payload: ProspectEmailRequest, request: Request) -> dict[str,
         type="premium_email",
         session_id=payload.session_id,
         email=payload.email,
+        source=payload.source,
+        app_version=payload.app_version,
+        locale=payload.locale,
     ), request)
 
 
@@ -988,6 +1019,9 @@ def prospect_don(payload: ProspectClickRequest, request: Request) -> dict[str, A
         visitor_id=payload.visitor_id.strip(),
         type="don_click",
         session_id=payload.session_id,
+        source=payload.source,
+        app_version=payload.app_version,
+        locale=payload.locale,
     ), request)
 
 
