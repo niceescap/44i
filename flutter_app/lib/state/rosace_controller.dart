@@ -10,9 +10,9 @@ import '../models/rosace_models.dart';
 
 class RosaceController extends ChangeNotifier {
   RosaceController({RosaceApi? api, String? locale})
-      : api = api ?? RosaceApi(),
-        locale = locale ?? deviceLocale(),
-        strings = AppStrings(locale ?? deviceLocale());
+      : locale = locale ?? deviceLocale(),
+        strings = AppStrings(locale ?? deviceLocale()),
+        api = api ?? RosaceApi(locale: locale ?? deviceLocale());
 
   final RosaceApi api;
   final String locale;
