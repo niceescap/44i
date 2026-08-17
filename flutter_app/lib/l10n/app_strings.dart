@@ -41,6 +41,8 @@ class AppStrings {
   String get legal => 'La Rosace, par « 44 interprètes » ★ V3 · 15 août 2026';
   String get audioPremium => en ? 'premium feature' : 'fonction premium';
   String get listen => en ? 'Listen' : 'Écouter';
+  String get handLine =>
+      en ? 'The three cards gather into the hand…' : 'Les trois cartes rejoignent la main…';
   String get close => en ? 'Close' : 'Fermer';
   String get none => en ? '(no exchange)' : '(aucun échange)';
   String get user => en ? 'user' : 'utilisateur';
