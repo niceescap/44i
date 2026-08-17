@@ -32,6 +32,7 @@ class RosaceController extends ChangeNotifier {
   final List<ChatMessage> messages = [];
   bool chatReady = false;
   bool premiumThanks = false;
+  int _gatherGen = 0;
 
   String pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
 
