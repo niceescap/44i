@@ -37,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  String get _bandeauUrl => '${controller.api.baseUrl}/static/brand/bandeau.jpg';
+
   Future<void> _donate() async {
     await controller.track('don_click');
     final uri = Uri.parse('https://paypal.me/NiceeCap/2');
@@ -44,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _privacy() async {
-    final uri = Uri.parse('${controller.api.baseUrl}/privacy');
+    final uri = Uri.parse('${controller.api.baseUrl}/privacy-policy');
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
@@ -106,85 +108,113 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final s = controller.strings;
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-              child: Column(
-                children: [
-                  Text(s.title, style: const TextStyle(fontSize: 40, fontFamily: 'serif', color: RosaceColors.cream, height: 1)),
-                  Text(s.tagline, style: const TextStyle(color: Color(0xffd2be86), fontStyle: FontStyle.italic)),
-                  Text(s.subtitle, style: const TextStyle(color: Color(0xffd2be86), fontSize: 13)),
-                ],
-              ),
-            ),
-            if (controller.error != null)
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Text(controller.error!, style: const TextStyle(color: Colors.redAccent)),
-              ),
-            Expanded(
-              flex: controller.phase == 'oracle' ? 4 : 6,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: RosaceStage(
-                  placements: controller.placements,
-                  phase: controller.phase,
-                  busy: controller.dealing,
-                  brandUrl: '${controller.api.baseUrl}/static/brand/rosace.png',
-                  onReveal: controller.reveal,
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 280,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: RosaceColors.bandeauOpacity,
+                child: Image.network(
+                  _bandeauUrl,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  errorBuilder: (_, __, ___) => const ColoredBox(color: RosaceColors.glow),
                 ),
               ),
             ),
-            Expanded(
-              flex: controller.phase == 'oracle' ? 5 : 3,
-              child: ChatPanel(
-                messages: controller.messages,
-                ready: controller.chatReady,
-                busy: controller.dealing && controller.phase == 'oracle',
-                hint: s.writeHint,
-                audioLabel: s.listen,
-                premiumPuff: s.audioPremium,
-                onSend: controller.send,
-                onAudio: () => controller.track('audio_click'),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  FilledButton(onPressed: _premium, child: Text(s.premium)),
-                  const SizedBox(height: 6),
-                  Row(
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            controller.track('export');
-                            Share.share(controller.exportMarkdown(), subject: 'La Rosace');
-                          },
-                          child: Text(s.keep),
-                        ),
+                      Text(s.title, style: rosaceTitleStyle(fontSize: 48)),
+                      Text(s.tagline, style: const TextStyle(color: RosaceColors.tagline, fontStyle: FontStyle.italic)),
+                      Text(s.subtitle, style: const TextStyle(color: RosaceColors.tagline, fontSize: 13)),
+                    ],
+                  ),
+                ),
+                if (controller.error != null)
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(controller.error!, style: const TextStyle(color: Colors.redAccent)),
+                  ),
+                Expanded(
+                  flex: controller.phase == 'oracle' ? 4 : 6,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: RosaceStage(
+                      placements: controller.placements,
+                      phase: controller.phase,
+                      busy: controller.dealing,
+                      brandUrl: '${controller.api.baseUrl}/static/brand/rosace.png',
+                      onReveal: controller.reveal,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: controller.phase == 'oracle' ? 5 : 3,
+                  child: ChatPanel(
+                    messages: controller.messages,
+                    ready: controller.chatReady,
+                    busy: controller.dealing && controller.phase == 'oracle',
+                    hint: s.writeHint,
+                    audioLabel: s.listen,
+                    premiumPuff: s.audioPremium,
+                    onSend: controller.send,
+                    onAudio: () => controller.track('audio_click'),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      FilledButton(onPressed: _premium, child: Text(s.premium)),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                controller.track('export');
+                                Share.share(controller.exportMarkdown(), subject: 'La Rosace');
+                              },
+                              child: Text(s.keep),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: controller.busy ? null : () => controller.deal(),
+                              child: Text(s.again),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: controller.busy ? null : () => controller.deal(),
-                          child: Text(s.again),
+                      const SizedBox(height: 6),
+                      OutlinedButton(onPressed: _donate, child: Text(s.donate)),
+                      TextButton(
+                        onPressed: _privacy,
+                        child: Text(
+                          '${s.legal} · ${s.privacy}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 10, color: RosaceColors.gold),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  OutlinedButton(onPressed: _donate, child: Text(s.donate)),
-                  TextButton(onPressed: _privacy, child: Text('${s.legal} · ${s.privacy}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, color: RosaceColors.gold))),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
