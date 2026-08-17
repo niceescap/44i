@@ -60,17 +60,22 @@ class RosaceController extends ChangeNotifier {
       final state = await api.createSession(width: width, height: height, locale: locale);
       sessionId = state.sessionId;
       placements = state.sites.map((site) => CardPlacement(site: site)).toList();
-      await api.trackVisit(visitId: visitId, visitorId: visitorId, sessionId: sessionId);
-      await api.trackEvent(visitId: visitId, visitorId: visitorId, type: 'deal', sessionId: sessionId);
     } catch (exception) {
-      error = strings.tableFail;
-      debugPrint('$exception');
+      error = '${strings.tableFail}\n$exception';
+      debugPrint('createSession: $exception');
       await track('error', code: 'table');
-    } finally {
-      busy = false;
-      dealing = false;
-      notifyListeners();
     }
+    if (sessionId != null) {
+      try {
+        await api.trackVisit(visitId: visitId, visitorId: visitorId, sessionId: sessionId);
+        await api.trackEvent(visitId: visitId, visitorId: visitorId, type: 'deal', sessionId: sessionId);
+      } catch (exception) {
+        debugPrint('track deal: $exception');
+      }
+    }
+    busy = false;
+    dealing = false;
+    notifyListeners();
   }
 
   Future<void> reveal(int index) async {
