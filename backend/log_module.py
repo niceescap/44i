@@ -415,16 +415,22 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
     </div>
 
     <h2>🔍 Filtre</h2>
+    <div class="filter-bar" id="sourceFilter">
+        <button type="button" class="active" data-source="all">Tous</button>
+        <button type="button" data-source="web">Web</button>
+        <button type="button" data-source="android">Android</button>
+    </div>
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Recherche par IP, visiteur, type d'événement...">
+        <input type="text" id="searchInput" placeholder="Recherche par IP, visiteur, source, type d'événement...">
         <button onclick="resetFilter()">Réinitialiser</button>
     </div>
 
-    <h2>📋 Visites ({stats['visits']} au total)</h2>
+    <h2>📋 Visites ({stats['visits']} au total — {stats['web_visits']} web · {stats['android_visits']} Android)</h2>
     <table id="visitsTable">
         <thead>
             <tr>
                 <th>Date</th>
+                <th>Source</th>
                 <th>IP</th>
                 <th>Visiteur</th>
                 <th>Durée</th>
