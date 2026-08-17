@@ -49,12 +49,12 @@ app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon() -> FileResponse:
-    return FileResponse(WEB_DIR / "brand" / "favicon.ico")
+    return FileResponse(WEB_DIR / "brand" / "logocarre.jpg", media_type="image/jpeg")
 
 
 @app.get("/apple-touch-icon.png", include_in_schema=False)
 def apple_touch_icon() -> FileResponse:
-    return FileResponse(WEB_DIR / "brand" / "apple-touch-icon.png")
+    return FileResponse(WEB_DIR / "brand" / "logocarre.jpg", media_type="image/jpeg")
 
 # ... la suite de ton code continue ici
 
