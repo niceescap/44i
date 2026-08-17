@@ -702,7 +702,14 @@ def _recompute_stats(data: dict[str, Any]) -> None:
     ips: set[str] = set()
     emails: set[str] = set()
     premium_clicks = don_clicks = audio_clicks = 0
+    reveals = interprets = chats = exports = 0
+    web_visits = android_visits = 0
     for visit in visits:
+        source = visit.get("source") or "web"
+        if source == "android":
+            android_visits += 1
+        else:
+            web_visits += 1
         if visit.get("visitor_id"):
             visitors.add(visit["visitor_id"])
         if visit.get("ip"):
@@ -721,6 +728,14 @@ def _recompute_stats(data: dict[str, Any]) -> None:
                 audio_clicks += 1
             elif kind == "premium_email" and ev.get("email"):
                 emails.add(ev["email"])
+            elif kind == "reveal":
+                reveals += 1
+            elif kind == "interpret":
+                interprets += 1
+            elif kind == "chat":
+                chats += 1
+            elif kind == "export":
+                exports += 1
     data["stats"] = {
         "visits": len(visits),
         "unique_visitors": len(visitors),
@@ -731,6 +746,12 @@ def _recompute_stats(data: dict[str, Any]) -> None:
         "don_clicks": don_clicks,
         "unique_don_ips": len(don_ips),
         "audio_clicks": audio_clicks,
+        "web_visits": web_visits,
+        "android_visits": android_visits,
+        "reveals": reveals,
+        "interprets": interprets,
+        "chats": chats,
+        "exports": exports,
     }
 
 
