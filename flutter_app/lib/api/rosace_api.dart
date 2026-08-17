@@ -61,7 +61,7 @@ class RosaceApi {
   Future<Map<String, dynamic>> reveal(String sessionId, int siteId) async {
     final response = await _client.post(
       _uri('/api/v2/sessions/$sessionId/reveal'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers,
       body: jsonEncode({'site_id': siteId}),
     );
     return _decode(response);
