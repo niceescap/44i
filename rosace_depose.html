@@ -4,17 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>La Rosace</title>
-  <link rel="icon" href="/static/brand/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" href="/static/brand/favicon-32.png" sizes="32x32">
-  <link rel="apple-touch-icon" href="/static/brand/apple-touch-icon.png">
-  <meta name="theme-color" content="#0a0510">
+  <link rel="icon" type="image/jpeg" href="/static/brand/logocarre.jpg">
+  <link rel="apple-touch-icon" href="/static/brand/logocarre.jpg">
+  <meta name="theme-color" content="#4a1d72">
+  <meta property="og:image" content="https://44i.webredirect.org/static/brand/bandeau.jpg">
+  <meta name="twitter:image" content="https://44i.webredirect.org/static/brand/bandeau.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Source+Sans+3:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --felt: #1a0e24;
-      --ink: #0a0510;
+      --felt: #3a1860;
+      --ink: #2a1248;
       --gold: #c9a84c;
       --gold-dim: rgba(201, 168, 76, 0.28);
       --cream: #f6edd4;
@@ -24,7 +25,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       min-height: 100%;
-      background: var(--ink);
+      background: var(--felt);
       color: #e8d5a3;
       font-family: Georgia, "Palatino Linotype", serif;
     }
@@ -57,9 +58,9 @@
     .ambient {
       position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse at 30% 18%, rgba(76, 29, 96, .28), transparent 52%),
-        radial-gradient(ellipse at 72% 82%, rgba(120, 40, 60, .18), transparent 50%),
-        radial-gradient(ellipse at 50% 50%, #140a22, #060309);
+        radial-gradient(ellipse at 30% 18%, rgba(150, 70, 200, .42), transparent 54%),
+        radial-gradient(ellipse at 72% 82%, rgba(170, 55, 130, .26), transparent 52%),
+        radial-gradient(ellipse at 50% 50%, #5a2488, #3a1860);
     }
     header {
       position: relative; z-index: 3;
@@ -79,37 +80,15 @@
       padding: 12px 26px 16px 12px;
       border-radius: 16px;
     }
-    .brand-arc-clip {
+    .brand-bandeau {
       position: absolute;
       inset: 0;
       z-index: 0;
-      overflow: hidden;
       pointer-events: none;
-      -webkit-mask-image:
-        radial-gradient(ellipse 95% 85% at 28% 60%, #000 18%, rgba(0,0,0,.55) 48%, transparent 78%);
-      mask-image:
-        radial-gradient(ellipse 95% 85% at 28% 60%, #000 18%, rgba(0,0,0,.55) 48%, transparent 78%);
+      background: url("/static/brand/bandeau.jpg") center / cover no-repeat;
+      opacity: .14;
     }
-    .brand-arc {
-      position: absolute;
-      width: 760%;
-      aspect-ratio: 1;
-      left: 12%;
-      top: 220%;
-      background: url("/static/brand/rosace.png") center / contain no-repeat;
-      opacity: .5;
-      mix-blend-mode: lighten;
-      transform: translate(-50%, -50%);
-      animation: rosaceCycle 240s linear infinite;
-      will-change: transform;
-    }
-    @keyframes rosaceCycle {
-      to { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .brand-arc { animation: none; }
-    }
-    header .brand > *:not(.brand-arc-clip) {
+    header .brand > *:not(.brand-bandeau) {
       position: relative;
       z-index: 1;
     }
@@ -200,11 +179,11 @@
       position: absolute; inset: 18px;
       border-radius: 24px;
       background:
-        radial-gradient(ellipse at center, #2a1840 0%, #1a0e28 42%, #100818 100%);
-      border: 3px solid #6b4c8a;
+        radial-gradient(ellipse at center, #4e2480 0%, #3a1860 42%, #2a1248 100%);
+      border: 3px solid #8b6ab0;
       box-shadow:
-        0 0 0 6px #1a0e2e,
-        0 0 0 7px #8b6ab0,
+        0 0 0 6px #321858,
+        0 0 0 7px #b08ad4,
         0 24px 70px rgba(0,0,0,.65),
         inset 0 0 90px rgba(0,0,0,.45);
       overflow: hidden;
@@ -440,8 +419,8 @@
       min-height: 0;
       flex-direction: column;
       margin: 4px 12px 10px;
-      background: linear-gradient(180deg, rgba(26,14,40,.55), rgba(10,6,18,.82));
-      border: 1px solid #4a2a6e;
+      background: linear-gradient(180deg, rgba(74, 36, 120, .52), rgba(42, 18, 72, .72));
+      border: 1px solid #7a4caa;
       border-radius: 16px;
       overflow: visible;
       box-shadow: 0 16px 40px rgba(0,0,0,.35);
@@ -531,7 +510,7 @@
       bottom: 22px;
       padding: 4px 7px;
       border-radius: 10px;
-      background: #2a1a3e;
+      background: #3a1860;
       border: 1px solid rgba(201,168,76,.45);
       color: #f6db9b;
       font-size: 10px;
@@ -549,14 +528,14 @@
       display: none;
       gap: 8px;
       padding: 10px 12px 12px;
-      border-top: 1px solid #2a1a3e;
+      border-top: 1px solid #4a2878;
     }
     #chat-form.ready { display: flex; }
     #chat-input {
       flex: 1;
       padding: 12px 14px;
-      background: #1a0e2e;
-      border: 1px solid #4a2a6e;
+      background: #321858;
+      border: 1px solid #7a4caa;
       border-radius: 8px;
       color: #e8d5a3;
       font-size: 15px;
@@ -593,7 +572,7 @@
       padding: 10px 12px;
       font-size: 12px;
       letter-spacing: .02em;
-      background: linear-gradient(135deg, #3a2a50, #2a1840);
+      background: linear-gradient(135deg, #5a3488, #3a1860);
       border: 1px solid var(--gold);
       color: #fff;
     }
@@ -652,7 +631,7 @@
     .modal-backdrop {
       position: absolute;
       inset: 0;
-      background: rgba(6, 3, 10, .72);
+      background: rgba(42, 18, 72, .62);
     }
     .modal-card {
       position: relative;
@@ -663,7 +642,7 @@
       padding: 28px 22px 22px;
       border: 1px solid var(--gold);
       border-radius: 16px;
-      background: linear-gradient(180deg, #24162f, #140a1c);
+      background: linear-gradient(180deg, #4a2878, #2a1248);
       color: var(--cream);
       box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
     }
@@ -688,8 +667,8 @@
       width: 100%;
       margin-bottom: 12px;
       padding: 12px 14px;
-      background: #1a0e2e;
-      border: 1px solid #4a2a6e;
+      background: #321858;
+      border: 1px solid #7a4caa;
       border-radius: 8px;
       color: #e8d5a3;
       font-size: 15px;
@@ -722,7 +701,7 @@
   <div class="ambient"></div>
   <header>
     <div class="brand">
-      <div class="brand-arc-clip" aria-hidden="true"><div class="brand-arc"></div></div>
+      <div class="brand-bandeau" aria-hidden="true"></div>
       <h1>La Rosace</h1>
       <p class="tagline">Consultation Symbolique anonyme</p>
       <p class="tagline-sub">l’Oracle vous guide</p>
