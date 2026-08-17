@@ -55,6 +55,7 @@ class RosaceController extends ChangeNotifier {
     placements = [];
     chatReady = false;
     phase = 'table';
+    _gatherGen++;
     chosen.clear();
     messages
       ..clear()
