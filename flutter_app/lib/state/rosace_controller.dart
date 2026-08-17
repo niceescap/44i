@@ -131,10 +131,14 @@ class RosaceController extends ChangeNotifier {
       }
       if (acc.isEmpty) {
         messages[messages.length - 1] = ChatMessage(role: 'oracle', content: strings.silent);
+        await track('interpret_fail', code: 'oracle');
+      } else {
+        await track('interpret');
       }
     } catch (exception) {
       debugPrint('$exception');
       messages[messages.length - 1] = ChatMessage(role: 'oracle', content: strings.silent);
+      await track('interpret_fail', code: 'oracle');
     }
     chatReady = true;
     notifyListeners();
