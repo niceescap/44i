@@ -170,14 +170,16 @@ class RosaceController extends ChangeNotifier {
     }
   }
 
-  Future<void> track(String type, {String? email}) {
+  Future<void> track(String type, {String? email, int? n, String? code}) {
     return api.trackEvent(
       visitId: visitId,
       visitorId: visitorId,
       type: type,
       sessionId: sessionId,
       email: email,
-    );
+      n: n,
+      code: code,
+    ).catchError((_) {});
   }
 
   String exportMarkdown() {
