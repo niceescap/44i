@@ -88,23 +88,8 @@
     }
     header .brand {
       position: relative;
-      isolation: isolate;
-      overflow: hidden;
       max-width: min(100%, 28rem);
       padding: 12px 26px 16px 12px;
-      border-radius: 16px;
-    }
-    .brand-bandeau {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      background: url("/static/brand/bandeau.jpg") center / cover no-repeat;
-      opacity: .14;
-    }
-    header .brand > *:not(.brand-bandeau) {
-      position: relative;
-      z-index: 1;
     }
     h1 {
       font-family: "Great Vibes", "Segoe Script", cursive;
