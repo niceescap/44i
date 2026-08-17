@@ -106,11 +106,23 @@ def recalc_stats(visits: list) -> dict:
         "unique_don_ips": set(),
         "audio_clicks": 0,
         "deals": 0,
+        "web_visits": 0,
+        "android_visits": 0,
+        "reveals": 0,
+        "interprets": 0,
+        "chats": 0,
+        "exports": 0,
+        "errors": 0,
         "event_types": Counter(),
     }
     for v in visits:
         ip = v["ip"]
         visitor = v["visitor_id"]
+        source = visit_source(v)
+        if source == "android":
+            stats["android_visits"] += 1
+        else:
+            stats["web_visits"] += 1
         has_premium = False
         for e in v.get("events", []):
             etype = e["type"]
@@ -127,11 +139,39 @@ def recalc_stats(visits: list) -> dict:
                 stats["audio_clicks"] += 1
             elif etype == "deal":
                 stats["deals"] += 1
+            elif etype == "reveal":
+                stats["reveals"] += 1
+            elif etype == "interpret":
+                stats["interprets"] += 1
+            elif etype == "chat":
+                stats["chats"] += 1
+            elif etype == "export":
+                stats["exports"] += 1
+            elif etype in {"error", "interpret_fail"}:
+                stats["errors"] += 1
         if has_premium:
             stats["unique_premium_visitors"].add(visitor)
     stats["unique_premium_visitors"] = len(stats["unique_premium_visitors"])
     stats["unique_don_ips"] = len(stats["unique_don_ips"])
     return stats
+
+
+def visit_source(visit: dict) -> str:
+    source = (visit.get("source") or "").strip().lower()
+    return source if source in {"web", "android"} else "web"
+
+
+def event_extra_label(event: dict) -> str:
+    bits = []
+    if event.get("type") == "premium_email" and event.get("email"):
+        bits.append(f"email: {event['email']}")
+    if event.get("type") == "reveal" and event.get("n") is not None:
+        bits.append(f"carte {event['n']}/3")
+    if event.get("type") == "error" and event.get("code"):
+        bits.append(event["code"])
+    if event.get("type") == "interpret_fail" and event.get("code"):
+        bits.append(event["code"])
+    return f" ({', '.join(bits)})" if bits else ""
 
 # ----------------------------------------------------------------------
 # Génération de la page HTML
