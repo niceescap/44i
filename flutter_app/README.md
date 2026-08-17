@@ -1,45 +1,50 @@
 # La Rosace — Flutter (Android)
 
-Client mobile de **La Rosace V3**. Même contrat que `rosace_depose.html` :
-API `/api/v2` uniquement. Aucune clé LLM dans l’application.
+Application **La Rosace**. Éditeur : **44 interprètes**. Repo : `44i`.
 
-## Première génération native
+| Visible (Store, icône, titre) | Technique (invisible) |
+|---|---|
+| La Rosace | `applicationId` = `com.nicee.larosace` |
+| Éditeur : 44 interprètes | module Dart = `la_rosace` |
+| Icône = `logocarre.jpg` | dossier = `flutter_app/` |
 
-Depuis ce dossier, avec Flutter installé :
+API uniquement `https://44i.webredirect.org` `/api/v2`. Aucune clé LLM dans l’app.
 
-```bash
-flutter create --org com.nicee --project-name interpretes44 --platforms android .
-flutter pub get
-```
+`com.nicee.interpretes44` est **réservé** à une éventuelle app-catalogue de l’éditeur.
 
-Ne pas laisser l’outil écraser `lib/` ni `pubspec.yaml`.
+## Build sur noe (Termux)
 
-Vérifier `applicationId` = `com.nicee.interpretes44`.
-
-## Lancement
-
-Production (défaut du code) :
+Ne pas merger cette branche dans `main`. Ne pas relancer `44i.service` pendant le build.
 
 ```bash
-flutter run --dart-define=API_BASE_URL=https://44i.webredirect.org
+cd ~/44i
+git fetch origin
+git checkout feature/la-rosace-identity
+git pull origin feature/la-rosace-identity
+
+cd flutter_app
+chmod +x tool/prepare_android.sh
+bash tool/prepare_android.sh
+
+flutter build apk --release --dart-define=API_BASE_URL=https://44i.webredirect.org
 ```
 
-Émulateur vers l’API locale :
+APK : `~/44i/flutter_app/build/app/outputs/flutter-apk/app-release.apk`
+
+Tu peux le renommer `La-Rosace.apk` pour le transfert ; Google n’utilise pas ce nom de fichier.
+
+AAB Play Store (plus tard) :
 
 ```bash
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3252
+flutter build appbundle --release --dart-define=API_BASE_URL=https://44i.webredirect.org
 ```
 
-AAB Play Store :
+## Première génération native (déjà dans le script)
 
 ```bash
-flutter build appbundle --dart-define=API_BASE_URL=https://44i.webredirect.org
+flutter create --org com.nicee --project-name la_rosace --platforms android .
 ```
 
-## Parité web
+Le script force ensuite `com.nicee.larosace` (sans underscore) et pose l’icône.
 
-Distribution 52 cartes → 3 révélations → interprétation SSE → chat SSE →
-export Markdown → don PayPal → liste d’attente Premium → bouton audio
-(teaser « fonction premium »).
-
-La V1 (tapis colonnes, `/api/sessions`) n’existe plus dans ce client.
+Ne pas laisser `flutter create` écraser `lib/` ni `pubspec.yaml`.
