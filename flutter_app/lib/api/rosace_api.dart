@@ -6,17 +6,32 @@ import 'package:http/http.dart' as http;
 import '../models/rosace_models.dart';
 
 class RosaceApi {
-  RosaceApi({http.Client? client})
+  RosaceApi({http.Client? client, this.locale = 'fr', this.appVersion = '1.0.0+1'})
       : baseUrl = const String.fromEnvironment(
           'API_BASE_URL',
           defaultValue: 'https://44i.webredirect.org',
         ),
         _client = client ?? http.Client();
 
+  static const source = 'android';
+
   final String baseUrl;
+  final String locale;
+  final String appVersion;
   final http.Client _client;
 
   Uri _uri(String path) => Uri.parse('$baseUrl$path');
+
+  Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        'User-Agent': 'LaRosace/$appVersion (Android)',
+      };
+
+  Map<String, dynamic> _meta() => {
+        'source': source,
+        'app_version': appVersion,
+        'locale': locale,
+      };
 
   Future<Map<String, dynamic>> _decode(http.Response response) {
     final value = jsonDecode(response.body);
