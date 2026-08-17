@@ -80,37 +80,15 @@
       padding: 12px 26px 16px 12px;
       border-radius: 16px;
     }
-    .brand-arc-clip {
+    .brand-bandeau {
       position: absolute;
       inset: 0;
       z-index: 0;
-      overflow: hidden;
       pointer-events: none;
-      -webkit-mask-image:
-        radial-gradient(ellipse 95% 85% at 28% 60%, #000 18%, rgba(0,0,0,.55) 48%, transparent 78%);
-      mask-image:
-        radial-gradient(ellipse 95% 85% at 28% 60%, #000 18%, rgba(0,0,0,.55) 48%, transparent 78%);
+      background: url("/static/brand/bandeau.jpg") center / cover no-repeat;
+      opacity: .14;
     }
-    .brand-arc {
-      position: absolute;
-      width: 760%;
-      aspect-ratio: 1;
-      left: 12%;
-      top: 220%;
-      background: url("/static/brand/rosace.png") center / contain no-repeat;
-      opacity: .5;
-      mix-blend-mode: lighten;
-      transform: translate(-50%, -50%);
-      animation: rosaceCycle 240s linear infinite;
-      will-change: transform;
-    }
-    @keyframes rosaceCycle {
-      to { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .brand-arc { animation: none; }
-    }
-    header .brand > *:not(.brand-arc-clip) {
+    header .brand > *:not(.brand-bandeau) {
       position: relative;
       z-index: 1;
     }
