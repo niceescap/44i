@@ -161,7 +161,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () => Share.share(controller.exportMarkdown(), subject: 'La Rosace'),
+                          onPressed: () {
+                            controller.track('export');
+                            Share.share(controller.exportMarkdown(), subject: 'La Rosace');
+                          },
                           child: Text(s.keep),
                         ),
                       ),
