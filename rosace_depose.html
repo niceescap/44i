@@ -984,7 +984,8 @@
       visit_id: visitId(),
       visitor_id: visitorId(),
       type: type,
-      session_id: sessionId || null
+      session_id: sessionId || null,
+      source: "web"
     }, extra || {});
     return api("/api/v2/prospects/event", {
       method: "POST",
