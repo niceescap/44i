@@ -93,6 +93,7 @@ class RosaceController extends ChangeNotifier {
         ..card = PlayingCard.fromCode(code)
         ..revealed = true;
       chosen.add(index);
+      await track('reveal', n: chosen.length);
       if (chosen.length == 1) {
         messages.add(ChatMessage(role: 'oracle', content: pick(strings.moreLines), guide: true));
       } else if (chosen.length == 2) {
