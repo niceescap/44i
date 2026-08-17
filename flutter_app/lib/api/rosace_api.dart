@@ -74,11 +74,12 @@ class RosaceApi {
   }) async {
     await _client.post(
       _uri('/api/v2/prospects/visit'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers,
       body: jsonEncode({
         'visit_id': visitId,
         'visitor_id': visitorId,
         'session_id': sessionId,
+        ..._meta(),
       }),
     );
   }
@@ -89,17 +90,22 @@ class RosaceApi {
     required String type,
     String? sessionId,
     String? email,
+    int? n,
+    String? code,
   }) async {
     final body = <String, dynamic>{
       'visit_id': visitId,
       'visitor_id': visitorId,
       'type': type,
       'session_id': sessionId,
+      ..._meta(),
     };
     if (email != null) body['email'] = email;
+    if (n != null) body['n'] = n;
+    if (code != null) body['code'] = code;
     final response = await _client.post(
       _uri('/api/v2/prospects/event'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers,
       body: jsonEncode(body),
     );
     if (response.statusCode >= 400) {
