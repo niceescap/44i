@@ -999,7 +999,8 @@
       body: JSON.stringify({
         visit_id: visitId(),
         visitor_id: visitorId(),
-        session_id: sessionId || null
+        session_id: sessionId || null,
+        source: "web"
       })
     }).catch(function (err) { console.error(err); });
   }
