@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:interpretes44/cards/deck.dart';
+import 'package:la_rosace/cards/deck.dart';
 
 void main() {
   test('French card names follow the web lexicon', () {
