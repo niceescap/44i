@@ -684,6 +684,12 @@ def _empty_prospects() -> dict[str, Any]:
             "don_clicks": 0,
             "unique_don_ips": 0,
             "audio_clicks": 0,
+            "web_visits": 0,
+            "android_visits": 0,
+            "reveals": 0,
+            "interprets": 0,
+            "chats": 0,
+            "exports": 0,
         },
     }
 
