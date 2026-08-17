@@ -65,6 +65,7 @@ class RosaceController extends ChangeNotifier {
     } catch (exception) {
       error = strings.tableFail;
       debugPrint('$exception');
+      await track('error', code: 'table');
     } finally {
       busy = false;
       dealing = false;
