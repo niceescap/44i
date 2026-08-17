@@ -33,8 +33,15 @@ class RosaceApi {
         'locale': locale,
       };
 
+  static const _timeout = Duration(seconds: 20);
+
   Future<Map<String, dynamic>> _decode(http.Response response) {
-    final value = jsonDecode(response.body);
+    Object? value;
+    try {
+      value = jsonDecode(response.body);
+    } catch (_) {
+      throw Exception('HTTP ${response.statusCode} depuis $baseUrl');
+    }
     if (response.statusCode >= 400) {
       throw Exception(value is Map ? (value['detail'] ?? 'Erreur serveur') : 'Erreur serveur');
     }
