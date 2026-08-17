@@ -1745,6 +1745,7 @@
       const front = el.querySelector(".front");
       if (front) paintFront(front, p.card);
       chosen.push(idx);
+      trackEvent("reveal", { n: chosen.length });
       lastSymbolique = data.symbolique || [];
       lastLogs = data.logs || [];
       var ev = lastSymbolique[lastSymbolique.length - 1];
