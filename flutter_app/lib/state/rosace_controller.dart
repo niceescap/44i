@@ -120,7 +120,10 @@ class RosaceController extends ChangeNotifier {
       } else if (chosen.length >= 3) {
         phase = 'recalling';
         messages.add(ChatMessage(role: 'oracle', content: strings.handLine, guide: true));
-        Future<void>.delayed(const Duration(milliseconds: 5000), beginOracle);
+        final gen = ++_gatherGen;
+        Future<void>.delayed(const Duration(milliseconds: 5000), () {
+          if (gen == _gatherGen) beginOracle();
+        });
       }
     } catch (exception) {
       error = exception.toString();
