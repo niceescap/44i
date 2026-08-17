@@ -53,15 +53,17 @@ class RosaceApi {
     required double height,
     required String locale,
   }) async {
-    final response = await _client.post(
-      _uri('/api/v2/sessions'),
-      headers: _headers,
-      body: jsonEncode({
-        'stage_width': width,
-        'stage_height': height,
-        'locale': locale,
-      }),
-    );
+    final response = await _client
+        .post(
+          _uri('/api/v2/sessions'),
+          headers: _headers,
+          body: jsonEncode({
+            'stage_width': width,
+            'stage_height': height,
+            'locale': locale,
+          }),
+        )
+        .timeout(_timeout);
     return RosaceState.fromJson(await _decode(response));
   }
 
