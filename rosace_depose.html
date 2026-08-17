@@ -1976,6 +1976,7 @@
     a.download = "la-rosace-consultation.md";
     a.click();
     URL.revokeObjectURL(a.href);
+    trackEvent("export");
   });
   document.getElementById("chat-form").addEventListener("submit", async function (ev) {
     ev.preventDefault();
