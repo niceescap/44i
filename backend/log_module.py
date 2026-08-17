@@ -326,6 +326,34 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
         .visit_start {{ background: var(--info); }}
         .deal {{ background: var(--danger); }}
         .audio_click {{ background: #6f42c1; }}
+        .reveal {{ background: #fd7e14; }}
+        .interpret {{ background: #20c997; }}
+        .interpret_fail {{ background: var(--danger); }}
+        .chat {{ background: #6610f2; }}
+        .export {{ background: #0b7285; }}
+        .error {{ background: #495057; }}
+        .source-pill {{
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }}
+        .source-web {{ background: #e7f1ff; color: #0b5ed7; }}
+        .source-android {{ background: #d3f9d8; color: #2b8a3e; }}
+        .filter-bar {{ display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0 1rem; }}
+        .filter-bar button {{
+            padding: 0.4rem 0.8rem;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }}
+        .filter-bar button.active {{ background: var(--dark); color: white; border-color: var(--dark); }}
+        .version {{ color: var(--muted); font-size: 0.75rem; }}
         .email-list {{
             list-style: none;
             background: var(--card-bg);
