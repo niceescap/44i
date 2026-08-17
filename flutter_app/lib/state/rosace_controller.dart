@@ -148,6 +148,7 @@ class RosaceController extends ChangeNotifier {
     final value = text.trim();
     if (sessionId == null || !chatReady || value.isEmpty || dealing) return;
     dealing = true;
+    await track('chat');
     messages.add(ChatMessage(role: 'user', content: value));
     messages.add(const ChatMessage(role: 'oracle', content: ''));
     notifyListeners();
