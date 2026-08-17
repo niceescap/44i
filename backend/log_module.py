@@ -448,11 +448,16 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
         event_types = [e["type"] for e in events]
         types_display = ", ".join(sorted(set(event_types)))
         email = get_email_from_visit(visit) or ""
-        data_search = f"{visit['ip']} {visit['visitor_id']} {' '.join(event_types)}"
+        source = visit_source(visit)
+        version = visit.get("app_version") or ""
+        locale = visit.get("locale") or ""
+        version_html = f'<div class="version">{version} {locale}</div>' if version or locale else ""
+        data_search = f"{visit['ip']} {visit['visitor_id']} {source} {version} {locale} {' '.join(event_types)}"
 
         html += f"""
-            <tr class="visit-row" data-search="{data_search}">
+            <tr class="visit-row" data-search="{data_search}" data-source="{source}">
                 <td>{visit['started_at'][:19].replace('T', ' ')}</td>
+                <td><span class="source-pill source-{source}">{source}</span>{version_html}</td>
                 <td>{visit['ip']}</td>
                 <td title="{visit['visitor_id']}">{visit['visitor_id'][:12]}…</td>
                 <td>{duration}s</td>
@@ -461,14 +466,14 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
                 <td>{email}</td>
             </tr>
             <tr class="events-detail" id="detail-{visit['visit_id']}">
-                <td colspan="7">
+                <td colspan="8">
                     <strong>Timeline des événements :</strong>
                     <div style="margin-top:0.5rem;">
         """
         for e in events:
             etype = e["type"]
-            email_info = f" (email: {e.get('email', '')})" if etype == "premium_email" else ""
-            html += f"""<div class="event-item"><span class="event-type {etype}">{etype}</span>{e['ts'][:19].replace('T', ' ')}{email_info}</div>\n"""
+            extra = event_extra_label(e)
+            html += f"""<div class="event-item"><span class="event-type {etype}">{etype}</span>{e['ts'][:19].replace('T', ' ')}{extra}</div>\n"""
         html += """</div></td></tr>"""
 
     html += """</tbody></table>
