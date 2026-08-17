@@ -110,6 +110,7 @@ class RosaceController extends ChangeNotifier {
       }
     } catch (exception) {
       error = exception.toString();
+      await track('error', code: 'session');
     } finally {
       dealing = false;
       notifyListeners();
