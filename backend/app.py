@@ -844,7 +844,42 @@ def _find_visit(data: dict[str, Any], visit_id: str) -> dict[str, Any] | None:
     return None
 
 
-def _ensure_visit(data: dict[str, Any], visit_id: str, visitor_id: str, ip: str, session_id: str | None) -> dict[str, Any]:
+def _resolve_source(raw: str | None, request: Request) -> str:
+    value = (raw or "").strip().lower()
+    if value in ALLOWED_PROSPECT_SOURCES:
+        return value
+    ua = (request.headers.get("user-agent") or "").lower()
+    if "okhttp" in ua or "dart:" in ua or "larosace" in ua or "interpretes44" in ua:
+        return "android"
+    return "web"
+
+
+def _apply_visit_meta(
+    visit: dict[str, Any],
+    *,
+    source: str | None = None,
+    app_version: str | None = None,
+    locale: str | None = None,
+) -> None:
+    if source:
+        visit["source"] = source
+    if app_version:
+        visit["app_version"] = app_version.strip()[:32]
+    if locale:
+        visit["locale"] = locale.strip()[:12]
+
+
+def _ensure_visit(
+    data: dict[str, Any],
+    visit_id: str,
+    visitor_id: str,
+    ip: str,
+    session_id: str | None,
+    *,
+    source: str | None = None,
+    app_version: str | None = None,
+    locale: str | None = None,
+) -> dict[str, Any]:
     visit = _find_visit(data, visit_id)
     if visit is None:
         visit = {
@@ -853,8 +888,10 @@ def _ensure_visit(data: dict[str, Any], visit_id: str, visitor_id: str, ip: str,
             "ip": ip,
             "started_at": _now_iso(),
             "session_id": session_id,
+            "source": source or "web",
             "events": [],
         }
+        _apply_visit_meta(visit, app_version=app_version, locale=locale)
         data.setdefault("visits", []).append(visit)
         return visit
     if visitor_id:
@@ -863,6 +900,7 @@ def _ensure_visit(data: dict[str, Any], visit_id: str, visitor_id: str, ip: str,
         visit["ip"] = ip
     if session_id:
         visit["session_id"] = session_id
+    _apply_visit_meta(visit, source=source, app_version=app_version, locale=locale)
     return visit
 
 
