@@ -59,9 +59,22 @@
     .ambient {
       position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse at 30% 18%, rgba(150, 70, 200, .42), transparent 54%),
-        radial-gradient(ellipse at 72% 82%, rgba(170, 55, 130, .26), transparent 52%),
-        radial-gradient(ellipse at 50% 50%, #5a2488, #3a1860);
+        radial-gradient(ellipse at 30% 18%, rgba(120, 56, 160, .42), transparent 54%),
+        radial-gradient(ellipse at 72% 82%, rgba(136, 44, 104, .26), transparent 52%),
+        radial-gradient(ellipse at 50% 50%, #481d6d, #2e134d);
+    }
+    .top-bandeau {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 430px;
+      z-index: 1;
+      pointer-events: none;
+      background: url("/static/brand/bandeau.jpg") center top / cover no-repeat;
+      opacity: .24;
+      -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent);
+      mask-image: linear-gradient(180deg, #000 72%, transparent);
     }
     header {
       position: relative; z-index: 3;
