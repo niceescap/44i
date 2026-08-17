@@ -588,8 +588,16 @@ def generate_markdown(data: dict, updated_at: str) -> str:
         duration = get_visit_duration(visit)
         email = get_email_from_visit(visit)
         started = visit['started_at'][:19].replace('T', ' ')
-        lines.append(f"### Visite du {started} - IP {visit['ip']}\n")
+        source = visit_source(visit)
+        version = visit.get("app_version") or ""
+        locale = visit.get("locale") or ""
+        lines.append(f"### Visite du {started} - IP {visit['ip']} ({source})\n")
         lines.append(f"- **Visiteur** : {visit['visitor_id']}")
+        lines.append(f"- **Source** : {source}")
+        if version:
+            lines.append(f"- **Version** : {version}")
+        if locale:
+            lines.append(f"- **Locale** : {locale}")
         lines.append(f"- **Début** : {started}")
         lines.append(f"- **Durée** : {duration}s")
         if email:
@@ -599,8 +607,8 @@ def generate_markdown(data: dict, updated_at: str) -> str:
         for i, e in enumerate(events, 1):
             etype = e["type"]
             ts = e['ts'][:19].replace('T', ' ')
-            email_info = f" (email: {e.get('email', '')})" if etype == "premium_email" else ""
-            lines.append(f"  {i}. `{etype}` à {ts}{email_info}")
+            extra = event_extra_label(e)
+            lines.append(f"  {i}. `{etype}` à {ts}{extra}")
         lines.append("")
 
     lines.append("## Emails collectés\n")
