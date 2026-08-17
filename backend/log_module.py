@@ -492,28 +492,38 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
 
     <script>
         const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', function() {
-            const filter = this.value.toLowerCase();
+        let sourceFilter = 'all';
+        function applyFilters() {
+            const filter = searchInput.value.toLowerCase();
             const rows = document.querySelectorAll('#visitsTable tbody tr.visit-row');
             rows.forEach(row => {
-                const searchData = row.getAttribute('data-search').toLowerCase();
-                row.style.display = searchData.includes(filter) ? '' : 'none';
+                const searchData = (row.getAttribute('data-search') || '').toLowerCase();
+                const source = row.getAttribute('data-source') || 'web';
+                const sourceOk = sourceFilter === 'all' || source === sourceFilter;
+                const textOk = !filter || searchData.includes(filter);
+                row.style.display = sourceOk && textOk ? '' : 'none';
                 const detailRow = row.nextElementSibling;
                 if (detailRow && detailRow.classList.contains('events-detail')) {
                     detailRow.style.display = 'none';
                 }
+            });
+        }
+        searchInput.addEventListener('input', applyFilters);
+        document.querySelectorAll('#sourceFilter button').forEach(button => {
+            button.addEventListener('click', function() {
+                sourceFilter = this.getAttribute('data-source') || 'all';
+                document.querySelectorAll('#sourceFilter button').forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+                applyFilters();
             });
         });
         function resetFilter() {
             searchInput.value = '';
-            const rows = document.querySelectorAll('#visitsTable tbody tr.visit-row');
-            rows.forEach(row => {
-                row.style.display = '';
-                const detailRow = row.nextElementSibling;
-                if (detailRow && detailRow.classList.contains('events-detail')) {
-                    detailRow.style.display = 'none';
-                }
+            sourceFilter = 'all';
+            document.querySelectorAll('#sourceFilter button').forEach(item => {
+                item.classList.toggle('active', item.getAttribute('data-source') === 'all');
             });
+            applyFilters();
         }
         document.querySelectorAll('.visit-row').forEach(row => {
             row.addEventListener('click', function() {
