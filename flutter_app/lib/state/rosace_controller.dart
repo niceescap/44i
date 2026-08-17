@@ -102,6 +102,15 @@ class RosaceController extends ChangeNotifier {
         ..revealed = true;
       chosen.add(index);
       await track('reveal', n: chosen.length);
+      final ev = RevelationGuides.eventFromReveal(data, Map<String, dynamic>.from(hit));
+      messages.add(ChatMessage(
+        role: 'oracle',
+        content: RevelationGuides.cardLine(card: placement.card, ev: ev, pick: pick),
+        guide: true,
+      ));
+      for (final line in RevelationGuides.contextLines(ev)) {
+        messages.add(ChatMessage(role: 'oracle', content: line, guide: true));
+      }
       if (chosen.length == 1) {
         messages.add(ChatMessage(role: 'oracle', content: pick(strings.moreLines), guide: true));
       } else if (chosen.length == 2) {
