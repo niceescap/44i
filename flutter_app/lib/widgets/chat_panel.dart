@@ -74,7 +74,7 @@ class _ChatPanelState extends State<ChatPanel> {
                   padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                   constraints: const BoxConstraints(maxWidth: 360),
                   decoration: BoxDecoration(
-                    color: mine ? RosaceColors.bubbleUser : RosaceColors.bubbleOracle,
+                    color: mine ? RosaceColors.bubbleUser.withOpacity(0.72) : RosaceColors.bubbleOracle.withOpacity(0.55),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
