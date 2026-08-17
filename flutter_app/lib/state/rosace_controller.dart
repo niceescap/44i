@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/rosace_api.dart';
 import '../cards/deck.dart';
+import '../cards/revelation_guides.dart';
 import '../l10n/app_strings.dart';
 import '../models/rosace_models.dart';
 
