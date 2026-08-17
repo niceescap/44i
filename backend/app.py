@@ -598,13 +598,25 @@ ALLOWED_PROSPECT_EVENTS = {
     "premium_email",
     "don_click",
     "audio_click",
+    "reveal",
+    "interpret",
+    "interpret_fail",
+    "chat",
+    "export",
+    "error",
 }
+
+ALLOWED_PROSPECT_SOURCES = {"web", "android"}
+ALLOWED_ERROR_CODES = {"network", "session", "oracle", "table", "unknown"}
 
 
 class ProspectClickRequest(BaseModel):
     visitor_id: str = Field(min_length=8, max_length=80)
     visit_id: str | None = None
     session_id: str | None = None
+    source: str | None = None
+    app_version: str | None = Field(default=None, max_length=32)
+    locale: str | None = Field(default=None, max_length=12)
 
 
 class ProspectEmailRequest(BaseModel):
@@ -612,12 +624,18 @@ class ProspectEmailRequest(BaseModel):
     visit_id: str | None = None
     email: str = Field(min_length=5, max_length=254)
     session_id: str | None = None
+    source: str | None = None
+    app_version: str | None = Field(default=None, max_length=32)
+    locale: str | None = Field(default=None, max_length=12)
 
 
 class ProspectVisitRequest(BaseModel):
     visit_id: str = Field(min_length=8, max_length=80)
     visitor_id: str = Field(min_length=8, max_length=80)
     session_id: str | None = None
+    source: str | None = None
+    app_version: str | None = Field(default=None, max_length=32)
+    locale: str | None = Field(default=None, max_length=12)
 
 
 class ProspectEventRequest(BaseModel):
@@ -626,6 +644,11 @@ class ProspectEventRequest(BaseModel):
     type: str = Field(min_length=2, max_length=40)
     session_id: str | None = None
     email: str | None = None
+    source: str | None = None
+    app_version: str | None = Field(default=None, max_length=32)
+    locale: str | None = Field(default=None, max_length=12)
+    n: int | None = Field(default=None, ge=1, le=3)
+    code: str | None = Field(default=None, max_length=20)
 
 
 def _prospect_dir() -> Path:
