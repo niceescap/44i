@@ -49,6 +49,8 @@ class RosaceController extends ChangeNotifier {
     busy = true;
     dealing = true;
     error = null;
+    sessionId = null;
+    placements = [];
     chatReady = false;
     phase = 'table';
     chosen.clear();
