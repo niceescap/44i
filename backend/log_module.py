@@ -398,15 +398,20 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
 
     <div class="stats-grid">
         <div class="stat-card"><div class="stat-value">{stats['visits']}</div><div class="stat-label">Visites</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['web_visits']}</div><div class="stat-label">Web</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['android_visits']}</div><div class="stat-label">Android</div></div>
         <div class="stat-card"><div class="stat-value">{stats['unique_visitors']}</div><div class="stat-label">Visiteurs uniques</div></div>
         <div class="stat-card"><div class="stat-value">{stats['unique_ips']}</div><div class="stat-label">IP uniques</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['deals']}</div><div class="stat-label">Deals</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['reveals']}</div><div class="stat-label">Révélations</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['interprets']}</div><div class="stat-label">Interprétations</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['chats']}</div><div class="stat-label">Messages</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['exports']}</div><div class="stat-label">Exports</div></div>
         <div class="stat-card"><div class="stat-value">{stats['premium_clicks']}</div><div class="stat-label">Clics Premium</div></div>
-        <div class="stat-card"><div class="stat-value">{stats['unique_premium_visitors']}</div><div class="stat-label">Visiteurs Premium</div></div>
         <div class="stat-card"><div class="stat-value">{stats['emails']}</div><div class="stat-label">Emails</div></div>
         <div class="stat-card"><div class="stat-value">{stats['don_clicks']}</div><div class="stat-label">Clics Don</div></div>
-        <div class="stat-card"><div class="stat-value">{stats['unique_don_ips']}</div><div class="stat-label">IPs Don uniques</div></div>
         <div class="stat-card"><div class="stat-value">{stats['audio_clicks']}</div><div class="stat-label">Clics Audio</div></div>
-        <div class="stat-card"><div class="stat-value">{stats['deals']}</div><div class="stat-label">Deals</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['errors']}</div><div class="stat-label">Erreurs</div></div>
     </div>
 
     <h2>🔍 Filtre</h2>
