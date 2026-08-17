@@ -47,15 +47,14 @@ class HandMotion {
 
   static List<int> recallOrder(List<CardPlacement> placements, List<int> chosen) {
     final keep = chosen.take(3).toSet();
-    final rows = <({int idx, double r, double a})>[];
+    final idxs = <int>[];
     for (var i = 0; i < placements.length; i++) {
-      if (keep.contains(i)) continue;
-      rows.add((idx: i, r: placements[i].site.radius, a: placements[i].site.angle));
+      if (!keep.contains(i)) idxs.add(i);
     }
-    rows.sort((u, v) {
-      final byR = v.r.compareTo(u.r);
-      return byR != 0 ? byR : u.a.compareTo(v.a);
+    idxs.sort((u, v) {
+      final byR = placements[v].site.radius.compareTo(placements[u].site.radius);
+      return byR != 0 ? byR : placements[u].site.angle.compareTo(placements[v].site.angle);
     });
-    return [for (final row in rows) row.idx];
+    return idxs;
   }
 }
