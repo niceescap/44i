@@ -121,7 +121,7 @@ class RosaceApi {
 
   Stream<String> _sse(String path, Map<String, dynamic> body) async* {
     final request = http.Request('POST', _uri(path))
-      ..headers['Content-Type'] = 'application/json'
+      ..headers.addAll(_headers)
       ..body = jsonEncode(body);
     final response = await _client.send(request);
     if (response.statusCode >= 400) {
