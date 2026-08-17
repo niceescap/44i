@@ -1985,6 +1985,7 @@
     const text = (input.value || "").trim();
     if (!text) return;
     input.value = "";
+    trackEvent("chat");
     appendBubble("user", text);
     showWaitMark();
     try {
