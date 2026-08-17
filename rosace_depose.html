@@ -1852,6 +1852,7 @@
       render(true);
     } catch (err) {
       console.error(err);
+      trackEvent("error", { code: "table" });
       setStatus("Le tapis n’a pas pu se préparer. Réessaie.");
     }
   }
