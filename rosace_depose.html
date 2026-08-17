@@ -6,7 +6,7 @@
   <title>La Rosace</title>
   <link rel="icon" type="image/jpeg" href="/static/brand/logocarre.jpg">
   <link rel="apple-touch-icon" href="/static/brand/logocarre.jpg">
-  <meta name="theme-color" content="#4a1d72">
+  <meta name="theme-color" content="#3b175b">
   <meta property="og:image" content="https://44i.webredirect.org/static/brand/bandeau.jpg">
   <meta name="twitter:image" content="https://44i.webredirect.org/static/brand/bandeau.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,8 +14,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Source+Sans+3:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --felt: #3a1860;
-      --ink: #2a1248;
+      --felt: #2e134d;
+      --ink: #220e3a;
       --gold: #c9a84c;
       --gold-dim: rgba(201, 168, 76, 0.28);
       --cream: #f6edd4;
@@ -30,6 +30,7 @@
       font-family: Georgia, "Palatino Linotype", serif;
     }
     body {
+      position: relative;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -58,9 +59,22 @@
     .ambient {
       position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse at 30% 18%, rgba(150, 70, 200, .42), transparent 54%),
-        radial-gradient(ellipse at 72% 82%, rgba(170, 55, 130, .26), transparent 52%),
-        radial-gradient(ellipse at 50% 50%, #5a2488, #3a1860);
+        radial-gradient(ellipse at 30% 18%, rgba(120, 56, 160, .42), transparent 54%),
+        radial-gradient(ellipse at 72% 82%, rgba(136, 44, 104, .26), transparent 52%),
+        radial-gradient(ellipse at 50% 50%, #481d6d, #2e134d);
+    }
+    .top-bandeau {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 430px;
+      z-index: 1;
+      pointer-events: none;
+      background: url("/static/brand/bandeau.jpg") center top / cover no-repeat;
+      opacity: .24;
+      -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent);
+      mask-image: linear-gradient(180deg, #000 72%, transparent);
     }
     header {
       position: relative; z-index: 3;
@@ -74,23 +88,8 @@
     }
     header .brand {
       position: relative;
-      isolation: isolate;
-      overflow: hidden;
       max-width: min(100%, 28rem);
       padding: 12px 26px 16px 12px;
-      border-radius: 16px;
-    }
-    .brand-bandeau {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      background: url("/static/brand/bandeau.jpg") center / cover no-repeat;
-      opacity: .14;
-    }
-    header .brand > *:not(.brand-bandeau) {
-      position: relative;
-      z-index: 1;
     }
     h1 {
       font-family: "Great Vibes", "Segoe Script", cursive;
@@ -99,7 +98,7 @@
       letter-spacing: .01em;
       line-height: .92;
       color: #f6db9b;
-      text-shadow: 0 2px 18px rgba(0,0,0,.4);
+      text-shadow: 0 2px 18px rgba(18, 6, 32, .7);
     }
     .tagline {
       font-family: "Source Sans 3", "Segoe UI", sans-serif;
@@ -179,11 +178,11 @@
       position: absolute; inset: 18px;
       border-radius: 24px;
       background:
-        radial-gradient(ellipse at center, #4e2480 0%, #3a1860 42%, #2a1248 100%);
-      border: 3px solid #8b6ab0;
+        radial-gradient(ellipse at center, #3e1d66 0%, #2e134d 42%, #220e3a 100%);
+      border: 3px solid #6f558d;
       box-shadow:
-        0 0 0 6px #321858,
-        0 0 0 7px #b08ad4,
+        0 0 0 6px #281346,
+        0 0 0 7px #8d6eaa,
         0 24px 70px rgba(0,0,0,.65),
         inset 0 0 90px rgba(0,0,0,.45);
       overflow: hidden;
@@ -419,11 +418,11 @@
       min-height: 0;
       flex-direction: column;
       margin: 4px 12px 10px;
-      background: linear-gradient(180deg, rgba(74, 36, 120, .52), rgba(42, 18, 72, .72));
-      border: 1px solid #7a4caa;
+      background: linear-gradient(180deg, rgba(46, 19, 77, .12), rgba(34, 14, 58, .22));
+      border: 1px solid rgba(111, 85, 141, .35);
       border-radius: 16px;
       overflow: visible;
-      box-shadow: 0 16px 40px rgba(0,0,0,.35);
+      box-shadow: none;
     }
     body.oracle #chat-panel {
       margin: 0 12px 24px;
@@ -448,9 +447,10 @@
       max-width: 100%;
       font-size: 12px;
       line-height: 1.45;
-      color: #8d7348;
+      color: #ead7a6;
       font-style: italic;
       letter-spacing: .01em;
+      text-shadow: 0 1px 10px rgba(18, 6, 32, .65);
     }
     .guide.pulse {
       animation: guidePulse 1.7s ease-in-out infinite;
@@ -510,7 +510,7 @@
       bottom: 22px;
       padding: 4px 7px;
       border-radius: 10px;
-      background: #3a1860;
+      background: #2e134d;
       border: 1px solid rgba(201,168,76,.45);
       color: #f6db9b;
       font-size: 10px;
@@ -528,14 +528,14 @@
       display: none;
       gap: 8px;
       padding: 10px 12px 12px;
-      border-top: 1px solid #4a2878;
+      border-top: 1px solid #3b2060;
     }
     #chat-form.ready { display: flex; }
     #chat-input {
       flex: 1;
       padding: 12px 14px;
-      background: #321858;
-      border: 1px solid #7a4caa;
+      background: #281346;
+      border: 1px solid #623d88;
       border-radius: 8px;
       color: #e8d5a3;
       font-size: 15px;
@@ -572,7 +572,7 @@
       padding: 10px 12px;
       font-size: 12px;
       letter-spacing: .02em;
-      background: linear-gradient(135deg, #5a3488, #3a1860);
+      background: linear-gradient(135deg, #482a6d, #2e134d);
       border: 1px solid var(--gold);
       color: #fff;
     }
@@ -631,7 +631,7 @@
     .modal-backdrop {
       position: absolute;
       inset: 0;
-      background: rgba(42, 18, 72, .62);
+      background: rgba(34, 14, 58, .62);
     }
     .modal-card {
       position: relative;
@@ -642,7 +642,7 @@
       padding: 28px 22px 22px;
       border: 1px solid var(--gold);
       border-radius: 16px;
-      background: linear-gradient(180deg, #4a2878, #2a1248);
+      background: linear-gradient(180deg, #3b2060, #220e3a);
       color: var(--cream);
       box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
     }
@@ -667,8 +667,8 @@
       width: 100%;
       margin-bottom: 12px;
       padding: 12px 14px;
-      background: #321858;
-      border: 1px solid #7a4caa;
+      background: #281346;
+      border: 1px solid #623d88;
       border-radius: 8px;
       color: #e8d5a3;
       font-size: 15px;
@@ -699,9 +699,9 @@
 </head>
 <body>
   <div class="ambient"></div>
+  <div class="top-bandeau" aria-hidden="true"></div>
   <header>
     <div class="brand">
-      <div class="brand-bandeau" aria-hidden="true"></div>
       <h1>La Rosace</h1>
       <p class="tagline">Consultation Symbolique anonyme</p>
       <p class="tagline-sub">l’Oracle vous guide</p>
