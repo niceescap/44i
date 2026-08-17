@@ -93,6 +93,17 @@ def browser_app() -> FileResponse:
         raise HTTPException(status_code=404, detail="rosace_depose.html introuvable")
     return FileResponse(html)
 
+
+@app.get("/privacy-policy", include_in_schema=False)
+@app.get("/privacy", include_in_schema=False)
+@app.get("/confidentialite", include_in_schema=False)
+def privacy_page() -> FileResponse:
+    html = REPO_ROOT / "privacy.html"
+    if not html.exists():
+        raise HTTPException(status_code=404, detail="privacy.html introuvable")
+    return FileResponse(html)
+
+
 def get_session(session_id: str) -> Session:
     session = store.get(session_id)
     if not session:
