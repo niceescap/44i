@@ -106,11 +106,23 @@ def recalc_stats(visits: list) -> dict:
         "unique_don_ips": set(),
         "audio_clicks": 0,
         "deals": 0,
+        "web_visits": 0,
+        "android_visits": 0,
+        "reveals": 0,
+        "interprets": 0,
+        "chats": 0,
+        "exports": 0,
+        "errors": 0,
         "event_types": Counter(),
     }
     for v in visits:
         ip = v["ip"]
         visitor = v["visitor_id"]
+        source = visit_source(v)
+        if source == "android":
+            stats["android_visits"] += 1
+        else:
+            stats["web_visits"] += 1
         has_premium = False
         for e in v.get("events", []):
             etype = e["type"]
@@ -127,11 +139,39 @@ def recalc_stats(visits: list) -> dict:
                 stats["audio_clicks"] += 1
             elif etype == "deal":
                 stats["deals"] += 1
+            elif etype == "reveal":
+                stats["reveals"] += 1
+            elif etype == "interpret":
+                stats["interprets"] += 1
+            elif etype == "chat":
+                stats["chats"] += 1
+            elif etype == "export":
+                stats["exports"] += 1
+            elif etype in {"error", "interpret_fail"}:
+                stats["errors"] += 1
         if has_premium:
             stats["unique_premium_visitors"].add(visitor)
     stats["unique_premium_visitors"] = len(stats["unique_premium_visitors"])
     stats["unique_don_ips"] = len(stats["unique_don_ips"])
     return stats
+
+
+def visit_source(visit: dict) -> str:
+    source = (visit.get("source") or "").strip().lower()
+    return source if source in {"web", "android"} else "web"
+
+
+def event_extra_label(event: dict) -> str:
+    bits = []
+    if event.get("type") == "premium_email" and event.get("email"):
+        bits.append(f"email: {event['email']}")
+    if event.get("type") == "reveal" and event.get("n") is not None:
+        bits.append(f"carte {event['n']}/3")
+    if event.get("type") == "error" and event.get("code"):
+        bits.append(event["code"])
+    if event.get("type") == "interpret_fail" and event.get("code"):
+        bits.append(event["code"])
+    return f" ({', '.join(bits)})" if bits else ""
 
 # ----------------------------------------------------------------------
 # Génération de la page HTML
@@ -286,6 +326,34 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
         .visit_start {{ background: var(--info); }}
         .deal {{ background: var(--danger); }}
         .audio_click {{ background: #6f42c1; }}
+        .reveal {{ background: #fd7e14; }}
+        .interpret {{ background: #20c997; }}
+        .interpret_fail {{ background: var(--danger); }}
+        .chat {{ background: #6610f2; }}
+        .export {{ background: #0b7285; }}
+        .error {{ background: #495057; }}
+        .source-pill {{
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }}
+        .source-web {{ background: #e7f1ff; color: #0b5ed7; }}
+        .source-android {{ background: #d3f9d8; color: #2b8a3e; }}
+        .filter-bar {{ display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0 1rem; }}
+        .filter-bar button {{
+            padding: 0.4rem 0.8rem;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }}
+        .filter-bar button.active {{ background: var(--dark); color: white; border-color: var(--dark); }}
+        .version {{ color: var(--muted); font-size: 0.75rem; }}
         .email-list {{
             list-style: none;
             background: var(--card-bg);
@@ -330,28 +398,39 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
 
     <div class="stats-grid">
         <div class="stat-card"><div class="stat-value">{stats['visits']}</div><div class="stat-label">Visites</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['web_visits']}</div><div class="stat-label">Web</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['android_visits']}</div><div class="stat-label">Android</div></div>
         <div class="stat-card"><div class="stat-value">{stats['unique_visitors']}</div><div class="stat-label">Visiteurs uniques</div></div>
         <div class="stat-card"><div class="stat-value">{stats['unique_ips']}</div><div class="stat-label">IP uniques</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['deals']}</div><div class="stat-label">Deals</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['reveals']}</div><div class="stat-label">Révélations</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['interprets']}</div><div class="stat-label">Interprétations</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['chats']}</div><div class="stat-label">Messages</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['exports']}</div><div class="stat-label">Exports</div></div>
         <div class="stat-card"><div class="stat-value">{stats['premium_clicks']}</div><div class="stat-label">Clics Premium</div></div>
-        <div class="stat-card"><div class="stat-value">{stats['unique_premium_visitors']}</div><div class="stat-label">Visiteurs Premium</div></div>
         <div class="stat-card"><div class="stat-value">{stats['emails']}</div><div class="stat-label">Emails</div></div>
         <div class="stat-card"><div class="stat-value">{stats['don_clicks']}</div><div class="stat-label">Clics Don</div></div>
-        <div class="stat-card"><div class="stat-value">{stats['unique_don_ips']}</div><div class="stat-label">IPs Don uniques</div></div>
         <div class="stat-card"><div class="stat-value">{stats['audio_clicks']}</div><div class="stat-label">Clics Audio</div></div>
-        <div class="stat-card"><div class="stat-value">{stats['deals']}</div><div class="stat-label">Deals</div></div>
+        <div class="stat-card"><div class="stat-value">{stats['errors']}</div><div class="stat-label">Erreurs</div></div>
     </div>
 
     <h2>🔍 Filtre</h2>
+    <div class="filter-bar" id="sourceFilter">
+        <button type="button" class="active" data-source="all">Tous</button>
+        <button type="button" data-source="web">Web</button>
+        <button type="button" data-source="android">Android</button>
+    </div>
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Recherche par IP, visiteur, type d'événement...">
+        <input type="text" id="searchInput" placeholder="Recherche par IP, visiteur, source, type d'événement...">
         <button onclick="resetFilter()">Réinitialiser</button>
     </div>
 
-    <h2>📋 Visites ({stats['visits']} au total)</h2>
+    <h2>📋 Visites ({stats['visits']} au total — {stats['web_visits']} web · {stats['android_visits']} Android)</h2>
     <table id="visitsTable">
         <thead>
             <tr>
                 <th>Date</th>
+                <th>Source</th>
                 <th>IP</th>
                 <th>Visiteur</th>
                 <th>Durée</th>
@@ -369,11 +448,16 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
         event_types = [e["type"] for e in events]
         types_display = ", ".join(sorted(set(event_types)))
         email = get_email_from_visit(visit) or ""
-        data_search = f"{visit['ip']} {visit['visitor_id']} {' '.join(event_types)}"
+        source = visit_source(visit)
+        version = visit.get("app_version") or ""
+        locale = visit.get("locale") or ""
+        version_html = f'<div class="version">{version} {locale}</div>' if version or locale else ""
+        data_search = f"{visit['ip']} {visit['visitor_id']} {source} {version} {locale} {' '.join(event_types)}"
 
         html += f"""
-            <tr class="visit-row" data-search="{data_search}">
+            <tr class="visit-row" data-search="{data_search}" data-source="{source}">
                 <td>{visit['started_at'][:19].replace('T', ' ')}</td>
+                <td><span class="source-pill source-{source}">{source}</span>{version_html}</td>
                 <td>{visit['ip']}</td>
                 <td title="{visit['visitor_id']}">{visit['visitor_id'][:12]}…</td>
                 <td>{duration}s</td>
@@ -382,14 +466,14 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
                 <td>{email}</td>
             </tr>
             <tr class="events-detail" id="detail-{visit['visit_id']}">
-                <td colspan="7">
+                <td colspan="8">
                     <strong>Timeline des événements :</strong>
                     <div style="margin-top:0.5rem;">
         """
         for e in events:
             etype = e["type"]
-            email_info = f" (email: {e.get('email', '')})" if etype == "premium_email" else ""
-            html += f"""<div class="event-item"><span class="event-type {etype}">{etype}</span>{e['ts'][:19].replace('T', ' ')}{email_info}</div>\n"""
+            extra = event_extra_label(e)
+            html += f"""<div class="event-item"><span class="event-type {etype}">{etype}</span>{e['ts'][:19].replace('T', ' ')}{extra}</div>\n"""
         html += """</div></td></tr>"""
 
     html += """</tbody></table>
@@ -408,28 +492,38 @@ def generate_dashboard_html(data: dict, updated_at: str) -> str:
 
     <script>
         const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', function() {
-            const filter = this.value.toLowerCase();
+        let sourceFilter = 'all';
+        function applyFilters() {
+            const filter = searchInput.value.toLowerCase();
             const rows = document.querySelectorAll('#visitsTable tbody tr.visit-row');
             rows.forEach(row => {
-                const searchData = row.getAttribute('data-search').toLowerCase();
-                row.style.display = searchData.includes(filter) ? '' : 'none';
+                const searchData = (row.getAttribute('data-search') || '').toLowerCase();
+                const source = row.getAttribute('data-source') || 'web';
+                const sourceOk = sourceFilter === 'all' || source === sourceFilter;
+                const textOk = !filter || searchData.includes(filter);
+                row.style.display = sourceOk && textOk ? '' : 'none';
                 const detailRow = row.nextElementSibling;
                 if (detailRow && detailRow.classList.contains('events-detail')) {
                     detailRow.style.display = 'none';
                 }
+            });
+        }
+        searchInput.addEventListener('input', applyFilters);
+        document.querySelectorAll('#sourceFilter button').forEach(button => {
+            button.addEventListener('click', function() {
+                sourceFilter = this.getAttribute('data-source') || 'all';
+                document.querySelectorAll('#sourceFilter button').forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+                applyFilters();
             });
         });
         function resetFilter() {
             searchInput.value = '';
-            const rows = document.querySelectorAll('#visitsTable tbody tr.visit-row');
-            rows.forEach(row => {
-                row.style.display = '';
-                const detailRow = row.nextElementSibling;
-                if (detailRow && detailRow.classList.contains('events-detail')) {
-                    detailRow.style.display = 'none';
-                }
+            sourceFilter = 'all';
+            document.querySelectorAll('#sourceFilter button').forEach(item => {
+                item.classList.toggle('active', item.getAttribute('data-source') === 'all');
             });
+            applyFilters();
         }
         document.querySelectorAll('.visit-row').forEach(row => {
             row.addEventListener('click', function() {
@@ -471,15 +565,22 @@ def generate_markdown(data: dict, updated_at: str) -> str:
     lines.append("| Métrique | Valeur |")
     lines.append("|----------|--------|")
     lines.append(f"| Visites | {stats['visits']} |")
+    lines.append(f"| Web | {stats['web_visits']} |")
+    lines.append(f"| Android | {stats['android_visits']} |")
     lines.append(f"| Visiteurs uniques | {stats['unique_visitors']} |")
     lines.append(f"| IP uniques | {stats['unique_ips']} |")
+    lines.append(f"| Deals | {stats['deals']} |")
+    lines.append(f"| Révélations | {stats['reveals']} |")
+    lines.append(f"| Interprétations | {stats['interprets']} |")
+    lines.append(f"| Messages | {stats['chats']} |")
+    lines.append(f"| Exports | {stats['exports']} |")
     lines.append(f"| Clics Premium | {stats['premium_clicks']} |")
     lines.append(f"| Visiteurs Premium | {stats['unique_premium_visitors']} |")
     lines.append(f"| Emails | {stats['emails']} |")
     lines.append(f"| Clics Don | {stats['don_clicks']} |")
     lines.append(f"| IPs Don uniques | {stats['unique_don_ips']} |")
     lines.append(f"| Clics Audio | {stats['audio_clicks']} |")
-    lines.append(f"| Deals | {stats['deals']} |\n")
+    lines.append(f"| Erreurs | {stats['errors']} |\n")
 
     lines.append("## Visites détaillées\n")
     for visit in visits_sorted:
@@ -487,8 +588,16 @@ def generate_markdown(data: dict, updated_at: str) -> str:
         duration = get_visit_duration(visit)
         email = get_email_from_visit(visit)
         started = visit['started_at'][:19].replace('T', ' ')
-        lines.append(f"### Visite du {started} - IP {visit['ip']}\n")
+        source = visit_source(visit)
+        version = visit.get("app_version") or ""
+        locale = visit.get("locale") or ""
+        lines.append(f"### Visite du {started} - IP {visit['ip']} ({source})\n")
         lines.append(f"- **Visiteur** : {visit['visitor_id']}")
+        lines.append(f"- **Source** : {source}")
+        if version:
+            lines.append(f"- **Version** : {version}")
+        if locale:
+            lines.append(f"- **Locale** : {locale}")
         lines.append(f"- **Début** : {started}")
         lines.append(f"- **Durée** : {duration}s")
         if email:
@@ -498,8 +607,8 @@ def generate_markdown(data: dict, updated_at: str) -> str:
         for i, e in enumerate(events, 1):
             etype = e["type"]
             ts = e['ts'][:19].replace('T', ' ')
-            email_info = f" (email: {e.get('email', '')})" if etype == "premium_email" else ""
-            lines.append(f"  {i}. `{etype}` à {ts}{email_info}")
+            extra = event_extra_label(e)
+            lines.append(f"  {i}. `{etype}` à {ts}{extra}")
         lines.append("")
 
     lines.append("## Emails collectés\n")

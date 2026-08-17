@@ -984,7 +984,8 @@
       visit_id: visitId(),
       visitor_id: visitorId(),
       type: type,
-      session_id: sessionId || null
+      session_id: sessionId || null,
+      source: "web"
     }, extra || {});
     return api("/api/v2/prospects/event", {
       method: "POST",
@@ -998,7 +999,8 @@
       body: JSON.stringify({
         visit_id: visitId(),
         visitor_id: visitorId(),
-        session_id: sessionId || null
+        session_id: sessionId || null,
+        source: "web"
       })
     }).catch(function (err) { console.error(err); });
   }
@@ -1710,15 +1712,18 @@
         textEl.textContent = content;
       }
       if (!content) textEl.textContent = "L’oracle est silencieux un instant.";
+      trackEvent(content ? "interpret" : "interpret_fail", content ? {} : { code: "oracle" });
     } catch (err) {
       console.error(err);
       try {
         var data = await api("/api/v2/sessions/" + sessionId + "/interpret", { method: "POST", body: "{}" });
         stopGuidePulse();
         textEl.textContent = data.content || "L’oracle est silencieux un instant.";
+        trackEvent(data.content ? "interpret" : "interpret_fail", data.content ? {} : { code: "oracle" });
       } catch (err2) {
         stopGuidePulse();
         textEl.textContent = "L’oracle est silencieux un instant.";
+        trackEvent("interpret_fail", { code: "oracle" });
       }
     }
     attachAudioButton(frame);
@@ -1743,6 +1748,7 @@
       const front = el.querySelector(".front");
       if (front) paintFront(front, p.card);
       chosen.push(idx);
+      trackEvent("reveal", { n: chosen.length });
       lastSymbolique = data.symbolique || [];
       lastLogs = data.logs || [];
       var ev = lastSymbolique[lastSymbolique.length - 1];
@@ -1846,6 +1852,7 @@
       render(true);
     } catch (err) {
       console.error(err);
+      trackEvent("error", { code: "table" });
       setStatus("Le tapis n’a pas pu se préparer. Réessaie.");
     }
   }
@@ -1970,6 +1977,7 @@
     a.download = "la-rosace-consultation.md";
     a.click();
     URL.revokeObjectURL(a.href);
+    trackEvent("export");
   });
   document.getElementById("chat-form").addEventListener("submit", async function (ev) {
     ev.preventDefault();
@@ -1978,6 +1986,7 @@
     const text = (input.value || "").trim();
     if (!text) return;
     input.value = "";
+    trackEvent("chat");
     appendBubble("user", text);
     showWaitMark();
     try {

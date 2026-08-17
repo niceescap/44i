@@ -598,13 +598,25 @@ ALLOWED_PROSPECT_EVENTS = {
     "premium_email",
     "don_click",
     "audio_click",
+    "reveal",
+    "interpret",
+    "interpret_fail",
+    "chat",
+    "export",
+    "error",
 }
+
+ALLOWED_PROSPECT_SOURCES = {"web", "android"}
+ALLOWED_ERROR_CODES = {"network", "session", "oracle", "table", "unknown"}
 
 
 class ProspectClickRequest(BaseModel):
     visitor_id: str = Field(min_length=8, max_length=80)
     visit_id: str | None = None
     session_id: str | None = None
+    source: str | None = None
+    app_version: str | None = Field(default=None, max_length=32)
+    locale: str | None = Field(default=None, max_length=12)
 
 
 class ProspectEmailRequest(BaseModel):
@@ -612,12 +624,18 @@ class ProspectEmailRequest(BaseModel):
     visit_id: str | None = None
     email: str = Field(min_length=5, max_length=254)
     session_id: str | None = None
+    source: str | None = None
+    app_version: str | None = Field(default=None, max_length=32)
+    locale: str | None = Field(default=None, max_length=12)
 
 
 class ProspectVisitRequest(BaseModel):
     visit_id: str = Field(min_length=8, max_length=80)
     visitor_id: str = Field(min_length=8, max_length=80)
     session_id: str | None = None
+    source: str | None = None
+    app_version: str | None = Field(default=None, max_length=32)
+    locale: str | None = Field(default=None, max_length=12)
 
 
 class ProspectEventRequest(BaseModel):
@@ -626,6 +644,11 @@ class ProspectEventRequest(BaseModel):
     type: str = Field(min_length=2, max_length=40)
     session_id: str | None = None
     email: str | None = None
+    source: str | None = None
+    app_version: str | None = Field(default=None, max_length=32)
+    locale: str | None = Field(default=None, max_length=12)
+    n: int | None = Field(default=None, ge=1, le=3)
+    code: str | None = Field(default=None, max_length=20)
 
 
 def _prospect_dir() -> Path:
@@ -661,6 +684,12 @@ def _empty_prospects() -> dict[str, Any]:
             "don_clicks": 0,
             "unique_don_ips": 0,
             "audio_clicks": 0,
+            "web_visits": 0,
+            "android_visits": 0,
+            "reveals": 0,
+            "interprets": 0,
+            "chats": 0,
+            "exports": 0,
         },
     }
 
@@ -673,7 +702,14 @@ def _recompute_stats(data: dict[str, Any]) -> None:
     ips: set[str] = set()
     emails: set[str] = set()
     premium_clicks = don_clicks = audio_clicks = 0
+    reveals = interprets = chats = exports = 0
+    web_visits = android_visits = 0
     for visit in visits:
+        source = visit.get("source") or "web"
+        if source == "android":
+            android_visits += 1
+        else:
+            web_visits += 1
         if visit.get("visitor_id"):
             visitors.add(visit["visitor_id"])
         if visit.get("ip"):
@@ -692,6 +728,14 @@ def _recompute_stats(data: dict[str, Any]) -> None:
                 audio_clicks += 1
             elif kind == "premium_email" and ev.get("email"):
                 emails.add(ev["email"])
+            elif kind == "reveal":
+                reveals += 1
+            elif kind == "interpret":
+                interprets += 1
+            elif kind == "chat":
+                chats += 1
+            elif kind == "export":
+                exports += 1
     data["stats"] = {
         "visits": len(visits),
         "unique_visitors": len(visitors),
@@ -702,6 +746,12 @@ def _recompute_stats(data: dict[str, Any]) -> None:
         "don_clicks": don_clicks,
         "unique_don_ips": len(don_ips),
         "audio_clicks": audio_clicks,
+        "web_visits": web_visits,
+        "android_visits": android_visits,
+        "reveals": reveals,
+        "interprets": interprets,
+        "chats": chats,
+        "exports": exports,
     }
 
 
@@ -794,7 +844,42 @@ def _find_visit(data: dict[str, Any], visit_id: str) -> dict[str, Any] | None:
     return None
 
 
-def _ensure_visit(data: dict[str, Any], visit_id: str, visitor_id: str, ip: str, session_id: str | None) -> dict[str, Any]:
+def _resolve_source(raw: str | None, request: Request) -> str:
+    value = (raw or "").strip().lower()
+    if value in ALLOWED_PROSPECT_SOURCES:
+        return value
+    ua = (request.headers.get("user-agent") or "").lower()
+    if "okhttp" in ua or "dart:" in ua or "larosace" in ua or "interpretes44" in ua:
+        return "android"
+    return "web"
+
+
+def _apply_visit_meta(
+    visit: dict[str, Any],
+    *,
+    source: str | None = None,
+    app_version: str | None = None,
+    locale: str | None = None,
+) -> None:
+    if source:
+        visit["source"] = source
+    if app_version:
+        visit["app_version"] = app_version.strip()[:32]
+    if locale:
+        visit["locale"] = locale.strip()[:12]
+
+
+def _ensure_visit(
+    data: dict[str, Any],
+    visit_id: str,
+    visitor_id: str,
+    ip: str,
+    session_id: str | None,
+    *,
+    source: str | None = None,
+    app_version: str | None = None,
+    locale: str | None = None,
+) -> dict[str, Any]:
     visit = _find_visit(data, visit_id)
     if visit is None:
         visit = {
@@ -803,8 +888,10 @@ def _ensure_visit(data: dict[str, Any], visit_id: str, visitor_id: str, ip: str,
             "ip": ip,
             "started_at": _now_iso(),
             "session_id": session_id,
+            "source": source or "web",
             "events": [],
         }
+        _apply_visit_meta(visit, app_version=app_version, locale=locale)
         data.setdefault("visits", []).append(visit)
         return visit
     if visitor_id:
@@ -813,6 +900,7 @@ def _ensure_visit(data: dict[str, Any], visit_id: str, visitor_id: str, ip: str,
         visit["ip"] = ip
     if session_id:
         visit["session_id"] = session_id
+    _apply_visit_meta(visit, source=source, app_version=app_version, locale=locale)
     return visit
 
 
@@ -829,9 +917,19 @@ def _append_event(data: dict[str, Any], visit: dict[str, Any], kind: str, extra:
 @app.post("/api/v2/prospects/visit")
 def prospect_visit(payload: ProspectVisitRequest, request: Request) -> dict[str, Any]:
     ip = _client_ip(request)
+    source = _resolve_source(payload.source, request)
     with _PROSPECT_LOCK:
         data = _load_prospects()
-        visit = _ensure_visit(data, payload.visit_id.strip(), payload.visitor_id.strip(), ip, payload.session_id)
+        visit = _ensure_visit(
+            data,
+            payload.visit_id.strip(),
+            payload.visitor_id.strip(),
+            ip,
+            payload.session_id,
+            source=source,
+            app_version=payload.app_version,
+            locale=payload.locale,
+        )
         if not any(ev.get("type") == "visit_start" for ev in visit.get("events") or []):
             _append_event(data, visit, "visit_start")
         else:
@@ -853,10 +951,25 @@ def prospect_event(payload: ProspectEventRequest, request: Request) -> dict[str,
         if not EMAIL_RE.match(email):
             raise HTTPException(status_code=400, detail="Adresse e-mail invalide")
         extra["email"] = email
+    elif kind == "reveal" and payload.n is not None:
+        extra["n"] = payload.n
+    elif kind == "error":
+        code = (payload.code or "unknown").strip().lower()
+        extra["code"] = code if code in ALLOWED_ERROR_CODES else "unknown"
+    source = _resolve_source(payload.source, request)
     ip = _client_ip(request)
     with _PROSPECT_LOCK:
         data = _load_prospects()
-        visit = _ensure_visit(data, payload.visit_id.strip(), payload.visitor_id.strip(), ip, payload.session_id)
+        visit = _ensure_visit(
+            data,
+            payload.visit_id.strip(),
+            payload.visitor_id.strip(),
+            ip,
+            payload.session_id,
+            source=source,
+            app_version=payload.app_version,
+            locale=payload.locale,
+        )
         if kind == "premium_email":
             already = any(
                 ev.get("type") == "premium_email" and ev.get("email") == extra["email"]
@@ -877,6 +990,9 @@ def prospect_click(payload: ProspectClickRequest, request: Request) -> dict[str,
         visitor_id=payload.visitor_id.strip(),
         type="premium_click",
         session_id=payload.session_id,
+        source=payload.source,
+        app_version=payload.app_version,
+        locale=payload.locale,
     ), request)
 
 
@@ -889,6 +1005,9 @@ def prospect_email(payload: ProspectEmailRequest, request: Request) -> dict[str,
         type="premium_email",
         session_id=payload.session_id,
         email=payload.email,
+        source=payload.source,
+        app_version=payload.app_version,
+        locale=payload.locale,
     ), request)
 
 
@@ -900,6 +1019,9 @@ def prospect_don(payload: ProspectClickRequest, request: Request) -> dict[str, A
         visitor_id=payload.visitor_id.strip(),
         type="don_click",
         session_id=payload.session_id,
+        source=payload.source,
+        app_version=payload.app_version,
+        locale=payload.locale,
     ), request)
 
 
