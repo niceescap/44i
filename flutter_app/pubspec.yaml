@@ -29,6 +29,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/brand/
+    - assets/cards/
 
 # Icône Play / launcher = logocarre.jpg (favicon web).
 # applicationId Android (invisible) = com.nicee.larosace
