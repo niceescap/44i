@@ -18,7 +18,7 @@ class GuideRail extends StatelessWidget {
         : guides;
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, compact ? 2 : 8),
+      margin: EdgeInsets.fromLTRB(12, 0, 12, compact ? 2 : 8),
       padding: EdgeInsets.fromLTRB(12, compact ? 6 : 8, 12, compact ? 4 : 8),
       decoration: BoxDecoration(
         color: const Color(0x66220e3a),
