@@ -10,10 +10,10 @@ import 'playing_card.dart';
 
 /// Tapis Flutter natif : on change les positions cibles, Flutter interpole.
 /// Pas de AnimationController (inopérant sur l'APK 1.2/1.3) : on séquence les
-/// étapes (deal staggered, rappel staggered, main, dévoilement) avec des
-/// timers qui basculent l'état de chaque carte ; chaque carte anime ensuite
-/// en implicite (AnimatedPositioned/Opacity/Rotation/Scale), calqué sur
-/// rosace_depose.html (dealOrder, recallOrder, HAND_SLOTS, ORACLE_SLOTS).
+/// étapes (deal staggered, rappel staggered) avec des timers qui basculent
+/// l'état de chaque carte. À la 3ᵉ carte, le rappel terminé, `onGathered`
+/// déclenche le bascule page → mode ChatBox (les 3 cartes passent en main,
+/// en-tête du chat). Constantes calquées sur rosace_depose.html.
 class RosaceStage extends StatefulWidget {
   const RosaceStage({
     super.key,
@@ -48,7 +48,6 @@ class _RosaceStageState extends State<RosaceStage> {
   final Set<int> _recalled = {};
   final Map<int, int> _dealRank = {};
   final Map<int, int> _recallRank = {};
-  bool _hand = false;
   bool _recalling = false;
   int _lastDeal = 0;
 
@@ -102,7 +101,6 @@ class _RosaceStageState extends State<RosaceStage> {
     _recalled.clear();
     _dealRank.clear();
     _recallRank.clear();
-    _hand = false;
     _recalling = false;
 
     final order = HandMotion.dealOrder(widget.placements);
@@ -126,7 +124,6 @@ class _RosaceStageState extends State<RosaceStage> {
     }
     _timers.clear();
     _recalled.clear();
-    _hand = false;
 
     final order = HandMotion.recallOrder(widget.placements, widget.chosen);
     final n = math.max(order.length - 1, 1);
@@ -137,14 +134,10 @@ class _RosaceStageState extends State<RosaceStage> {
         if (mounted) setState(() => _recalled.add(order[rank]));
       });
     }
-    // Fin du rappel : les 3 choisies forment l'éventail de la main.
+    // Rappel terminé → le tapis se replie, l'UI bascule en mode ChatBox
+    // (les 3 cartes deviennent la main en tête de chat).
     _after(const Duration(milliseconds: HandMotion.gatherMs), () {
-      if (!mounted) return;
-      setState(() => _hand = true);
-      // Dwell de l'éventail, puis dévoilement oracle (phase 'oracle').
-      _after(const Duration(milliseconds: HandMotion.handMs), () {
-        if (mounted) widget.onGathered?.call();
-      });
+      if (mounted) widget.onGathered?.call();
     });
   }
 
@@ -155,7 +148,7 @@ class _RosaceStageState extends State<RosaceStage> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final size = constraints.biggest.shortestSide;
-          final cardW = size * 0.078;
+          final cardW = (size * 0.10).clamp(34.0, 58.0).toDouble();
           final cardH = cardW * (49.5 / 34.5);
           return Stack(
             clipBehavior: Clip.none,
@@ -182,7 +175,9 @@ class _RosaceStageState extends State<RosaceStage> {
                   child: CustomPaint(painter: _StarPainter(widget.placements)),
                 ),
               ),
-              ..._cardChildren(size, cardW, cardH),
+              ...List<Widget>.generate(widget.placements.length, (index) {
+                return _placedCard(index, size, cardW, cardH);
+              }),
             ],
           );
         },
@@ -190,24 +185,11 @@ class _RosaceStageState extends State<RosaceStage> {
     );
   }
 
-  List<Widget> _cardChildren(double size, double cardW, double cardH) {
-    // Pendant la main, on peint les 3 choisies par-dessus les autres.
-    final indices = List<int>.generate(widget.placements.length, (i) => i);
-    if (_hand || widget.phase == 'oracle') {
-      indices.sort((a, b) {
-        final ka = widget.chosen.indexOf(a);
-        final kb = widget.chosen.indexOf(b);
-        return (ka >= 0 ? 1 : 0) - (kb >= 0 ? 1 : 0);
-      });
-    }
-    return indices.map((index) => _placedCard(index, size, cardW, cardH)).toList();
-  }
-
   Widget _placedCard(int index, double size, double cardW, double cardH) {
     final item = widget.placements[index];
     final keepAt = widget.chosen.indexOf(index);
     final isKeep = keepAt >= 0 && keepAt < 3;
-    final pose = _pose(item, index, keepAt, isKeep);
+    final pose = _pose(item, index, isKeep);
     final ms = _durationMs(isKeep);
     final curve = Curves.easeInOutCubic;
     return AnimatedPositioned(
@@ -247,25 +229,18 @@ class _RosaceStageState extends State<RosaceStage> {
   }
 
   int _durationMs(bool isKeep) {
-    if (widget.phase == 'oracle') return HandMotion.unveilMs;
     if (widget.phase == 'recalling') {
-      return isKeep ? HandMotion.handMs : HandMotion.recallFlight;
+      return isKeep ? HandMotion.recallFlight : HandMotion.recallFlight;
     }
     return HandMotion.dealFlight;
   }
 
   /// [x, y, rotDeg, scale, opacity] en fractions du tapis.
-  List<double> _pose(CardPlacement item, int index, int keepAt, bool isKeep) {
+  List<double> _pose(CardPlacement item, int index, bool isKeep) {
     if (_handPhase) {
-      if (isKeep) {
-        if (widget.phase == 'oracle') return HandMotion.oracleSlots[keepAt].toPose();
-        if (_hand) return HandMotion.handSlots[keepAt].toPose();
-        // Pendant le rappel, la carte choisie reste à son site.
-        return _sitePose(item);
-      }
-      if (widget.phase == 'recalling' && !_recalled.contains(index)) {
-        return _sitePose(item);
-      }
+      // Les 3 choisies restent posées ; les autres rappellent au centre.
+      if (isKeep) return _sitePose(item);
+      if (!_recalled.contains(index)) return _sitePose(item);
       final rank = _recallRank[index] ?? 0;
       return [0.5, 0.5, HandMotion.recallSpin(rank), 0.55, 0];
     }
