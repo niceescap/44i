@@ -119,11 +119,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: IgnorePointer(
               child: Opacity(
                 opacity: RosaceColors.bandeauOpacity,
-                child: Image.network(
-                  _bandeauUrl,
+                child: Image.asset(
+                  'assets/brand/bandeau.jpg',
                   fit: BoxFit.cover,
                   alignment: Alignment.topCenter,
-                  errorBuilder: (_, __, ___) => const ColoredBox(color: RosaceColors.glow),
+                  errorBuilder: (_, __, ___) => Image.network(
+                    _bandeauUrl,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                    errorBuilder: (_, __, ___) => const ColoredBox(color: RosaceColors.glow),
+                  ),
                 ),
               ),
             ),
