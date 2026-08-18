@@ -32,9 +32,21 @@ class RosaceController extends ChangeNotifier {
   final List<ChatMessage> messages = [];
   bool chatReady = false;
   bool premiumThanks = false;
-  int _gatherGen = 0;
+  int dealSeq = 0;
+  int gatherSeq = 0;
+  int _motionGen = 0;
 
   String pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
+
+  void _addGuide(String text, {bool pulse = true}) {
+    for (var i = 0; i < messages.length; i++) {
+      final item = messages[i];
+      if (item.guide && item.pulse) {
+        messages[i] = ChatMessage(role: item.role, content: item.content, guide: true);
+      }
+    }
+    messages.add(ChatMessage(role: 'oracle', content: text, guide: true, pulse: pulse));
+  }
 
   Future<void> start() async {
     final prefs = await SharedPreferences.getInstance();
