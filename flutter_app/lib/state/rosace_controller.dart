@@ -67,20 +67,27 @@ class RosaceController extends ChangeNotifier {
     placements = [];
     chatReady = false;
     phase = 'table';
-    _gatherGen++;
+    gatherSeq = 0;
+    _motionGen++;
     chosen.clear();
     messages
-      ..clear()
-      ..add(ChatMessage(role: 'oracle', content: pick(strings.askLines), guide: true));
+      ..clear();
+    _addGuide(pick(strings.askLines));
     notifyListeners();
     try {
       final state = await api.createSession(width: width, height: height, locale: locale);
       sessionId = state.sessionId;
       placements = state.sites.map((site) => CardPlacement(site: site)).toList();
+      dealSeq++;
+      final gen = ++_motionGen;
+      Future<void>.delayed(const Duration(milliseconds: 4800), () {
+        if (gen == _motionGen) finishDeal();
+      });
     } catch (exception) {
       error = '${strings.tableFail}\n$exception';
       debugPrint('createSession: $exception');
       await track('error', code: 'table');
+      dealing = false;
     }
     if (sessionId != null) {
       try {
@@ -91,6 +98,11 @@ class RosaceController extends ChangeNotifier {
       }
     }
     busy = false;
+    notifyListeners();
+  }
+
+  void finishDeal() {
+    if (phase != 'table') return;
     dealing = false;
     notifyListeners();
   }
