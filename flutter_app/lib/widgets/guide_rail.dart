@@ -12,8 +12,15 @@ class GuideRail extends StatelessWidget {
   Widget build(BuildContext context) {
     if (guides.isEmpty) return const SizedBox.shrink();
     final last = guides.length > 4 ? guides.sublist(guides.length - 4) : guides;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 0, 18, 6),
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(minHeight: 56),
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      decoration: BoxDecoration(
+        color: const Color(0x66220e3a),
+        border: Border(left: BorderSide(color: const Color(0xffc9a84c).withOpacity(0.7), width: 2)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
