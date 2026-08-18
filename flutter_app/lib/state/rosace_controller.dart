@@ -159,11 +159,7 @@ class RosaceController extends ChangeNotifier {
     if (sessionId == null || phase != 'recalling') return;
     phase = 'oracle';
     dealing = false;
-    messages.add(ChatMessage(
-      role: 'oracle',
-      content: '${pick(strings.waitLines)} ${pick(strings.discLines)}',
-      guide: true,
-    ));
+    _addGuide('${pick(strings.waitLines)} ${pick(strings.discLines)}');
     notifyListeners();
     await _interpret();
   }
