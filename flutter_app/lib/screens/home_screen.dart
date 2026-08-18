@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../cards/deck.dart';
 import '../l10n/app_strings.dart';
 import '../models/rosace_models.dart';
 import '../state/rosace_controller.dart';
