@@ -124,11 +124,10 @@ class RosaceController extends ChangeNotifier {
         ..revealed = true;
       chosen.add(index);
       await track('reveal', n: chosen.length);
-      final ev = RevelationGuides.eventFromReveal(data, Map<String, dynamic>.from(hit));
-      _addGuide(RevelationGuides.cardLine(card: placement.card, ev: ev, pick: pick));
-      for (final line in RevelationGuides.contextLines(ev)) {
-        _addGuide(line);
-      }
+      // Mini-log web : « Nom, motif. » parmi 5 formulations pré-enregistrées
+      // (workflow validé de rosace_depose.html). Pas de paragraphes
+      // Paire/Apport/Remarquable dans le chat — ils restent côté serveur.
+      _addGuide(RevelationGuides.cardGuideLine(placement.card.code), pulse: false);
       if (chosen.length == 1) {
         _addGuide(pick(strings.moreLines));
       } else if (chosen.length == 2) {
