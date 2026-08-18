@@ -229,9 +229,7 @@ class _RosaceStageState extends State<RosaceStage> {
   }
 
   int _durationMs(bool isKeep) {
-    if (widget.phase == 'recalling') {
-      return isKeep ? HandMotion.recallFlight : HandMotion.recallFlight;
-    }
+    if (widget.phase == 'recalling') return HandMotion.recallFlight;
     return HandMotion.dealFlight;
   }
 
