@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../cards/hand_motion.dart';
@@ -5,8 +8,12 @@ import '../models/rosace_models.dart';
 import '../theme.dart';
 import 'playing_card.dart';
 
-/// Tapis Flutter natif : on change les positions cibles, Flutter interpolé.
-/// Pas de AnimationController (inopérant sur l’APK 1.2/1.3).
+/// Tapis Flutter natif : on change les positions cibles, Flutter interpole.
+/// Pas de AnimationController (inopérant sur l'APK 1.2/1.3) : on séquence les
+/// étapes (deal staggered, rappel staggered, main, dévoilement) avec des
+/// timers qui basculent l'état de chaque carte ; chaque carte anime ensuite
+/// en implicite (AnimatedPositioned/Opacity/Rotation/Scale), calqué sur
+/// rosace_depose.html (dealOrder, recallOrder, HAND_SLOTS, ORACLE_SLOTS).
 class RosaceStage extends StatefulWidget {
   const RosaceStage({
     super.key,
@@ -36,19 +43,24 @@ class RosaceStage extends StatefulWidget {
 }
 
 class _RosaceStageState extends State<RosaceStage> {
-  var spread = false;
-  var lastDeal = 0;
-  var gatherArmed = false;
+  final List<Timer> _timers = [];
+  final Set<int> _spread = {};
+  final Set<int> _recalled = {};
+  final Map<int, int> _dealRank = {};
+  final Map<int, int> _recallRank = {};
+  bool _hand = false;
+  bool _recalling = false;
+  int _lastDeal = 0;
 
-  bool get _hand => widget.phase == 'recalling' || widget.phase == 'oracle';
+  bool get _handPhase => widget.phase == 'recalling' || widget.phase == 'oracle';
 
   @override
   void initState() {
     super.initState();
-    lastDeal = widget.dealSeq;
+    _lastDeal = widget.dealSeq;
     if (widget.placements.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => spread = true);
+        if (mounted) _startDeal();
       });
     }
   }
@@ -56,29 +68,84 @@ class _RosaceStageState extends State<RosaceStage> {
   @override
   void didUpdateWidget(covariant RosaceStage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.dealSeq != lastDeal) {
-      lastDeal = widget.dealSeq;
-      gatherArmed = false;
-      spread = false;
-      if (widget.placements.isNotEmpty) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          setState(() => spread = true);
-          Future<void>.delayed(const Duration(milliseconds: 850), () {
-            if (mounted) widget.onDealt?.call();
-          });
-        });
-      }
+    if (widget.dealSeq != _lastDeal) {
+      _lastDeal = widget.dealSeq;
+      _startDeal();
     }
-    if (widget.phase == 'recalling' && !gatherArmed) {
-      gatherArmed = true;
-      Future<void>.delayed(const Duration(milliseconds: 1100), () {
-        if (mounted) widget.onGathered?.call();
+    if (widget.phase == 'recalling' && !_recalling) {
+      _recalling = true;
+      _startRecall();
+    }
+    if (widget.phase == 'table' || widget.phase == 'oracle') {
+      _recalling = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final t in _timers) {
+      t.cancel();
+    }
+    super.dispose();
+  }
+
+  void _after(Duration delay, void Function() action) {
+    _timers.add(Timer(delay, action));
+  }
+
+  void _startDeal() {
+    for (final t in _timers) {
+      t.cancel();
+    }
+    _timers.clear();
+    _spread.clear();
+    _recalled.clear();
+    _dealRank.clear();
+    _recallRank.clear();
+    _hand = false;
+    _recalling = false;
+
+    final order = HandMotion.dealOrder(widget.placements);
+    final n = math.max(order.length - 1, 1);
+    for (var rank = 0; rank < order.length; rank++) {
+      _dealRank[order[rank]] = rank;
+      final delay = Duration(milliseconds: (rank / n * HandMotion.dealStagger).round());
+      _after(delay, () {
+        if (mounted) setState(() => _spread.add(order[rank]));
       });
     }
-    if (widget.phase == 'table') {
-      gatherArmed = false;
+    // Toutes les cartes posées → débloque les taps du tapis.
+    _after(const Duration(milliseconds: HandMotion.dealMs), () {
+      if (mounted) widget.onDealt?.call();
+    });
+  }
+
+  void _startRecall() {
+    for (final t in _timers) {
+      t.cancel();
     }
+    _timers.clear();
+    _recalled.clear();
+    _hand = false;
+
+    final order = HandMotion.recallOrder(widget.placements, widget.chosen);
+    final n = math.max(order.length - 1, 1);
+    for (var rank = 0; rank < order.length; rank++) {
+      _recallRank[order[rank]] = rank;
+      final delay = Duration(milliseconds: (rank / n * HandMotion.recallStagger).round());
+      _after(delay, () {
+        if (mounted) setState(() => _recalled.add(order[rank]));
+      });
+    }
+    // Fin du rappel : les 3 choisies forment l'éventail de la main.
+    _after(const Duration(milliseconds: HandMotion.gatherMs), () {
+      if (!mounted) return;
+      setState(() => _hand = true);
+      // Dwell de l'éventail, puis dévoilement oracle (phase 'oracle').
+      _after(const Duration(milliseconds: HandMotion.handMs), () {
+        if (mounted) widget.onGathered?.call();
+      });
+    });
   }
 
   @override
@@ -96,7 +163,7 @@ class _RosaceStageState extends State<RosaceStage> {
               Positioned.fill(
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 700),
-                  opacity: _hand ? 0.08 : 0.28,
+                  opacity: _handPhase ? 0.08 : 0.28,
                   child: Image.asset(
                     'assets/brand/rosace.png',
                     fit: BoxFit.contain,
@@ -111,13 +178,11 @@ class _RosaceStageState extends State<RosaceStage> {
               Positioned.fill(
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 700),
-                  opacity: _hand ? 0.15 : 1,
+                  opacity: _handPhase ? 0.15 : 1,
                   child: CustomPaint(painter: _StarPainter(widget.placements)),
                 ),
               ),
-              ...List<Widget>.generate(widget.placements.length, (index) {
-                return _placedCard(index, size, cardW, cardH);
-              }),
+              ..._cardChildren(size, cardW, cardH),
             ],
           );
         },
@@ -125,34 +190,53 @@ class _RosaceStageState extends State<RosaceStage> {
     );
   }
 
+  List<Widget> _cardChildren(double size, double cardW, double cardH) {
+    // Pendant la main, on peint les 3 choisies par-dessus les autres.
+    final indices = List<int>.generate(widget.placements.length, (i) => i);
+    if (_hand || widget.phase == 'oracle') {
+      indices.sort((a, b) {
+        final ka = widget.chosen.indexOf(a);
+        final kb = widget.chosen.indexOf(b);
+        return (ka >= 0 ? 1 : 0) - (kb >= 0 ? 1 : 0);
+      });
+    }
+    return indices.map((index) => _placedCard(index, size, cardW, cardH)).toList();
+  }
+
   Widget _placedCard(int index, double size, double cardW, double cardH) {
     final item = widget.placements[index];
     final keepAt = widget.chosen.indexOf(index);
     final isKeep = keepAt >= 0 && keepAt < 3;
-    final pose = _pose(item, keepAt, isKeep);
+    final pose = _pose(item, index, keepAt, isKeep);
+    final ms = _durationMs(isKeep);
+    final curve = Curves.easeInOutCubic;
     return AnimatedPositioned(
       key: ValueKey('c-$index'),
-      duration: Duration(milliseconds: _hand ? 900 : 780),
-      curve: Curves.easeInOutCubic,
+      duration: Duration(milliseconds: ms),
+      curve: curve,
       left: pose[0] * size - cardW / 2,
       top: pose[1] * size - cardH / 2,
       child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 650),
+        duration: Duration(milliseconds: ms),
         opacity: pose[4],
         child: AnimatedRotation(
-          duration: Duration(milliseconds: _hand ? 900 : 780),
-          curve: Curves.easeInOutCubic,
+          duration: Duration(milliseconds: ms),
+          curve: curve,
           turns: pose[2] / 360,
           child: AnimatedScale(
-            duration: Duration(milliseconds: _hand ? 900 : 780),
-            curve: Curves.easeInOutCubic,
+            duration: Duration(milliseconds: ms),
+            curve: curve,
             scale: pose[3],
             child: PlayingCardView(
               card: item.card,
               revealed: item.revealed,
               width: cardW,
               height: cardH,
-              onTap: widget.busy || widget.phase != 'table' || item.revealed || pose[4] < 0.5
+              onTap: widget.busy ||
+                      widget.phase != 'table' ||
+                      item.revealed ||
+                      !_spread.contains(index) ||
+                      pose[4] < 0.5
                   ? null
                   : () => widget.onReveal(index),
             ),
@@ -162,21 +246,44 @@ class _RosaceStageState extends State<RosaceStage> {
     );
   }
 
+  int _durationMs(bool isKeep) {
+    if (widget.phase == 'oracle') return HandMotion.unveilMs;
+    if (widget.phase == 'recalling') {
+      return isKeep ? HandMotion.handMs : HandMotion.recallFlight;
+    }
+    return HandMotion.dealFlight;
+  }
+
   /// [x, y, rotDeg, scale, opacity] en fractions du tapis.
-  List<double> _pose(CardPlacement item, int keepAt, bool isKeep) {
-    if (_hand && isKeep) {
-      const xs = [0.30, 0.50, 0.70];
-      const rots = [-16.0, 2.0, 16.0];
-      final oracle = widget.phase == 'oracle';
-      return [xs[keepAt], oracle ? 0.48 : 0.64, rots[keepAt], oracle ? 2.15 : 1.75, 1];
+  List<double> _pose(CardPlacement item, int index, int keepAt, bool isKeep) {
+    if (_handPhase) {
+      if (isKeep) {
+        if (widget.phase == 'oracle') return HandMotion.oracleSlots[keepAt].toPose();
+        if (_hand) return HandMotion.handSlots[keepAt].toPose();
+        // Pendant le rappel, la carte choisie reste à son site.
+        return _sitePose(item);
+      }
+      if (widget.phase == 'recalling' && !_recalled.contains(index)) {
+        return _sitePose(item);
+      }
+      final rank = _recallRank[index] ?? 0;
+      return [0.5, 0.5, HandMotion.recallSpin(rank), 0.55, 0];
     }
-    if (_hand) {
-      return [0.50, 0.50, 0, 0.35, 0];
+    if (!_spread.contains(index)) {
+      final rank = _dealRank[index] ?? 0;
+      return [0.5, 0.5, HandMotion.dealSpin(rank), 0.86, 1];
     }
-    if (!spread) {
-      return [0.50, 0.50, HandMotion.siteRot(item.site.id), 0.82, 1];
-    }
-    return [item.site.x / 1000, item.site.y / 1000, HandMotion.siteRot(item.site.id), 1, 1];
+    return _sitePose(item);
+  }
+
+  List<double> _sitePose(CardPlacement item) {
+    return [
+      item.site.x / 1000,
+      item.site.y / 1000,
+      HandMotion.siteRot(item.site.id),
+      1,
+      1,
+    ];
   }
 }
 
