@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../cards/deck.dart';
+import '../l10n/app_strings.dart';
+import '../models/rosace_models.dart';
 import '../state/rosace_controller.dart';
 import '../theme.dart';
 import '../widgets/chat_panel.dart';
 import '../widgets/guide_rail.dart';
+import '../widgets/hand_header.dart';
 import '../widgets/rosace_stage.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,6 +21,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final RosaceController controller;
+
+  bool get _chatMode => controller.phase == 'oracle';
 
   @override
   void initState() {
@@ -39,6 +45,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String get _bandeauUrl => '${controller.api.baseUrl}/static/brand/bandeau.jpg';
+  String get _brandUrl => '${controller.api.baseUrl}/static/brand/rosace.png';
+
+  List<PlayingCard> get _handCards {
+    final cards = <PlayingCard>[];
+    for (final idx in controller.chosen.take(3)) {
+      if (idx >= 0 && idx < controller.placements.length && controller.placements[idx].revealed) {
+        cards.add(controller.placements[idx].card);
+      }
+    }
+    return cards;
+  }
+
+  List<ChatMessage> get _guides => controller.messages.where((m) => m.guide).toList();
 
   Future<void> _donate() async {
     await controller.track('don_click');
@@ -49,6 +68,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _privacy() async {
     final uri = Uri.parse('${controller.api.baseUrl}/privacy-policy');
     await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _export() {
+    controller.track('export');
+    Share.share(controller.exportMarkdown(), subject: 'La Rosace');
   }
 
   Future<void> _premium() async {
@@ -134,100 +158,147 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-                  child: Column(
-                    children: [
-                      Text(s.title, style: rosaceTitleStyle(fontSize: 48)),
-                      Text(appVersionLabel, style: const TextStyle(color: RosaceColors.gold, fontSize: 11)),
-                      Text(s.tagline, style: const TextStyle(color: RosaceColors.tagline, fontStyle: FontStyle.italic)),
-                      Text(s.subtitle, style: const TextStyle(color: RosaceColors.tagline, fontSize: 13)),
-                    ],
-                  ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 600),
+              switchInCurve: Curves.easeInOut,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: ScaleTransition(
+                  scale: Tween(begin: 0.985, end: 1.0).animate(anim),
+                  child: child,
                 ),
-                if (controller.error != null)
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(controller.error!, style: const TextStyle(color: Colors.redAccent)),
-                  ),
-                Expanded(
-                  flex: controller.phase == 'oracle' ? 4 : 6,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: RosaceStage(
-                      key: const ValueKey('rosace-stage'),
-                      placements: controller.placements,
-                      chosen: List<int>.from(controller.chosen),
-                      phase: controller.phase,
-                      dealSeq: controller.dealSeq,
-                      busy: controller.dealing,
-                      brandUrl: '${controller.api.baseUrl}/static/brand/rosace.png',
-                      onReveal: controller.reveal,
-                      onDealt: controller.finishDeal,
-                      onGathered: controller.beginOracle,
-                    ),
-                  ),
-                ),
-                GuideRail(guides: controller.messages.where((item) => item.guide).toList()),
-                Expanded(
-                  flex: controller.phase == 'oracle' ? 5 : 3,
-                  child: ChatPanel(
-                    messages: controller.messages.where((item) => !item.guide).toList(),
-                    ready: controller.chatReady,
-                    busy: controller.dealing && controller.phase == 'oracle',
-                    hint: s.writeHint,
-                    audioLabel: s.listen,
-                    premiumPuff: s.audioPremium,
-                    onSend: controller.send,
-                    onAudio: () => controller.track('audio_click'),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      FilledButton(onPressed: _premium, child: Text(s.premium)),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                controller.track('export');
-                                Share.share(controller.exportMarkdown(), subject: 'La Rosace');
-                              },
-                              child: Text(s.keep),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: controller.busy ? null : () => controller.deal(),
-                              child: Text(s.again),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      OutlinedButton(onPressed: _donate, child: Text(s.donate)),
-                      TextButton(
-                        onPressed: _privacy,
-                        child: Text(
-                          '${s.legal} · ${s.privacy}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 10, color: RosaceColors.gold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
+              child: _chatMode ? _chatScene(s) : _tapisScene(s),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _header(AppStrings s, {required bool chat}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      child: Column(
+        children: [
+          Text(s.title, style: rosaceTitleStyle(fontSize: chat ? 26 : 38), textAlign: TextAlign.center),
+          const SizedBox(height: 2),
+          Text(
+            '${appVersionLabel} · ${s.subtitle}',
+            style: const TextStyle(color: RosaceColors.tagline, fontSize: 11, fontStyle: FontStyle.italic),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tapisScene(AppStrings s) {
+    return Column(
+      key: const ValueKey('tapis'),
+      children: [
+        _header(s, chat: false),
+        if (controller.error != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(controller.error!, style: const TextStyle(color: Colors.redAccent)),
+          ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+            children: [
+              RosaceStage(
+                key: const ValueKey('rosace-stage'),
+                placements: controller.placements,
+                chosen: List<int>.from(controller.chosen),
+                phase: controller.phase,
+                dealSeq: controller.dealSeq,
+                busy: controller.dealing,
+                brandUrl: _brandUrl,
+                onReveal: controller.reveal,
+                onDealt: controller.finishDeal,
+                onGathered: controller.beginOracle,
+              ),
+              const SizedBox(height: 6),
+              if (_guides.isNotEmpty) GuideRail(guides: _guides),
+            ],
+          ),
+        ),
+        _toolbar(s),
+      ],
+    );
+  }
+
+  Widget _chatScene(AppStrings s) {
+    return Column(
+      key: const ValueKey('chat'),
+      children: [
+        _header(s, chat: true),
+        HandHeader(cards: _handCards),
+        if (_guides.isNotEmpty) GuideRail(guides: _guides, compact: true),
+        Expanded(
+          child: ChatPanel(
+            messages: controller.messages.where((m) => !m.guide).toList(),
+            ready: controller.chatReady,
+            busy: controller.dealing && controller.phase == 'oracle',
+            hint: s.writeHint,
+            audioLabel: s.listen,
+            premiumPuff: s.audioPremium,
+            onSend: controller.send,
+            onAudio: () => controller.track('audio_click'),
+          ),
+        ),
+        _toolbar(s),
+      ],
+    );
+  }
+
+  Widget _toolbar(AppStrings s) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 2, 10, 8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          decoration: BoxDecoration(
+            color: RosaceColors.ink.withOpacity(0.62),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: RosaceColors.gold.withOpacity(0.5)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _tool(Icons.replay, s.again, controller.busy ? null : () => controller.deal()),
+              _tool(Icons.ios_share, s.keep, _export),
+              _tool(Icons.favorite, s.donate, _donate),
+              _tool(Icons.workspace_premium, s.premium, _premium),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tool(IconData icon, String label, VoidCallback? onTap) {
+    return Tooltip(
+      message: label,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: onTap == null ? Colors.white24 : RosaceColors.gold, size: 22),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(color: onTap == null ? Colors.white24 : RosaceColors.tagline, fontSize: 9),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

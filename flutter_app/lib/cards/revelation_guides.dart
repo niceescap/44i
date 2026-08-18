@@ -1,90 +1,56 @@
-import 'deck.dart';
+import 'dart:math';
 
-/// Guides de révélation alignés sur rosace_depose.html
-/// (cardGuideLine + appendDesignationFromEvent + appendContextLogs).
-/// Source : data.symbolique / chosen[].event — pas de lexique local.
+/// Guides de révélation alignés sur rosace_depose.html (workflow web validé).
+///
+/// Version compacte : mini-log court `cardGuideLine(code)` — « Nom, motif. » —
+/// parmi 5 formulations pré-enregistrées tirées au sort. **Aucun** paragraphe
+/// verbeux (Paire / Apport / Remarquable) dans le chat : ces détails restent
+/// côté serveur (logs techniques), comme sur le web servi en ligne.
 class RevelationGuides {
-  static Map<String, dynamic> eventFromReveal(Map<String, dynamic> data, Map hit) {
-    final fromHit = hit['event'];
-    if (fromHit is Map && fromHit.isNotEmpty) {
-      return Map<String, dynamic>.from(fromHit);
-    }
-    final rows = data['symbolique'];
-    if (rows is List && rows.isNotEmpty && rows.last is Map) {
-      return Map<String, dynamic>.from(rows.last as Map);
-    }
-    return {};
+  /// Motif par carte, identique à `CARD_MOTIF` de rosace_depose.html.
+  static const Map<String, String> CARD_MOTIF = {
+    'AC': 'triomphe', 'KC': 'homme protecteur', 'QC': 'femme alliée', 'JC': 'jeune homme', 'TC': 'argent',
+    '9C': 'travail', '8C': 'association', '7C': 'l’esprit', '6C': 'obstacles', '5C': 'implication',
+    '4C': 'imprudence', '3C': 'soutien', '2C': 'hésitation',
+    'AH': 'le foyer', 'KH': 'homme bienveillant', 'QH': 'femme bienveillante', 'JH': 'rencontre légère', 'TH': 'vie sociale',
+    '9H': 'accomplissement', '8H': 'sentiments', '7H': 'vie affective', '6H': 'souvenirs', '5H': 'échanges du cœur',
+    '4H': 'déception', '3H': 'union', '2H': 'malentendu',
+    'AD': 'une nouvelle', 'KD': 'autorité lointaine', 'QD': 'jalousie', 'JD': 'le message', 'TD': 'le voyage',
+    '9D': 'le retard', '8D': 'une démarche', '7D': 'discussion vive', '6D': 'petit flux d’argent', '5D': 'vie cachée',
+    '4D': 'concrétisation', '3D': 'construction', '2D': 'indécision',
+    'AS': 'les papiers', 'KS': 'figure officielle', 'QS': 'solitude', 'JS': 'avertissement', 'TS': 'nuages',
+    '9S': 'coup du sort', '8S': 'ragots', '7S': 'lutte', '6S': 'petits accrocs', '5S': 'rupture',
+    '4S': 'retrait', '3S': 'rivalité', '2S': 'tromperie',
+  };
+
+  static const Map<String, String> _rankFr = {
+    'A': 'as', '2': 'deux', '3': 'trois', '4': 'quatre', '5': 'cinq', '6': 'six',
+    '7': 'sept', '8': 'huit', '9': 'neuf', 'T': 'dix', 'J': 'valet', 'Q': 'dame', 'K': 'roi',
+  };
+  static const Map<String, String> _suitFr = {
+    'S': 'pique', 'H': 'cœur', 'D': 'carreau', 'C': 'trèfle',
+  };
+
+  /// Nom français du code, minuscules comme sur le web (« six de trèfle »).
+  static String frenchCardName(String code) {
+    if (code.length < 2) return code;
+    final rank = code.substring(0, code.length - 1);
+    final suit = code.substring(code.length - 1);
+    return '${_rankFr[rank] ?? rank} de ${_suitFr[suit] ?? suit}';
   }
 
-  static String motif(Map<String, dynamic> ev) {
-    final raw = '${ev['designation'] ?? ev['contenu'] ?? ''}'.trim();
-    if (raw.isEmpty) return 'un souffle';
-    return raw.split(',').first.trim();
-  }
-
-  static String cardName(PlayingCard card, Map<String, dynamic> ev) {
-    final nom = '${ev['nom'] ?? ''}'.trim();
-    return nom.isNotEmpty ? nom : card.frenchName;
-  }
-
-  static String cardLine({
-    required PlayingCard card,
-    required Map<String, dynamic> ev,
-    required String Function(List<String>) pick,
-  }) {
-    final name = cardName(card, ev);
-    final hint = motif(ev);
+  /// Mini-log web : « Six de trèfle, obstacles. » — 5 formulations tirées au sort.
+  static String cardGuideLine(String code, {Random? rng}) {
+    final name = frenchCardName(code);
+    final motif = CARD_MOTIF[code] ?? 'un souffle';
     final cap = name.isEmpty ? name : '${name[0].toUpperCase()}${name.substring(1)}';
-    return pick([
-      '$cap, $hint.',
-      'Voici $name : $hint.',
-      '$cap se montre, $hint.',
-      'Tu lèves $name — $hint.',
-      '$cap. Motif : $hint.',
-    ]);
-  }
-
-  static List<String> contextLines(Map<String, dynamic> ev) {
-    final lines = <String>[];
-    final type = ev['type'];
-    if (type == 'paire') {
-      final names = _names(ev['cartes']);
-      final body = '${ev['contenu_enrichi'] ?? ev['contenu'] ?? ''}'.trim();
-      if (body.isNotEmpty) {
-        lines.add(names.isEmpty ? 'Paire — $body' : 'Paire $names — $body');
-      }
-    } else if (type == 'apport') {
-      final carte = _name(ev['carte']);
-      final sur = _name(ev['sur']);
-      final body = '${ev['contenu_enrichi'] ?? ev['conclusion'] ?? ''}'.trim();
-      if (body.isNotEmpty) {
-        lines.add('Apport $carte sur $sur — $body');
-      }
-    }
-    final seen = <String>{};
-    for (final rem in ev['remarquables'] as List? ?? const []) {
-      if (rem is! Map) continue;
-      final extra = '${rem['signification'] ?? rem['qualite'] ?? ''}'.trim();
-      final cards = _names(rem['cartes']);
-      final line =
-          'Remarquable ${rem['sous_type'] ?? ''} $cards${extra.isEmpty ? '' : ' — $extra'}'
-              .replaceAll(RegExp(r'\s+'), ' ')
-              .trim();
-      if (line.length > 'Remarquable'.length && seen.add(line)) {
-        lines.add(line);
-      }
-    }
-    return lines;
-  }
-
-  static String _name(Object? code) {
-    final value = '$code'.trim();
-    if (value.isEmpty) return '';
-    return PlayingCard.fromCode(value).frenchName;
-  }
-
-  static String _names(Object? codes) {
-    if (codes is! List) return '';
-    return codes.map(_name).where((name) => name.isNotEmpty).join(' + ');
+    final frames = [
+      '$cap, $motif.',
+      'Voici $name : $motif.',
+      '$cap se montre, $motif.',
+      'Tu lèves $name — $motif.',
+      '$cap. Motif : $motif.',
+    ];
+    return frames[(rng ?? Random()).nextInt(frames.length)];
   }
 }

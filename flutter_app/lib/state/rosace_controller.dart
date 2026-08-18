@@ -34,7 +34,6 @@ class RosaceController extends ChangeNotifier {
   bool premiumThanks = false;
   int dealSeq = 0;
   int gatherSeq = 0;
-  int _motionGen = 0;
 
   String pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
 
@@ -68,7 +67,6 @@ class RosaceController extends ChangeNotifier {
     chatReady = false;
     phase = 'table';
     gatherSeq = 0;
-    _motionGen++;
     chosen.clear();
     messages
       ..clear();
@@ -79,7 +77,8 @@ class RosaceController extends ChangeNotifier {
       sessionId = state.sessionId;
       placements = state.sites.map((site) => CardPlacement(site: site)).toList();
       dealSeq++;
-      dealing = false;
+      // dealing reste à true jusqu'à onDealt (fin des animations de deal,
+      // cf. RosaceStage._startDeal) : aucun tap pendant la dispersion des 52.
     } catch (exception) {
       error = '${strings.tableFail}\n$exception';
       debugPrint('createSession: $exception');
@@ -125,11 +124,10 @@ class RosaceController extends ChangeNotifier {
         ..revealed = true;
       chosen.add(index);
       await track('reveal', n: chosen.length);
-      final ev = RevelationGuides.eventFromReveal(data, Map<String, dynamic>.from(hit));
-      _addGuide(RevelationGuides.cardLine(card: placement.card, ev: ev, pick: pick));
-      for (final line in RevelationGuides.contextLines(ev)) {
-        _addGuide(line);
-      }
+      // Mini-log web : « Nom, motif. » parmi 5 formulations pré-enregistrées
+      // (workflow validé de rosace_depose.html). Pas de paragraphes
+      // Paire/Apport/Remarquable dans le chat — ils restent côté serveur.
+      _addGuide(RevelationGuides.cardGuideLine(placement.card.code), pulse: false);
       if (chosen.length == 1) {
         _addGuide(pick(strings.moreLines));
       } else if (chosen.length == 2) {
@@ -138,9 +136,11 @@ class RosaceController extends ChangeNotifier {
         phase = 'recalling';
         gatherSeq++;
         _addGuide(strings.handLine);
-        final gen = ++_motionGen;
-        Future<void>.delayed(const Duration(milliseconds: 8000), () {
-          if (gen == _motionGen) beginOracle();
+        // Le RosaceStage pilote le dévoilement (rappel staggered → main →
+        // oracle) et appelle beginOracle via onGathered. Filet de sécurité :
+        // si l'écran est détaché, l'oracle démarre quand même après 12 s.
+        Future<void>.delayed(const Duration(seconds: 12), () {
+          if (phase == 'recalling') beginOracle();
         });
       }
     } catch (exception) {
