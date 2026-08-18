@@ -16,15 +16,17 @@ class HandSlot {
   final int z;
 }
 
-/// Constantes calquées sur rosace_depose.html (gatherToHand + unveilOracle).
+/// Constantes calquées sur rosace_depose.html.
 class HandMotion {
+  static const dealMs = 4400;
+  static const dealStagger = 1680;
+  static const dealFlight = 2720;
   static const gatherMs = 3200;
   static const handMs = 1600;
   static const handStagger = 70;
   static const recallFlight = 2000;
   static const recallStagger = 1200;
   static const unveilMs = 900;
-  static const fallbackMs = 5000;
 
   static const handSlots = [
     HandSlot(x: 0.452, y: 0.74, rot: -11, scale: 1.52, z: 260),
@@ -40,9 +42,23 @@ class HandMotion {
 
   static double siteRot(int siteId) => ((siteId * 17) % 13) - 6.0;
 
+  static double dealSpin(int rank) {
+    final sign = rank.isOdd ? -1.0 : 1.0;
+    return sign * (110 + (rank * 11) % 70);
+  }
+
   static double recallSpin(int rank) {
     final sign = rank.isOdd ? 1.0 : -1.0;
     return sign * (100 + (rank * 9) % 70);
+  }
+
+  static List<int> dealOrder(List<CardPlacement> placements) {
+    final idxs = List<int>.generate(placements.length, (i) => i);
+    idxs.sort((u, v) {
+      final byR = placements[u].site.radius.compareTo(placements[v].site.radius);
+      return byR != 0 ? byR : placements[u].site.angle.compareTo(placements[v].site.angle);
+    });
+    return idxs;
   }
 
   static List<int> recallOrder(List<CardPlacement> placements, List<int> chosen) {

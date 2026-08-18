@@ -45,11 +45,13 @@ class ChatMessage {
     required this.role,
     required this.content,
     this.guide = false,
+    this.pulse = false,
   });
 
   final String role;
   final String content;
   final bool guide;
+  final bool pulse;
 }
 
 class RosaceState {

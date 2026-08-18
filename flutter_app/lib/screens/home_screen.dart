@@ -150,12 +150,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: RosaceStage(
+                      key: const ValueKey('rosace-stage'),
                       placements: controller.placements,
-                      chosen: controller.chosen,
+                      chosen: List<int>.from(controller.chosen),
                       phase: controller.phase,
+                      dealSeq: controller.dealSeq,
+                      gatherSeq: controller.gatherSeq,
                       busy: controller.dealing,
                       brandUrl: '${controller.api.baseUrl}/static/brand/rosace.png',
                       onReveal: controller.reveal,
+                      onDealt: controller.finishDeal,
                       onGathered: controller.beginOracle,
                     ),
                   ),
