@@ -43,6 +43,17 @@ class _RosaceStageState extends State<RosaceStage> {
   bool get _hand => widget.phase == 'recalling' || widget.phase == 'oracle';
 
   @override
+  void initState() {
+    super.initState();
+    lastDeal = widget.dealSeq;
+    if (widget.placements.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => spread = true);
+      });
+    }
+  }
+
+  @override
   void didUpdateWidget(covariant RosaceStage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.dealSeq != lastDeal) {
