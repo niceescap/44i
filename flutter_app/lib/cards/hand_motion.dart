@@ -14,6 +14,9 @@ class HandSlot {
   final double rot;
   final double scale;
   final int z;
+
+  /// [x, y, rotDeg, scale, opacity] en fractions du tapis.
+  List<double> toPose() => [x, y, rot, scale, 1];
 }
 
 /// Constantes calquées sur rosace_depose.html.
