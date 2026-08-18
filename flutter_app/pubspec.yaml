@@ -1,7 +1,7 @@
-name: interpretes44
+name: la_rosace
 description: La Rosace — consultation symbolique anonyme.
 publish_to: "none"
-version: 1.0.0+1
+version: 1.4.0+4
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -17,11 +17,23 @@ dependencies:
   url_launcher: ^6.3.1
   shared_preferences: ^2.3.2
   cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
+
+# Icône Play / launcher = logocarre.jpg (favicon web).
+# applicationId Android (invisible) = com.nicee.larosace
+# Éditeur / repo = 44 interprètes / 44i
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "../backend/static/brand/logocarre.jpg"
+  adaptive_icon_background: "#2e134d"
+  adaptive_icon_foreground: "../backend/static/brand/logocarre.jpg"

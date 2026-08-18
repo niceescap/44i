@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/rosace_api.dart';
 import '../cards/deck.dart';
+import '../cards/revelation_guides.dart';
 import '../l10n/app_strings.dart';
 import '../models/rosace_models.dart';
 
@@ -31,8 +32,21 @@ class RosaceController extends ChangeNotifier {
   final List<ChatMessage> messages = [];
   bool chatReady = false;
   bool premiumThanks = false;
+  int dealSeq = 0;
+  int gatherSeq = 0;
+  int _motionGen = 0;
 
   String pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
+
+  void _addGuide(String text, {bool pulse = true}) {
+    for (var i = 0; i < messages.length; i++) {
+      final item = messages[i];
+      if (item.guide && item.pulse) {
+        messages[i] = ChatMessage(role: item.role, content: item.content, guide: true);
+      }
+    }
+    messages.add(ChatMessage(role: 'oracle', content: text, guide: true, pulse: pulse));
+  }
 
   Future<void> start() async {
     final prefs = await SharedPreferences.getInstance();
@@ -49,28 +63,48 @@ class RosaceController extends ChangeNotifier {
     busy = true;
     dealing = true;
     error = null;
+    sessionId = null;
+    placements = [];
     chatReady = false;
     phase = 'table';
+    gatherSeq = 0;
+    _motionGen++;
     chosen.clear();
     messages
-      ..clear()
-      ..add(ChatMessage(role: 'oracle', content: pick(strings.askLines), guide: true));
+      ..clear();
+    _addGuide(pick(strings.askLines));
     notifyListeners();
     try {
       final state = await api.createSession(width: width, height: height, locale: locale);
       sessionId = state.sessionId;
       placements = state.sites.map((site) => CardPlacement(site: site)).toList();
-      await api.trackVisit(visitId: visitId, visitorId: visitorId, sessionId: sessionId);
-      await api.trackEvent(visitId: visitId, visitorId: visitorId, type: 'deal', sessionId: sessionId);
+      dealSeq++;
+      final gen = ++_motionGen;
+      Future<void>.delayed(const Duration(milliseconds: 4800), () {
+        if (gen == _motionGen) finishDeal();
+      });
     } catch (exception) {
-      error = strings.tableFail;
-      debugPrint('$exception');
+      error = '${strings.tableFail}\n$exception';
+      debugPrint('createSession: $exception');
       await track('error', code: 'table');
-    } finally {
-      busy = false;
       dealing = false;
-      notifyListeners();
     }
+    if (sessionId != null) {
+      try {
+        await api.trackVisit(visitId: visitId, visitorId: visitorId, sessionId: sessionId);
+        await api.trackEvent(visitId: visitId, visitorId: visitorId, type: 'deal', sessionId: sessionId);
+      } catch (exception) {
+        debugPrint('track deal: $exception');
+      }
+    }
+    busy = false;
+    notifyListeners();
+  }
+
+  void finishDeal() {
+    if (phase != 'table') return;
+    dealing = false;
+    notifyListeners();
   }
 
   Future<void> reveal(int index) async {
@@ -94,27 +128,40 @@ class RosaceController extends ChangeNotifier {
         ..revealed = true;
       chosen.add(index);
       await track('reveal', n: chosen.length);
+      final ev = RevelationGuides.eventFromReveal(data, Map<String, dynamic>.from(hit));
+      _addGuide(RevelationGuides.cardLine(card: placement.card, ev: ev, pick: pick));
+      for (final line in RevelationGuides.contextLines(ev)) {
+        _addGuide(line);
+      }
       if (chosen.length == 1) {
-        messages.add(ChatMessage(role: 'oracle', content: pick(strings.moreLines), guide: true));
+        _addGuide(pick(strings.moreLines));
       } else if (chosen.length == 2) {
-        messages.add(ChatMessage(role: 'oracle', content: pick(strings.lastLines), guide: true));
+        _addGuide(pick(strings.lastLines));
       } else if (chosen.length >= 3) {
-        phase = 'oracle';
-        messages.add(ChatMessage(
-          role: 'oracle',
-          content: '${pick(strings.waitLines)} ${pick(strings.discLines)}',
-          guide: true,
-        ));
-        notifyListeners();
-        await _interpret();
+        phase = 'recalling';
+        gatherSeq++;
+        _addGuide(strings.handLine);
+        final gen = ++_motionGen;
+        Future<void>.delayed(const Duration(milliseconds: 8000), () {
+          if (gen == _motionGen) beginOracle();
+        });
       }
     } catch (exception) {
       error = exception.toString();
       await track('error', code: 'session');
     } finally {
-      dealing = false;
+      if (phase != 'recalling') dealing = false;
       notifyListeners();
     }
+  }
+
+  Future<void> beginOracle() async {
+    if (sessionId == null || phase != 'recalling') return;
+    phase = 'oracle';
+    dealing = false;
+    _addGuide('${pick(strings.waitLines)} ${pick(strings.discLines)}');
+    notifyListeners();
+    await _interpret();
   }
 
   Future<void> _interpret() async {

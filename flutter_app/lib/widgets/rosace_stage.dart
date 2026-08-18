@@ -1,24 +1,74 @@
 import 'package:flutter/material.dart';
 
+import '../cards/hand_motion.dart';
 import '../models/rosace_models.dart';
 import '../theme.dart';
 import 'playing_card.dart';
 
-class RosaceStage extends StatelessWidget {
+/// Tapis Flutter natif : on change les positions cibles, Flutter interpolé.
+/// Pas de AnimationController (inopérant sur l’APK 1.2/1.3).
+class RosaceStage extends StatefulWidget {
   const RosaceStage({
     super.key,
     required this.placements,
+    required this.chosen,
     required this.phase,
+    required this.dealSeq,
     required this.busy,
     required this.brandUrl,
     required this.onReveal,
+    this.onDealt,
+    this.onGathered,
   });
 
   final List<CardPlacement> placements;
+  final List<int> chosen;
   final String phase;
+  final int dealSeq;
   final bool busy;
   final String brandUrl;
   final Future<void> Function(int index) onReveal;
+  final VoidCallback? onDealt;
+  final VoidCallback? onGathered;
+
+  @override
+  State<RosaceStage> createState() => _RosaceStageState();
+}
+
+class _RosaceStageState extends State<RosaceStage> {
+  var spread = false;
+  var lastDeal = 0;
+  var gatherArmed = false;
+
+  bool get _hand => widget.phase == 'recalling' || widget.phase == 'oracle';
+
+  @override
+  void didUpdateWidget(covariant RosaceStage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.dealSeq != lastDeal) {
+      lastDeal = widget.dealSeq;
+      gatherArmed = false;
+      spread = false;
+      if (widget.placements.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() => spread = true);
+          Future<void>.delayed(const Duration(milliseconds: 850), () {
+            if (mounted) widget.onDealt?.call();
+          });
+        });
+      }
+    }
+    if (widget.phase == 'recalling' && !gatherArmed) {
+      gatherArmed = true;
+      Future<void>.delayed(const Duration(milliseconds: 1100), () {
+        if (mounted) widget.onGathered?.call();
+      });
+    }
+    if (widget.phase == 'table') {
+      gatherArmed = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,46 +77,91 @@ class RosaceStage extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final size = constraints.biggest.shortestSide;
-          final cardW = size * 0.072;
+          final cardW = size * 0.078;
           final cardH = cardW * (49.5 / 34.5);
           return Stack(
-            alignment: Alignment.center,
+            clipBehavior: Clip.none,
             children: [
               Positioned.fill(
-                child: Image.network(
-                  brandUrl,
-                  fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.28),
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 700),
+                  opacity: _hand ? 0.08 : 0.28,
+                  child: Image.network(
+                    widget.brandUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  ),
                 ),
               ),
-              Positioned.fill(child: CustomPaint(painter: _StarPainter(placements))),
-              ...placements.asMap().entries.map((entry) {
-                final index = entry.key;
-                final item = entry.value;
-                final left = (item.site.x / 1000) * size - cardW / 2;
-                final top = (item.site.y / 1000) * size - cardH / 2;
-                final rot = ((item.site.id * 17) % 13) - 6;
-                return Positioned(
-                  left: left,
-                  top: top,
-                  child: Transform.rotate(
-                    angle: rot * 0.0174533,
-                    child: PlayingCardView(
-                      card: item.card,
-                      revealed: item.revealed,
-                      width: cardW,
-                      height: cardH,
-                      onTap: busy || phase != 'table' || item.revealed ? null : () => onReveal(index),
-                    ),
-                  ),
-                );
+              Positioned.fill(
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 700),
+                  opacity: _hand ? 0.15 : 1,
+                  child: CustomPaint(painter: _StarPainter(widget.placements)),
+                ),
+              ),
+              ...List<Widget>.generate(widget.placements.length, (index) {
+                return _placedCard(index, size, cardW, cardH);
               }),
             ],
           );
         },
       ),
     );
+  }
+
+  Widget _placedCard(int index, double size, double cardW, double cardH) {
+    final item = widget.placements[index];
+    final keepAt = widget.chosen.indexOf(index);
+    final isKeep = keepAt >= 0 && keepAt < 3;
+    final pose = _pose(item, keepAt, isKeep);
+    return AnimatedPositioned(
+      key: ValueKey('c-$index'),
+      duration: Duration(milliseconds: _hand ? 900 : 780),
+      curve: Curves.easeInOutCubic,
+      left: pose[0] * size - cardW / 2,
+      top: pose[1] * size - cardH / 2,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 650),
+        opacity: pose[4],
+        child: AnimatedRotation(
+          duration: Duration(milliseconds: _hand ? 900 : 780),
+          curve: Curves.easeInOutCubic,
+          turns: pose[2] / 360,
+          child: AnimatedScale(
+            duration: Duration(milliseconds: _hand ? 900 : 780),
+            curve: Curves.easeInOutCubic,
+            scale: pose[3],
+            child: PlayingCardView(
+              card: item.card,
+              revealed: item.revealed,
+              width: cardW,
+              height: cardH,
+              onTap: widget.busy || widget.phase != 'table' || item.revealed || pose[4] < 0.5
+                  ? null
+                  : () => widget.onReveal(index),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// [x, y, rotDeg, scale, opacity] en fractions du tapis.
+  List<double> _pose(CardPlacement item, int keepAt, bool isKeep) {
+    if (_hand && isKeep) {
+      const xs = [0.30, 0.50, 0.70];
+      const rots = [-16.0, 2.0, 16.0];
+      final oracle = widget.phase == 'oracle';
+      return [xs[keepAt], oracle ? 0.48 : 0.64, rots[keepAt], oracle ? 2.15 : 1.75, 1];
+    }
+    if (_hand) {
+      return [0.50, 0.50, 0, 0.35, 0];
+    }
+    if (!spread) {
+      return [0.50, 0.50, HandMotion.siteRot(item.site.id), 0.82, 1];
+    }
+    return [item.site.x / 1000, item.site.y / 1000, HandMotion.siteRot(item.site.id), 1, 1];
   }
 }
 

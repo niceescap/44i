@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import '../models/rosace_models.dart';
 
 class RosaceApi {
-  RosaceApi({http.Client? client, this.locale = 'fr', this.appVersion = '1.0.0+1'})
+  RosaceApi({http.Client? client, this.locale = 'fr', this.appVersion = '1.4.0+4'})
       : baseUrl = const String.fromEnvironment(
           'API_BASE_URL',
           defaultValue: 'https://44i.webredirect.org',
@@ -33,8 +33,15 @@ class RosaceApi {
         'locale': locale,
       };
 
+  static const _timeout = Duration(seconds: 20);
+
   Future<Map<String, dynamic>> _decode(http.Response response) {
-    final value = jsonDecode(response.body);
+    Object? value;
+    try {
+      value = jsonDecode(response.body);
+    } catch (_) {
+      throw Exception('HTTP ${response.statusCode} depuis $baseUrl');
+    }
     if (response.statusCode >= 400) {
       throw Exception(value is Map ? (value['detail'] ?? 'Erreur serveur') : 'Erreur serveur');
     }
@@ -46,15 +53,17 @@ class RosaceApi {
     required double height,
     required String locale,
   }) async {
-    final response = await _client.post(
-      _uri('/api/v2/sessions'),
-      headers: _headers,
-      body: jsonEncode({
-        'stage_width': width,
-        'stage_height': height,
-        'locale': locale,
-      }),
-    );
+    final response = await _client
+        .post(
+          _uri('/api/v2/sessions'),
+          headers: _headers,
+          body: jsonEncode({
+            'stage_width': width,
+            'stage_height': height,
+            'locale': locale,
+          }),
+        )
+        .timeout(_timeout);
     return RosaceState.fromJson(await _decode(response));
   }
 

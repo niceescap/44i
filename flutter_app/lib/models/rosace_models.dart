@@ -15,7 +15,11 @@ class RosaceSite {
   final double x;
   final double y;
 
-  double get radius => math.hypot((x - 500) / 392, (y - 500) / 392);
+  double get radius {
+    final dx = (x - 500) / 392;
+    final dy = (y - 500) / 392;
+    return math.sqrt(dx * dx + dy * dy);
+  }
   double get angle => math.atan2(y - 500, x - 500);
 
   factory RosaceSite.fromJson(Map<String, dynamic> json) => RosaceSite(
@@ -41,11 +45,13 @@ class ChatMessage {
     required this.role,
     required this.content,
     this.guide = false,
+    this.pulse = false,
   });
 
   final String role;
   final String content;
   final bool guide;
+  final bool pulse;
 }
 
 class RosaceState {
