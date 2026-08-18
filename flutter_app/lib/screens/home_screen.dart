@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../state/rosace_controller.dart';
 import '../theme.dart';
 import '../widgets/chat_panel.dart';
+import '../widgets/guide_rail.dart';
 import '../widgets/rosace_stage.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -155,7 +156,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       chosen: List<int>.from(controller.chosen),
                       phase: controller.phase,
                       dealSeq: controller.dealSeq,
-                      gatherSeq: controller.gatherSeq,
                       busy: controller.dealing,
                       brandUrl: '${controller.api.baseUrl}/static/brand/rosace.png',
                       onReveal: controller.reveal,
@@ -164,10 +164,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+                GuideRail(guides: controller.messages.where((item) => item.guide).toList()),
                 Expanded(
                   flex: controller.phase == 'oracle' ? 5 : 3,
                   child: ChatPanel(
-                    messages: controller.messages,
+                    messages: controller.messages.where((item) => !item.guide).toList(),
                     ready: controller.chatReady,
                     busy: controller.dealing && controller.phase == 'oracle',
                     hint: s.writeHint,
