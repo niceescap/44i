@@ -129,24 +129,21 @@ class RosaceController extends ChangeNotifier {
       chosen.add(index);
       await track('reveal', n: chosen.length);
       final ev = RevelationGuides.eventFromReveal(data, Map<String, dynamic>.from(hit));
-      messages.add(ChatMessage(
-        role: 'oracle',
-        content: RevelationGuides.cardLine(card: placement.card, ev: ev, pick: pick),
-        guide: true,
-      ));
+      _addGuide(RevelationGuides.cardLine(card: placement.card, ev: ev, pick: pick));
       for (final line in RevelationGuides.contextLines(ev)) {
-        messages.add(ChatMessage(role: 'oracle', content: line, guide: true));
+        _addGuide(line);
       }
       if (chosen.length == 1) {
-        messages.add(ChatMessage(role: 'oracle', content: pick(strings.moreLines), guide: true));
+        _addGuide(pick(strings.moreLines));
       } else if (chosen.length == 2) {
-        messages.add(ChatMessage(role: 'oracle', content: pick(strings.lastLines), guide: true));
+        _addGuide(pick(strings.lastLines));
       } else if (chosen.length >= 3) {
         phase = 'recalling';
-        messages.add(ChatMessage(role: 'oracle', content: strings.handLine, guide: true));
-        final gen = ++_gatherGen;
-        Future<void>.delayed(const Duration(milliseconds: 5000), () {
-          if (gen == _gatherGen) beginOracle();
+        gatherSeq++;
+        _addGuide(strings.handLine);
+        final gen = ++_motionGen;
+        Future<void>.delayed(const Duration(milliseconds: 8000), () {
+          if (gen == _motionGen) beginOracle();
         });
       }
     } catch (exception) {
