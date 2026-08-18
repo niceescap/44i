@@ -50,7 +50,6 @@ class _RosaceStageState extends State<RosaceStage> with TickerProviderStateMixin
   static const _unveilEase = Cubic(0.2, 0.8, 0.18, 1);
 
   bool get _oracle => widget.phase == 'oracle';
-  bool get _recalling => widget.phase == 'recalling' || widget.gatherSeq > _lastGatherSeq || gather.value > 0 || unveil.value > 0;
 
   @override
   void initState() {
