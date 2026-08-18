@@ -37,6 +37,6 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "../backend/static/brand/logocarre.jpg"
+  image_path: "assets/brand/logocarre.jpg"
   adaptive_icon_background: "#2e134d"
-  adaptive_icon_foreground: "../backend/static/brand/logocarre.jpg"
+  adaptive_icon_foreground: "assets/brand/logocarre.jpg"
