@@ -141,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     children: [
                       Text(s.title, style: rosaceTitleStyle(fontSize: 48)),
+                      Text(appVersionLabel, style: const TextStyle(color: RosaceColors.gold, fontSize: 11)),
                       Text(s.tagline, style: const TextStyle(color: RosaceColors.tagline, fontStyle: FontStyle.italic)),
                       Text(s.subtitle, style: const TextStyle(color: RosaceColors.tagline, fontSize: 13)),
                     ],
