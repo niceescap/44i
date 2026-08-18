@@ -34,7 +34,6 @@ class RosaceController extends ChangeNotifier {
   bool premiumThanks = false;
   int dealSeq = 0;
   int gatherSeq = 0;
-  int _motionGen = 0;
 
   String pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
 
@@ -68,7 +67,6 @@ class RosaceController extends ChangeNotifier {
     chatReady = false;
     phase = 'table';
     gatherSeq = 0;
-    _motionGen++;
     chosen.clear();
     messages
       ..clear();
@@ -79,7 +77,8 @@ class RosaceController extends ChangeNotifier {
       sessionId = state.sessionId;
       placements = state.sites.map((site) => CardPlacement(site: site)).toList();
       dealSeq++;
-      dealing = false;
+      // dealing reste à true jusqu'à onDealt (fin des animations de deal,
+      // cf. RosaceStage._startDeal) : aucun tap pendant la dispersion des 52.
     } catch (exception) {
       error = '${strings.tableFail}\n$exception';
       debugPrint('createSession: $exception');
@@ -138,9 +137,11 @@ class RosaceController extends ChangeNotifier {
         phase = 'recalling';
         gatherSeq++;
         _addGuide(strings.handLine);
-        final gen = ++_motionGen;
-        Future<void>.delayed(const Duration(milliseconds: 8000), () {
-          if (gen == _motionGen) beginOracle();
+        // Le RosaceStage pilote le dévoilement (rappel staggered → main →
+        // oracle) et appelle beginOracle via onGathered. Filet de sécurité :
+        // si l'écran est détaché, l'oracle démarre quand même après 12 s.
+        Future<void>.delayed(const Duration(seconds: 12), () {
+          if (phase == 'recalling') beginOracle();
         });
       }
     } catch (exception) {
