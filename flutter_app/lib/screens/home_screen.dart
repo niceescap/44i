@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../state/rosace_controller.dart';
 import '../theme.dart';
 import '../widgets/chat_panel.dart';
+import '../widgets/guide_rail.dart';
 import '../widgets/rosace_stage.dart';
 
 class HomeScreen extends StatefulWidget {
