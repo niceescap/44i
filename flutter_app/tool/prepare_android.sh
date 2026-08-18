@@ -38,6 +38,7 @@ if [ -f "$OLD_KT" ]; then
   rm -rf android/app/src/main/kotlin/com/nicee/la_rosace
 fi
 
+bash "$ROOT/tool/sync_brand.sh" || true
 flutter pub get
 dart run flutter_launcher_icons
 
