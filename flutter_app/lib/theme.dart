@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// Palette alignée sur le web validé (pourpre 20 % plus sombre).
+/// Palette web. Aucun fetch de police au démarrage.
 class RosaceColors {
   static const felt = Color(0xff2e134d);
   static const ink = Color(0xff220e3a);
@@ -17,6 +16,8 @@ class RosaceColors {
   static const bandeauOpacity = 0.24;
 }
 
+const appVersionLabel = '1.4.1+5';
+
 ThemeData rosaceTheme() {
   final base = ThemeData(
     brightness: Brightness.dark,
@@ -30,7 +31,7 @@ ThemeData rosaceTheme() {
     fontFamily: 'serif',
   );
   return base.copyWith(
-    textTheme: GoogleFonts.sourceSans3TextTheme(base.textTheme).apply(
+    textTheme: base.textTheme.apply(
       bodyColor: RosaceColors.cream,
       displayColor: RosaceColors.cream,
     ),
@@ -54,8 +55,10 @@ ThemeData rosaceTheme() {
 }
 
 TextStyle rosaceTitleStyle({double fontSize = 40}) {
-  return GoogleFonts.greatVibes(
+  return TextStyle(
+    fontFamily: 'serif',
     fontSize: fontSize,
+    fontStyle: FontStyle.italic,
     fontWeight: FontWeight.w400,
     color: const Color(0xfff6db9b),
     height: 0.92,
