@@ -1,7 +1,7 @@
 name: la_rosace
 description: La Rosace — consultation symbolique anonyme.
 publish_to: "none"
-version: 1.4.0+4
+version: 1.4.1+5
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -27,6 +27,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/brand/
 
 # Icône Play / launcher = logocarre.jpg (favicon web).
 # applicationId Android (invisible) = com.nicee.larosace

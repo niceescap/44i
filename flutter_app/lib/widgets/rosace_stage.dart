@@ -43,6 +43,17 @@ class _RosaceStageState extends State<RosaceStage> {
   bool get _hand => widget.phase == 'recalling' || widget.phase == 'oracle';
 
   @override
+  void initState() {
+    super.initState();
+    lastDeal = widget.dealSeq;
+    if (widget.placements.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => spread = true);
+      });
+    }
+  }
+
+  @override
   void didUpdateWidget(covariant RosaceStage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.dealSeq != lastDeal) {
@@ -86,10 +97,14 @@ class _RosaceStageState extends State<RosaceStage> {
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 700),
                   opacity: _hand ? 0.08 : 0.28,
-                  child: Image.network(
-                    widget.brandUrl,
+                  child: Image.asset(
+                    'assets/brand/rosace.png',
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    errorBuilder: (_, __, ___) => Image.network(
+                      widget.brandUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
                   ),
                 ),
               ),

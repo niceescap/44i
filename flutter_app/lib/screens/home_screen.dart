@@ -119,11 +119,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: IgnorePointer(
               child: Opacity(
                 opacity: RosaceColors.bandeauOpacity,
-                child: Image.network(
-                  _bandeauUrl,
+                child: Image.asset(
+                  'assets/brand/bandeau.jpg',
                   fit: BoxFit.cover,
                   alignment: Alignment.topCenter,
-                  errorBuilder: (_, __, ___) => const ColoredBox(color: RosaceColors.glow),
+                  errorBuilder: (_, __, ___) => Image.network(
+                    _bandeauUrl,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                    errorBuilder: (_, __, ___) => const ColoredBox(color: RosaceColors.glow),
+                  ),
                 ),
               ),
             ),
@@ -136,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     children: [
                       Text(s.title, style: rosaceTitleStyle(fontSize: 48)),
+                      Text(appVersionLabel, style: const TextStyle(color: RosaceColors.gold, fontSize: 11)),
                       Text(s.tagline, style: const TextStyle(color: RosaceColors.tagline, fontStyle: FontStyle.italic)),
                       Text(s.subtitle, style: const TextStyle(color: RosaceColors.tagline, fontSize: 13)),
                     ],

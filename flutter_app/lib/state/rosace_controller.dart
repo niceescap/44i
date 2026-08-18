@@ -79,10 +79,7 @@ class RosaceController extends ChangeNotifier {
       sessionId = state.sessionId;
       placements = state.sites.map((site) => CardPlacement(site: site)).toList();
       dealSeq++;
-      final gen = ++_motionGen;
-      Future<void>.delayed(const Duration(milliseconds: 4800), () {
-        if (gen == _motionGen) finishDeal();
-      });
+      dealing = false;
     } catch (exception) {
       error = '${strings.tableFail}\n$exception';
       debugPrint('createSession: $exception');
