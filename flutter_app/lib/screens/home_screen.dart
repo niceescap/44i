@@ -40,12 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String get _bandeauUrl => '${controller.api.baseUrl}/static/brand/bandeau.jpg';
 
-  Future<void> _donate() async {
-    await controller.track('don_click');
-    final uri = Uri.parse('https://paypal.me/NiceeCap/2');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-
   Future<void> _privacy() async {
     final uri = Uri.parse('${controller.api.baseUrl}/privacy-policy');
     await launchUrl(uri, mode: LaunchMode.externalApplication);
