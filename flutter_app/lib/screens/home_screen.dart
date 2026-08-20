@@ -206,7 +206,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      OutlinedButton(onPressed: _donate, child: Text(s.donate)),
                       TextButton(
                         onPressed: _privacy,
                         child: Text(
