@@ -1,7 +1,7 @@
 name: la_rosace
 description: La Rosace — consultation symbolique anonyme.
 publish_to: "none"
-version: 1.5.1+7
+version: 1.5.2+8
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
