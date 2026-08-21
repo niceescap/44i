@@ -73,3 +73,5 @@ echo
 echo "OK — applicationId attendu : com.nicee.larosace"
 echo "Vérif :"
 grep -R "applicationId" android/app/build.gradle android/app/build.gradle.kts 2>/dev/null || true
+echo "INTERNET main manifest :"
+grep -n "android.permission.INTERNET" "$MAIN_MANIFEST" || echo "MANQUANT — AAB release cassé"
