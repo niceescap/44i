@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../cards/deck.dart';
 import '../theme.dart';
 
+/// Carte à jouer : charge les PNG du deck La Rosace (propriété exclusive).
+/// Fallback programmatique conservé pour robustesse.
 class PlayingCardView extends StatelessWidget {
   const PlayingCardView({
     super.key,
@@ -19,94 +21,74 @@ class PlayingCardView extends StatelessWidget {
   final double width;
   final double height;
 
+  /// Mapping code carte → asset PNG.
+  /// Convention : {A,K,Q,J,T,9,8,7,6,5,4,3,2}{C,D,H,S}.png + back.png
+  String get _assetPath {
+    if (!revealed || card.code == '?') return 'assets/cards/back.png';
+    return 'assets/cards/${card.rank}${card.suit}.png';
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 400),
+      child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
-          gradient: revealed
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xfff6edd4), Color(0xffe4d2a4)],
-                )
-              : const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xff6e2346), Color(0xff30132e)],
-                ),
           border: Border.all(color: RosaceColors.gold, width: 1),
           boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 4)],
         ),
-        child: revealed ? _Front(card: card) : const _Back(),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Image.asset(
+            _assetPath,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _Fallback(card: card, revealed: revealed),
+          ),
+        ),
       ),
     );
   }
 }
 
-class _Back extends StatelessWidget {
-  const _Back();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('✦', style: TextStyle(color: RosaceColors.gold.withOpacity(0.85), fontSize: 10)),
-    );
-  }
-}
-
-class _Front extends StatelessWidget {
-  const _Front({required this.card});
+/// Placeholder conservé en cas d'asset manquant (ne devrait pas arriver en prod).
+class _Fallback extends StatelessWidget {
+  const _Fallback({required this.card, required this.revealed});
   final PlayingCard card;
+  final bool revealed;
 
   @override
   Widget build(BuildContext context) {
-    final color = card.red ? RosaceColors.red : RosaceColors.blackSuit;
-    final face = PlayingCard.rankFace[card.rank] ?? card.rank;
-    final layout = PlayingCard.pipLayout[card.rank];
-    return Stack(
-      children: [
-        Positioned(left: 2, top: 1, child: _Corner(face: face, pip: card.pip, color: color)),
-        Positioned(right: 2, bottom: 1, child: RotatedBox(quarterTurns: 2, child: _Corner(face: face, pip: card.pip, color: color))),
-        if (layout != null)
-          ...layout.map((pt) {
-            final invert = pt.length > 2 && pt[2] == 1;
-            return Positioned(
-              left: (pt[0] / 100) * 34 - 5,
-              top: (pt[1] / 100) * 49 - 6,
-              child: Transform.rotate(
-                angle: invert ? 3.1416 : 0,
-                child: Text(card.pip, style: TextStyle(color: color, fontSize: card.rank == 'A' ? 14 : 8, height: 1)),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: revealed
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xfff6edd4), Color(0xffe4d2a4)],
+              )
+            : const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xff6e2346), Color(0xff30132e)],
               ),
-            );
-          })
-        else
-          Center(
-            child: Text('$face${card.pip}', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 9)),
-          ),
-      ],
-    );
-  }
-}
-
-class _Corner extends StatelessWidget {
-  const _Corner({required this.face, required this.pip, required this.color});
-  final String face;
-  final String pip;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(face, style: TextStyle(color: color, fontSize: 7, height: 1, fontWeight: FontWeight.bold)),
-        Text(pip, style: TextStyle(color: color, fontSize: 7, height: 1)),
-      ],
+      ),
+      child: revealed
+          ? Center(
+              child: Text(
+                card.label,
+                style: TextStyle(
+                  color: card.red ? RosaceColors.red : RosaceColors.blackSuit,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 9,
+                ),
+              ),
+            )
+          : Center(
+              child: Text('✦', style: TextStyle(color: RosaceColors.gold.withOpacity(0.85), fontSize: 10)),
+            ),
     );
   }
 }
