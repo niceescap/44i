@@ -264,7 +264,6 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _tool(Icons.replay, s.again, controller.busy ? null : () => controller.deal()),
               _tool(Icons.ios_share, s.keep, _export),
-              _tool(Icons.favorite, s.donate, _donate),
               _tool(Icons.workspace_premium, s.premium, _premium),
             ],
           ),
