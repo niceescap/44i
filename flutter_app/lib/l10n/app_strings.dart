@@ -22,7 +22,6 @@ class AppStrings {
   String get writeHint => en ? 'Write to the oracle…' : 'Écris à l’oracle…';
   String get keep => en ? 'Keep this reading' : 'Conserver ce tirage';
   String get again => en ? 'Start over' : 'Recommencer';
-  String get donate => en ? 'Donate to La Rosace' : 'Faire un don à La Rosace';
   String get premium => en ? 'Try the Premium version' : 'Tester la version Premium';
   String get premiumTitle => 'La Grande Rosace';
   String get premiumBody => en
