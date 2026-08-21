@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import '../models/rosace_models.dart';
 
 class RosaceApi {
-  RosaceApi({http.Client? client, this.locale = 'fr', this.appVersion = '1.5.0+6'})
+  RosaceApi({http.Client? client, this.locale = 'fr', this.appVersion = '1.5.1+7'})
       : baseUrl = const String.fromEnvironment(
           'API_BASE_URL',
           defaultValue: 'https://44i.webredirect.org',
