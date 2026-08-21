@@ -16,7 +16,7 @@ class RosaceColors {
   static const bandeauOpacity = 0.24;
 }
 
-const appVersionLabel = '1.5.2+8';
+const appVersionLabel = '1.5.3+9';
 
 ThemeData rosaceTheme() {
   final base = ThemeData(
