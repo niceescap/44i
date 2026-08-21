@@ -32,4 +32,5 @@ flutter_app/.flutter-plugins-dependencies
 flutter_app/build/
 flutter_app/.idea/
 **/local.properties
+flutter_app/android/key.properties
 *.iml
