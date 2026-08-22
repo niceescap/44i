@@ -38,6 +38,29 @@ if [ -f "$OLD_KT" ]; then
   rm -rf android/app/src/main/kotlin/com/nicee/la_rosace
 fi
 
+# flutter create ne pose INTERNET que dans debug/profile.
+# Un AAB release sans ça = Failed host lookup: 44i.webredirect.org
+MAIN_MANIFEST="android/app/src/main/AndroidManifest.xml"
+if [ -f "$MAIN_MANIFEST" ] && ! grep -q 'android.permission.INTERNET' "$MAIN_MANIFEST"; then
+  echo "Patch INTERNET manquant dans $MAIN_MANIFEST"
+  python3 - <<'PY'
+from pathlib import Path
+p = Path("android/app/src/main/AndroidManifest.xml")
+text = p.read_text()
+needle = "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">"
+insert = needle + """
+    <!-- OBLIGATOIRE en release. flutter create ne le met que dans debug/profile. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>"""
+if needle not in text:
+    raise SystemExit("manifest inattendu, INTERNET non injecté")
+p.write_text(text.replace(needle, insert, 1))
+PY
+fi
+if [ -f "$MAIN_MANIFEST" ]; then
+  sed -i 's/android:label="la_rosace"/android:label="La Rosace"/' "$MAIN_MANIFEST"
+fi
+
 bash "$ROOT/tool/sync_brand.sh" || true
 flutter pub get
 if [ -f "$ROOT/assets/brand/logocarre.jpg" ]; then
@@ -50,3 +73,5 @@ echo
 echo "OK — applicationId attendu : com.nicee.larosace"
 echo "Vérif :"
 grep -R "applicationId" android/app/build.gradle android/app/build.gradle.kts 2>/dev/null || true
+echo "INTERNET main manifest :"
+grep -n "android.permission.INTERNET" "$MAIN_MANIFEST" || echo "MANQUANT — AAB release cassé"
