@@ -1,62 +1,161 @@
-# AdMob — point d’insertion (recherche, pas d’implémentation)
+# AdMob — mémoire technique de décision
 
-Question : où coller AdMob pour qu’il apparaisse **après la fin de l’animation du tirage** et **avant la réponse du modèle** ?
+Cahier pour un futur agent codeur. **Aucune implémentation dans cette version.**
+Branche de référence : `feature/play-release-v2` (app en test fermé 1.5.3+9).
 
-Réponse courte : dans `RosaceController.beginOracle()`, **avant** `await _interpret()`. Format Google pour cet emplacement : **interstitiel** (plein écran, rupture naturelle).
+Décision en une phrase :
 
-## Flux actuel (1.5.3+9, `feature/play-release-v2`)
+> Afficher un `InterstitialAd` de test après l’animation de regroupement des trois cartes et avant `_interpret()`. Précharger si possible. Attendre la fermeture ou gérer l’échec, puis seulement lancer le streaming IA. Si l’ad n’est pas disponible, continuer directement vers l’oracle.
+
+---
+
+## 1. Format retenu
+
+- SDK : **Google Mobile Ads Flutter** (`google_mobile_ads`).
+- Format : **`InterstitialAd` uniquement**.
+- Interdit : bannière, rewarded, native, app-open.
+- Rôle : transition plein écran entre deux phases de la consultation (tirage terminé → oracle).
+- L’utilisateur ferme l’annonce (croix / skip). Pas de timer d’auto-close dans le SDK.
+
+Docs : [Interstitial (Flutter)](https://developers.google.com/admob/flutter/interstitial) · [Get started](https://developers.google.com/admob/flutter/quick-start)
+
+---
+
+## 2. Position exacte dans le flux
+
+Flux **à conserver** :
 
 ```
 3e carte révélée
-  → phase = 'recalling'          RosaceController.reveal()
-  → animation rappel 49 cartes   RosaceStage._startRecall()
-  → onGathered après 3200 ms     HandMotion.gatherMs
-  → beginOracle()
-       phase = 'oracle'          HomeScreen bascule ChatPanel
-       _interpret()              stream SSE → bulle oracle
+  → symbolique locale existante          reveal() / _addGuide(cardGuideLine)
+  → animation de regroupement            RosaceStage._startRecall()
+  → InterstitialAd                       NOUVEAU — ici seulement
+  → fermeture ou échec / absence d’ad
+  → interprétation IA                    _interpret()
+  → streaming SSE actuel                 api.interpretStream
 ```
 
-La symbolique (mini-logs) est déjà écrite pendant les clics, dans `reveal()`, via `_addGuide(RevelationGuides.cardGuideLine(...))`. Rien à bouger de ce côté.
+### Ancres code (ne pas déplacer la révélation ni la symbolique)
 
-## Où, exactement
+| Rôle | Fichier | Élément |
+|---|---|---|
+| Hook d’insertion | `flutter_app/lib/state/rosace_controller.dart` | `beginOracle()` |
+| Stream IA | même fichier | `_interpret()` |
+| Fin d’animation | `flutter_app/lib/widgets/rosace_stage.dart` | `_startRecall()` → timer `HandMotion.gatherMs` (3200 ms) → `onGathered` |
+| Câblage | `flutter_app/lib/screens/home_screen.dart` | `onGathered: controller.beginOracle` |
+| Affichage bulle | `flutter_app/lib/widgets/chat_panel.dart` | bulle oracle ; `content.isEmpty` → marque d’attente |
+| Symbolique (inchangée) | `rosace_controller.dart` `reveal()` | `_addGuide(RevelationGuides.cardGuideLine(...))` pendant les 3 clics |
 
-| Quoi | Où |
-|---|---|
-| Fichier | `flutter_app/lib/state/rosace_controller.dart` |
-| Fonction | `beginOracle()` (l.157) puis `_interpret()` (l.166) |
-| Fin d’animation | `flutter_app/lib/widgets/rosace_stage.dart` → `_startRecall()`, timer `HandMotion.gatherMs` (3200 ms) → `onGathered` |
-| Câblage UI | `flutter_app/lib/screens/home_screen.dart` : `onGathered: controller.beginOracle` |
-| Réponse modèle | `_interpret()` : ajoute une `ChatMessage` oracle vide, lit `api.interpretStream`, `ChatPanel` affiche la bulle (marque d’attente si `content.isEmpty`) |
-| Filet | `reveal()` : `Future.delayed(12s)` rappelle `beginOracle()` si `phase` est encore `'recalling'` |
-
-Aujourd’hui `beginOracle()` enchaîne tout de suite :
+Séquence actuelle de `beginOracle()` :
 
 ```dart
-phase = 'oracle';
+if (sessionId == null || phase != 'recalling') return;
+phase = 'oracle';          // HomeScreen bascule ChatPanel (_chatMode)
+dealing = false;
+_addGuide(...wait + disclaimer...);
 notifyListeners();
-await _interpret();   // ← insérer l’interstitiel AVANT cette ligne
+await _interpret();        // ← l’interstitiel s’intercale AVANT cet appel
 ```
 
-Ne pas toucher à `onGathered` dans le stage : l’animation doit se terminer, puis l’annonce, puis le stream.
+Ne pas modifier `onGathered` dans le stage : l’animation doit **finir**, puis l’ad, puis le SSE.
 
-## Format Google pour cet emplacement
+---
 
-[Interstitial ads](https://developers.google.com/admob/flutter/interstitial) : plein écran, « natural transition points » (entre deux activités, après un niveau). C’est le format standard pour une pause de quelques secondes entre une action terminée (tirage + animation) et un nouveau contenu (oracle). Pas de bannière (persistante), pas d’app-open (lancement), pas de rewarded (opt-in).
+## 3. Règle de consommation IA
 
-Plugin : [`google_mobile_ads`](https://pub.dev/packages/google_mobile_ads)  
-Guide : [Get started (Flutter)](https://developers.google.com/admob/flutter/quick-start)
+**Le streaming SSE ne démarre pas pendant l’interstitiel.**
 
-L’interstitiel se ferme par l’utilisateur (croix / skip). Il n’y a pas de « timer 3 s puis auto-close » dans le SDK : `onAdDismissedFullScreenContent` (ou échec de show/load) déclenche alors `_interpret()`.
+Ordre futur obligatoire :
 
-## Modifications nécessaires (future version, pas maintenant)
+```
+show ad
+  → onAdDismissedFullScreenContent
+    ou onAdFailedToShowFullScreenContent
+    ou pas d’ad chargée / load failed
+  → _interpret()
+```
 
-1. **Précharger** l’interstitiel (idéalement dès la 2ᵉ carte, ou au `deal`) pour ne pas bloquer sur un spinner à `beginOracle()`.
-2. Dans `beginOracle()` : `show()` l’annonce déjà chargée ; **seulement après dismiss / fail** → `phase = 'oracle'` + `_interpret()`. Ne pas lancer le SSE pendant l’annonce (jetons + bulle cachée).
-3. `pubspec.yaml` : dépendance `google_mobile_ads`.
-4. `main.dart` : `MobileAds.instance.initialize()` après le consentement.
-5. `AndroidManifest.xml` : `com.google.android.gms.ads.APPLICATION_ID` (App ID AdMob, pas l’ad unit). `INTERNET` est déjà là. Fusion possible de `com.google.android.gms.permission.AD_ID`.
-6. **UMP / RGPD** (France = EEE) : [Privacy & messaging](https://developers.google.com/admob/flutter/privacy) avant tout init ads.
-7. Compte AdMob : App ID + ad unit **Interstitial**. En debug : IDs de test Google (`ca-app-pub-3940256099942544/1033173712`).
-8. Privacy policy + Data safety Play (publicité, identifiant pub) — hors code.
+- Pas d’ad, load KO, show KO → **continuer vers l’oracle**. La pub ne bloque jamais la consultation.
+- Ne pas ouvrir le SSE « en dessous » de l’annonce (jetons brûlés, bulle invisible).
 
-Hors scope de cette note : compte AdMob, eCPM, AAB. Ne pas merger dans `main`. Ne pas builder.
+---
+
+## 4. Préchargement
+
+Orientation d’implémentation (pas maintenant) :
+
+- `InterstitialAd.load` **avant** le moment du show.
+- Moment préféré : dès la **2ᵉ carte** révélée, sinon au `deal()` une fois la session créée.
+- But : à `beginOracle()`, `show()` une ad déjà en mémoire. Pas de spinner artificiel après l’animation.
+- Si le preload n’est pas prêt à `beginOracle()` : ne pas attendre indéfiniment → oracle.
+
+---
+
+## 5. Identifiants — bien distinguer les trois
+
+| Identifiant | Rôle | Où |
+|---|---|---|
+| **AdMob App ID** | identifie l’app auprès d’AdMob | `AndroidManifest` : `com.google.android.gms.ads.APPLICATION_ID` |
+| **Ad Unit ID** | unité *Interstitial* de prod | passé à `InterstitialAd.load` |
+| **Test Ad Unit ID** | tests dev + test fermé | `InterstitialAd.load` tant que l’on n’est pas en prod ads |
+
+**Test Android officiel Google (ad unit interstitial, PAS l’App ID) :**
+
+```
+ca-app-pub-3940256099942544/1033173712
+```
+
+L’App ID de test Google (manifest uniquement, distinct) est `ca-app-pub-3940256099942544~3347511713` — ne pas le coller dans `InterstitialAd.load`.
+
+Prod : remplacer App ID **et** Ad Unit ID par les vrais, jamais committer un ID prod dans un chemin de test.
+
+---
+
+## 6. Cycle de vie SDK
+
+Utilisation prévue :
+
+1. `InterstitialAd.load(...)` → callback `onAdLoaded` / `onAdFailedToLoad`.
+2. Sur l’instance : `fullScreenContentCallback = FullScreenContentCallback(...)`.
+3. `InterstitialAd.show()`.
+4. `onAdDismissedFullScreenContent` → `ad.dispose()` → `_interpret()`.
+5. `onAdFailedToShowFullScreenContent` → `ad.dispose()` → `_interpret()`.
+6. `onAdFailedToLoad` (preload) : garder `_ad == null` ; à `beginOracle()` → `_interpret()` direct.
+
+**Un interstitiel chargé n’est pas réutilisable.** Après show (succès ou échec d’affichage), l’objet est consommé : `dispose()`, puis un nouveau `load` si un prochain tirage en a besoin.
+
+Ne pas empiler plusieurs instances. Une ad préchargée max.
+
+---
+
+## 7. Consentement (orientation technique)
+
+- Utiliser **UMP** (User Messaging Platform, plugin `google_mobile_ads`) **avant** toute requête pub, dès que requis.
+- Utilisateurs **EEE / UK / Suisse** : ne pas `load` / `initialize` ads tant que l’état de consentement ne le permet pas.
+- Si le consentement n’autorise pas les ads : **pas d’ad, oracle quand même** (même règle que l’échec de load).
+- Doc : [Privacy & messaging (Flutter)](https://developers.google.com/admob/flutter/privacy)
+
+Hors de ce document : calendrier Play, Data safety, copy privacy, stratégie commerciale.
+
+---
+
+## 8. Point d’attention — double `beginOracle()`
+
+Aujourd’hui deux chemins :
+
+1. `onGathered` (fin réelle de l’animation, ~3200 ms).
+2. Filet dans `reveal()` : `Future.delayed(12s)` si `phase == 'recalling'` → `beginOracle()`.
+
+`beginOracle()` a déjà un garde `if (phase != 'recalling') return;` puis pose `phase = 'oracle'`.
+
+La future implémentation **doit** :
+
+- rester idempotente : un seul show, un seul `_interpret()` par tirage ;
+- si l’ad est à l’écran quand le filet 12 s se déclenche : le garde de phase (ou un flag `oracleStarted` / `adShowing`) doit empêcher un second show et un second SSE ;
+- ne pas laisser le filet lancer `_interpret()` pendant que l’interstitiel est visible.
+
+---
+
+## Hors scope jusqu’à l’implémentation
+
+Pas de `pubspec.yaml`, pas de manifest, pas de `main.dart`, pas de version, pas d’AAB, pas de merge `main`.
