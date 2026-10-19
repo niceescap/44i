@@ -160,7 +160,13 @@ class RosaceController extends ChangeNotifier {
   }
 
   Future<void> beginOracle() async {
-    if (sessionId == null || phase != 'recalling') return;
+    if (sessionId == null || phase != 'recalling' || _oracleGate) return;
+    _oracleGate = true;
+    final epoch = _drawEpoch;
+    final session = sessionId;
+    // Ad après l'animation (onGathered), avant le SSE. Fail/absent = oracle.
+    await OracleInterstitial.instance.showIfReady();
+    if (session != sessionId || epoch != _drawEpoch || phase != 'recalling') return;
     phase = 'oracle';
     dealing = false;
     _addGuide('${pick(strings.waitLines)} ${pick(strings.discLines)}');
