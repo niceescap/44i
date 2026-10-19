@@ -138,6 +138,7 @@ class RosaceController extends ChangeNotifier {
         _addGuide(pick(strings.moreLines));
       } else if (chosen.length == 2) {
         _addGuide(pick(strings.lastLines));
+        OracleInterstitial.instance.preload();
       } else if (chosen.length >= 3) {
         phase = 'recalling';
         gatherSeq++;
