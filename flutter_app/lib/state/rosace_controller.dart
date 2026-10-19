@@ -58,6 +58,7 @@ class RosaceController extends ChangeNotifier {
       await prefs.setString('la-rosace-visitor', visitorId);
     }
     visitId = 't-${DateTime.now().microsecondsSinceEpoch}-${_rng.nextInt(1 << 20)}';
+    unawaited(OracleInterstitial.instance.prepare());
     await deal();
   }
 
