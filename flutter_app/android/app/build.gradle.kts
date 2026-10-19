@@ -33,7 +33,7 @@ android {
 
     defaultConfig {
         applicationId = "com.nicee.larosace"
-        minSdk = flutter.minSdkVersion
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
