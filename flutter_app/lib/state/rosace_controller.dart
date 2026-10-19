@@ -71,6 +71,8 @@ class RosaceController extends ChangeNotifier {
     chatReady = false;
     phase = 'table';
     gatherSeq = 0;
+    _oracleGate = false;
+    _drawEpoch++;
     chosen.clear();
     messages
       ..clear();
