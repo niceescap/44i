@@ -35,6 +35,8 @@ class RosaceController extends ChangeNotifier {
   bool premiumThanks = false;
   int dealSeq = 0;
   int gatherSeq = 0;
+  bool _oracleGate = false;
+  int _drawEpoch = 0;
 
   String pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
 
