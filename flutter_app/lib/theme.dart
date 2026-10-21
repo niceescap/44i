@@ -16,7 +16,7 @@ class RosaceColors {
   static const bandeauOpacity = 0.24;
 }
 
-const appVersionLabel = '1.4.1+5';
+const appVersionLabel = '1.5.0+6';
 
 ThemeData rosaceTheme() {
   final base = ThemeData(
@@ -25,7 +25,6 @@ ThemeData rosaceTheme() {
     colorScheme: ColorScheme.fromSeed(
       seedColor: RosaceColors.gold,
       brightness: Brightness.dark,
-      surface: RosaceColors.felt,
     ),
     scaffoldBackgroundColor: RosaceColors.felt,
     fontFamily: 'serif',

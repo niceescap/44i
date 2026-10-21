@@ -1,0 +1,3 @@
+# Les images du jeu de cartes (back.png + 52 <code>.png) sont fournies par
+# l'éditeur et copiées ici au build. Le dossier doit rester présent pour que
+# `flutter build` le référence dans le pubspec.

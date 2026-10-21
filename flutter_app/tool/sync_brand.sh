@@ -6,4 +6,9 @@ DST="$ROOT/assets/brand"
 mkdir -p "$DST"
 cp -f "$SRC/bandeau.jpg" "$DST/bandeau.jpg"
 cp -f "$SRC/rosace.png" "$DST/rosace.png"
-echo "OK brand → $DST"
+if [ -f "$SRC/logocarre.jpg" ]; then
+  cp -f "$SRC/logocarre.jpg" "$DST/logocarre.jpg"
+  echo "OK brand → $DST (bandeau, rosace, logocarre)"
+else
+  echo "OK brand → $DST (bandeau, rosace) — logocarre.jpg absent, icône launcher inchangée"
+fi

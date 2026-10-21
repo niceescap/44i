@@ -40,7 +40,11 @@ fi
 
 bash "$ROOT/tool/sync_brand.sh" || true
 flutter pub get
-dart run flutter_launcher_icons
+if [ -f "$ROOT/assets/brand/logocarre.jpg" ]; then
+  dart run flutter_launcher_icons
+else
+  echo "SKIP flutter_launcher_icons — logocarre.jpg absent (icône par défaut, l'éditeur la fournira)"
+fi
 
 echo
 echo "OK — applicationId attendu : com.nicee.larosace"
