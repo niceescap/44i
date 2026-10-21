@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../ads/oracle_interstitial.dart';
 import '../api/rosace_api.dart';
 import '../cards/deck.dart';
 import '../cards/revelation_guides.dart';
@@ -34,6 +36,8 @@ class RosaceController extends ChangeNotifier {
   bool premiumThanks = false;
   int dealSeq = 0;
   int gatherSeq = 0;
+  bool _oracleGate = false;
+  int _drawEpoch = 0;
 
   String pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
 
@@ -55,6 +59,7 @@ class RosaceController extends ChangeNotifier {
       await prefs.setString('la-rosace-visitor', visitorId);
     }
     visitId = 't-${DateTime.now().microsecondsSinceEpoch}-${_rng.nextInt(1 << 20)}';
+    unawaited(OracleInterstitial.instance.prepare());
     await deal();
   }
 
@@ -67,6 +72,8 @@ class RosaceController extends ChangeNotifier {
     chatReady = false;
     phase = 'table';
     gatherSeq = 0;
+    _oracleGate = false;
+    _drawEpoch++;
     chosen.clear();
     messages
       ..clear();
@@ -132,6 +139,7 @@ class RosaceController extends ChangeNotifier {
         _addGuide(pick(strings.moreLines));
       } else if (chosen.length == 2) {
         _addGuide(pick(strings.lastLines));
+        OracleInterstitial.instance.preload();
       } else if (chosen.length >= 3) {
         phase = 'recalling';
         gatherSeq++;
@@ -153,7 +161,13 @@ class RosaceController extends ChangeNotifier {
   }
 
   Future<void> beginOracle() async {
-    if (sessionId == null || phase != 'recalling') return;
+    if (sessionId == null || phase != 'recalling' || _oracleGate) return;
+    _oracleGate = true;
+    final epoch = _drawEpoch;
+    final session = sessionId;
+    // Ad après l'animation (onGathered), avant le SSE. Fail/absent = oracle.
+    await OracleInterstitial.instance.showIfReady();
+    if (session != sessionId || epoch != _drawEpoch || phase != 'recalling') return;
     phase = 'oracle';
     dealing = false;
     _addGuide('${pick(strings.waitLines)} ${pick(strings.discLines)}');
